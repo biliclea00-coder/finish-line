@@ -253,6 +253,16 @@ var DOCS = {
  "t4-slides":{t:"Topic 4 slides",c:1,p:40},"t4-cases":{t:"Topic 4 exercises",c:1,p:3},"t4-solutions":{t:"Topic 4 solutions",c:1,p:6},
  "t5-slides":{t:"Topic 5 slides",c:1,p:40},"t5-cases":{t:"Topic 5 exercises",c:1,p:9},"t5-solutions":{t:"Topic 5 solutions",c:1,p:15},
  "exam-2023":{t:"Exam CM01, November 2023",c:1,p:9},
+ "t1-prereq":{t:"Pre-requisite case",c:1,p:1},"t1-prereq-solutions":{t:"Pre-requisite case: solution",c:1,p:3},
+ "ifrs18-standard":{t:"IFRS 18 Presentation and Disclosure (IASB, the standard)",c:1,p:180},
+ "ifrs18-ie":{t:"IFRS 18 Illustrative Examples (IASB)",c:1,p:88},
+ "ifrs18-bc":{t:"IFRS 18 Basis for Conclusions (IASB)",c:1,p:178},
+ "pwc-ifrs18":{t:"PwC: IFRS 18 is here, redefining financial performance reporting",c:1,p:5},
+ "loreal-urd-2023":{t:"L'Oréal, Universal Registration Document 2023",p:450},
+ "airbus-fs-2023":{t:"Airbus, Financial Statements FY 2023",p:150},
+ "lufthansa-ar-2025":{t:"Lufthansa, Annual Report 2025",p:414},
+ "bayer-ar-2023":{t:"Bayer, Annual Report 2023",p:284},
+ "inditex-aa-2023":{t:"Inditex, Group Annual Accounts 2023",p:569},
  "airfrance-urd-2023":{t:"Air France-KLM, Universal Registration Document 2023",p:488},
  "orange-ar-2023":{t:"Orange, Annual Report 2023",p:145},
  "orange-urd-2023":{t:"Orange, Universal Registration Document 2023",p:496},
@@ -264,11 +274,11 @@ var DOCS = {
  "ifrs18-summary":{t:"IFRS 18 project summary (IASB, April 2024)",p:17}
 };
 var FURTHER = {
- 1:[["airfrance-urd-2023","The income statement and balance sheet behind slides 16 to 17 and Case 3"],["orange-ar-2023","The income statement examples on slides 24 and 26"],["ifrs18-summary","Background to slides 35 to 37: what IFRS 18 changes"]],
- 2:[["iag-ar-2023","The group structure example on slide 6"],["airfrance-urd-2023","Case 11: did the asset increase come from acquisitions?"]],
- 3:[["orange-urd-2023","Right-of-use assets and lease liabilities, slides 57 to 59"],["vw-ar-2023","The group behind the SEAT goodwill case (Case 4)"]],
- 4:[["orange-urd-2023","The equity and debt examples on slides 19 to 25"],["airfrance-urd-2023","The instruments in Exercise 1 and slide 32"]],
- 5:[["orange-fy2023-presentation","How Orange presents its KPIs, slides 8 to 11"],["orange-ar-2023","Orange KPIs in the annual report, slide 23"],["dt-ar-2023","Deutsche Telekom's performance measures, slide 20"],["veolia-urd-2023","Veolia's indicators, slide 26"],["iag-ar-2023","Airline KPIs compared on slide 13"],["vw-ar-2023","Context for Exercises 1 and 3 (Volkswagen)"],["ifrs18-summary","Management-defined performance measures, slides 14 to 16"]]
+ 1:[["loreal-urd-2023","The report Case 1 is built on"],["ifrs18-summary","IASB summary behind slides 35 to 37"],["pwc-ifrs18","A five-page overview of what IFRS 18 changes"],["ifrs18-standard","The IFRS 18 standard itself"],["ifrs18-ie","Worked examples of the new income statement"],["ifrs18-bc","Why the IASB decided what it decided"]],
+ 2:[],
+ 3:[["orange-ar-2023","Right-of-use assets and lease liabilities, slides 57 to 59"],["vw-ar-2023","The group behind the SEAT goodwill case (Case 4)"]],
+ 4:[["orange-urd-2023","The equity and debt examples on slides 19 to 25"],["airfrance-urd-2023","The instruments in Exercise 1 and slide 32"],["lufthansa-ar-2025","The share buy-back on slide 34"],["airbus-fs-2023","The equity section for Exercise 3"]],
+ 5:[["orange-fy2023-presentation","How Orange presents its KPIs, slides 8 to 11"],["orange-urd-2023","Orange KPIs, slide 23"],["inditex-aa-2023","The EBITDA example on slide 22"],["dt-ar-2023","Deutsche Telekom's performance measures, slide 20"],["veolia-urd-2023","Veolia's indicators, slide 26"],["iag-ar-2023","Airline KPIs compared, slide 13"],["airfrance-urd-2023","Airline KPIs compared, slide 13"],["bayer-ar-2023","Bayer's reporting (also Topic 3, slide 20)"]]
 };
 var RATINGS = [["","Not rated yet"],["never","Never seen this"],["seen","Seen it, can't do it"],["notes","Can do with notes"],["cold","Can do cold"]];
 
@@ -328,7 +338,7 @@ var DEVNOTES = [
   ["Positioning","Designed first for students with learning difficulties, not mentioned in marketing.","Decided"],
   ["Pitch evidence","Classroom observations (AI used for quizzes, low participation) are personal experience. Do not name the school on stage.","Decided"],
   ["Topic 3 slides","Complete deck received (60 slides). Ladder rebuilt with exact slide numbers.","Done"],
-  ["Missing documents","Topic 5: Volkswagen 2021 statements (Exercises 1, 3). Topic 4: Airbus Annual Report 2023 (Exercise 3). Topic 1: L'Oréal 2023 URD (link only).","Open"],
+  ["Documents","All course documents received and matched to the course folders. IFRS 18 standard texts and the PwC note are kept behind course access, like the slides.","Done"],
   ["Bond question","The Nov 2023 exam has a 9-point bond question at the effective interest rate. Check which exercise in Topic 4 trains it.","Open"]
  ]]
 ];
@@ -756,9 +766,10 @@ function vTopic(n){
   h += '<section class="card"><h2>Course material</h2><p class="note">Tick each file once you have it. Open it here to read the slides with the ladder next to you.</p>'+
     [["slides","Slides"],["cases","Cases"],["solutions","Solutions"]].map(function(m){ var id = "t"+t.n+"-"+m[0], d = DOCS[id];
       return '<div class="readrow"><label class="check"><input type="checkbox" data-have="'+id+'"'+(S.have[id]?" checked":"")+'><span>'+m[1]+' <span class="note">· '+d.p+' pages</span></span></label><div class="attach"><a class="btn small ghost" href="#doc/'+id+'/'+(S.docPos[id]||1)+'">'+(m[0]==="solutions"?"Open after trying the cases":(S.docPos[id]>1?"Continue at page "+S.docPos[id]:"Open"))+'</a></div></div>'; }).join("")+
+    (t.n===1?[["t1-prereq","Pre-requisite case"],["t1-prereq-solutions","Pre-requisite case: solution"]].map(function(m){ return '<div class="readrow"><label class="check"><input type="checkbox" data-have="'+m[0]+'"'+(S.have[m[0]]?" checked":"")+'><span>'+m[1]+'</span></label><div class="attach"><a class="btn small ghost" href="#doc/'+m[0]+'/1">Open</a></div></div>'; }).join(""):'')+
     (t.n===2?'<div class="readrow"><label class="check"><input type="checkbox" data-have="exam-2023"'+(S.have["exam-2023"]?" checked":"")+'><span>Past exam, November 2023</span></label><div class="attach"><a class="btn small ghost" href="#doc/exam-2023/1">Open</a></div></div>':'')+
     (t.matNote?'<p class="note">'+t.matNote+'</p>':'')+'</section>';
-  h += '<section class="card"><h2>Further reading (optional)</h2><p class="note">The real reports the slides and cases draw on. Open them when you want to see the example in its original setting.</p>'+
+  if((FURTHER[t.n]||[]).length) h += '<section class="card"><h2>Further reading (optional)</h2><p class="note">The real reports the slides and cases draw on. Open them when you want to see the example in its original setting.</p>'+
     (FURTHER[t.n]||[]).map(function(r){ var id = "fr-"+r[0], d = DOCS[r[0]];
       return '<div class="readrow"><label class="check"><input type="checkbox" data-read="'+id+'"'+(S.read[id]?" checked":"")+'><span>'+esc(d.t)+'<br><span class="note">'+esc(r[1])+' · '+d.p+' pages</span></span></label><div class="attach"><a class="btn small ghost" href="#doc/'+r[0]+'/'+(S.docPos[r[0]]||1)+'">Open</a></div></div>'; }).join("")+'</section>';
   h += '<section class="card"><h2>Textbook reading</h2>'+

@@ -70,16 +70,13 @@ The generator already exists in the site (types e1 to e4). Cases 1 to 9 match th
 
 | Case | Step | Kind | Inputs and method |
 |---|---|---|---|
-| 1 VW divisions | t5d, t5e | calc | ROCE after tax = NOPAT ÷ capital employed = NOPAT margin × CE turnover. EVA = NOPAT − WACC × CE. Compare the divisions. *Needs the VW 2021 statements, which are not uploaded yet.* |
+| 1 VW divisions | t5d, t5e | calc | ROCE after tax = NOPAT ÷ capital employed = NOPAT margin × CE turnover. EVA = NOPAT − WACC × CE. Compare the divisions. Statements are inside the exercise file (pictures). |
 | 2 CleanMotors | t5c | calc + judge | **Inputs:** an income statement and a balance sheet for two years, and the tax rate. **Method:** NOPAT = operating profit × (1 − t); CE = equity + net debt including leases (or the operating side: fixed assets + working capital); then the company's two adjustments (exclude non-recurring items, exclude financial assets) and why they flatter ROCE. **Re-skin:** Apex Vault (manufacturing) or Terra Properties (heavy right-of-use assets). |
-| 3 VW free cash flow | t5f | calc | FCFF = operating cash flow − capex (+ interest after tax, depending on the definition); FCFE = FCFF − interest after tax + net borrowing. *Needs the VW 2021 cash flow statement.* |
+| 3 VW free cash flow | t5f | calc | FCFF = operating cash flow − capex (+ interest after tax, depending on the definition); FCFE = FCFF − interest after tax + net borrowing. Cash flow statement is inside the exercise file (picture). |
 | 4 Lufthansa depreciation | t5d | calc | Restate depreciation with a longer life and the same residual value; the adjusted charge raises EBIT and the book value; ROCE before and after the change. **Re-skin:** Apex Vault machines on a 10-year versus a 15-year life. |
 
 ---
 
-## Missing documents (to ask Lea)
+## Documents
 
-- Topic 5: the Volkswagen 2021 statements by division and the cash flow statement (Exercises 1, 3). Possibly another handout.
-- Topic 4: Airbus Annual Report 2023 (Exercise 3).
-- Topic 1: L'Oréal 2023 URD (Case 1). Only a link is given in the case.
-- Topic 4 slides: the professor's version was uploaded. Students will have the student version, so the tool must not depend on the speaker notes.
+All course documents are in. The real reports sit under `readings/` (public company documents). Slides, cases, solutions, the pre-requisite case, the 2023 exam, the IFRS 18 standard texts and the PwC note sit under `course/`, encrypted. Topic 4 now uses the student version of the slides.
