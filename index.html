@@ -1,0 +1,1026 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Finish Line prototype</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* Layout idea: one narrow column, phone first. The course map is home; every topic is a ladder; a running-track lane marks the finish line. */
+:root{
+  --bg:#F3F5F1; --surface:#FFFFFF; --ink:#16211C; --muted:#5C6B63; --line:#D9DFD8;
+  --accent:#D9482B; --accent-ink:#FFFFFF; --deep:#1F5A45; --on-deep:#FFFFFF;
+  --good:#1E7A4F; --good-bg:#DDF0E5; --warn:#9A5B00; --warn-bg:#FBEBCF; --idle-bg:#E9EDE8;
+  --info:#2B4C8C; --info-bg:#E1E8F7;
+  --display:"Bricolage Grotesque","Trebuchet MS",sans-serif;
+  --body:"IBM Plex Sans","Segoe UI",system-ui,sans-serif;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#111815; --surface:#1A2420; --ink:#ECF1EC; --muted:#9BAAA1; --line:#2C3A34;
+    --accent:#F0633F; --accent-ink:#1A0D08; --deep:#7FCBA9; --on-deep:#0E1512;
+    --good:#7FD3A6; --good-bg:#173A2A; --warn:#F2C374; --warn-bg:#3D2E10; --idle-bg:#232E29;
+    --info:#A9C0F5; --info-bg:#1C2A4A;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#111815; --surface:#1A2420; --ink:#ECF1EC; --muted:#9BAAA1; --line:#2C3A34;
+  --accent:#F0633F; --accent-ink:#1A0D08; --deep:#7FCBA9; --on-deep:#0E1512;
+  --good:#7FD3A6; --good-bg:#173A2A; --warn:#F2C374; --warn-bg:#3D2E10; --idle-bg:#232E29;
+  --info:#A9C0F5; --info-bg:#1C2A4A;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.5;-webkit-text-size-adjust:100%}
+.wrap{max-width:640px;margin:0 auto;padding:16px 16px 56px;display:flex;flex-direction:column;gap:18px}
+header.top{display:flex;align-items:center;justify-content:space-between;gap:12px;padding-top:4px}
+.brand{font-family:var(--display);font-weight:700;font-size:18px;display:flex;align-items:center;gap:8px;color:var(--ink);text-decoration:none}
+.flag{width:18px;height:18px;border-radius:3px;background:conic-gradient(var(--ink) 25%,transparent 0 50%,var(--ink) 0 75%,transparent 0) 0 0/9px 9px;border:1px solid var(--ink)}
+.proto{font-size:12px;color:var(--muted);border:1px solid var(--line);border-radius:999px;padding:2px 10px;white-space:nowrap}
+nav.tabs{display:flex;gap:6px;flex-wrap:wrap}
+nav.tabs a{font-size:13px;text-decoration:none;color:var(--muted);padding:5px 11px;border-radius:999px;border:1px solid var(--line);background:var(--surface)}
+nav.tabs a[aria-current="page"]{color:var(--on-deep);background:var(--deep);border-color:var(--deep)}
+h1{font-family:var(--display);font-weight:700;font-size:27px;line-height:1.15;margin:0;text-wrap:balance}
+h2{font-family:var(--display);font-weight:700;font-size:19px;line-height:1.2;margin:0;text-wrap:balance}
+h3{font-family:var(--display);font-weight:700;font-size:16px;line-height:1.25;margin:0}
+p{margin:0}
+a{color:var(--deep)}
+.lead{color:var(--muted)}
+.eyebrow{font-size:12px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px;display:flex;flex-direction:column;gap:12px}
+.stack{display:flex;flex-direction:column;gap:12px}
+.row{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.note{font-size:13px;color:var(--muted)}
+.back{font-size:14px;text-decoration:none}
+input[type=text],input[type=date],input[type=number],select,textarea{font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:9px 11px;width:100%}
+textarea{min-height:84px;resize:vertical}
+label.f{font-weight:600;font-size:14px;display:flex;flex-direction:column;gap:6px}
+.btn{font:inherit;font-weight:600;border:0;border-radius:12px;padding:13px 16px;background:var(--accent);color:var(--accent-ink);cursor:pointer;text-align:center;text-decoration:none;display:block;width:100%}
+.btn.ghost{background:transparent;color:var(--ink);border:1px solid var(--line)}
+.btn.small{padding:8px 12px;font-size:14px;width:auto;border-radius:10px}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.pill{font-size:12px;font-weight:600;padding:2px 9px;border-radius:999px;white-space:nowrap}
+.pill.solid{background:var(--good-bg);color:var(--good)}
+.pill.prog{background:var(--info-bg);color:var(--info)}
+.pill.gap{background:var(--warn-bg);color:var(--warn)}
+.pill.todo{background:var(--idle-bg);color:var(--muted)}
+/* finish card */
+.finish{background:var(--deep);color:var(--on-deep);border:0}
+.finish .big{font-family:var(--display);font-weight:700;font-size:42px;line-height:1;font-variant-numeric:tabular-nums}
+.finish .eyebrow,.finish .note{color:inherit;opacity:.82}
+.finish input[type=date]{background:transparent;color:inherit;border-color:currentColor;width:auto;padding:5px 8px;font-size:14px}
+.lane{display:flex;align-items:center;gap:5px}
+.lane i{flex:1;height:12px;border-radius:3px;background:currentColor;opacity:.25;position:relative;overflow:hidden}
+.lane i b{position:absolute;inset:0 auto 0 0;background:currentColor;opacity:1}
+.lane i.full{opacity:1}
+.lane .end{width:14px;height:22px;border-radius:2px;flex:none;background:conic-gradient(currentColor 25%,transparent 0 50%,currentColor 0 75%,transparent 0) 0 0/7px 7px;border:1px solid currentColor}
+/* topic rows */
+.topic{display:grid;grid-template-columns:40px 1fr;gap:12px;text-decoration:none;color:inherit;align-items:start}
+.topic .num{width:40px;height:40px;border-radius:10px;background:var(--idle-bg);display:flex;align-items:center;justify-content:center;font-family:var(--display);font-weight:700;font-size:18px}
+.topic .meta{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.dots{display:flex;gap:4px;flex-wrap:wrap}
+.dots i{width:18px;height:6px;border-radius:3px;background:var(--idle-bg)}
+.dots i.solid{background:var(--good)} .dots i.prog{background:var(--info)} .dots i.gap{background:var(--warn)}
+/* ladder */
+.ladder{list-style:none;margin:0;padding:0;display:flex;flex-direction:column}
+.ladder li{display:grid;grid-template-columns:28px 1fr;gap:10px;padding:10px 0;border-top:1px solid var(--line)}
+.ladder li:first-child{border-top:0;padding-top:0}
+.ladder .n{width:28px;height:28px;border-radius:50%;border:2px solid var(--deep);color:var(--deep);display:flex;align-items:center;justify-content:center;font-weight:600;font-size:13px}
+.ladder .n.here{background:var(--deep);color:var(--on-deep)}
+.ladder .body{display:flex;flex-direction:column;gap:6px;min-width:0}
+.ladder select{font-size:14px;padding:6px 8px}
+ul.plain{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:4px;font-size:14px}
+.check{display:grid;grid-template-columns:22px 1fr;gap:8px;align-items:start;font-size:14px}
+.check input{width:18px;height:18px;margin:2px 0 0}
+.readrow{display:flex;flex-direction:column;gap:6px;padding:8px 0;border-top:1px solid var(--line)}
+.readrow:first-of-type{border-top:0}
+.readrow .tools{display:flex;gap:8px;align-items:center;font-size:13px;color:var(--muted)}
+.readrow .tools input{width:84px;padding:5px 8px;font-size:14px}
+.mat{display:flex;flex-wrap:wrap;gap:6px}
+/* universe */
+.hero{position:relative;border-radius:16px;overflow:hidden;min-height:220px;display:flex;align-items:flex-end;background:#16211C}
+.hero img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.hero .ov{position:relative;padding:60px 16px 16px;width:100%;color:#fff;background:linear-gradient(to top,rgba(10,18,14,.88),rgba(10,18,14,0));display:flex;flex-direction:column;gap:6px}
+.hero .ov p{color:#E6ECE7}
+.hero .eyebrow{color:#CFE3D8}
+.co{background:var(--surface);border:1px solid var(--line);border-radius:14px;overflow:hidden;display:flex;flex-direction:column}
+.co .ph{position:relative;aspect-ratio:16/9;background:#16211C}
+.co .ph img{width:100%;height:100%;object-fit:cover;display:block}
+.co .ph .tag{position:absolute;left:12px;bottom:10px;font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#fff;background:rgba(10,18,14,.72);padding:3px 9px;border-radius:999px}
+.co .tx{padding:14px 16px 16px;display:flex;flex-direction:column;gap:6px}
+.co .tx p{font-size:14px;color:var(--muted)}
+/* exercise */
+.sheet{border:1px solid var(--line);border-radius:10px;overflow:hidden;font-size:14px;font-variant-numeric:tabular-nums}
+.sheet .ti{background:var(--idle-bg);padding:6px 10px;font-weight:600}
+.sheet .cols{display:grid;grid-template-columns:1fr 1fr}
+.sheet .col{padding:8px 10px;display:flex;flex-direction:column;gap:4px;min-width:0}
+.sheet .col + .col{border-left:1px solid var(--line)}
+.sheet .col .h{font-size:11px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:var(--muted)}
+.sheet .ln{display:flex;justify-content:space-between;gap:8px}
+.sheet .ln.tot{border-top:1px solid var(--line);padding-top:4px;font-weight:600}
+.fields{display:flex;flex-direction:column;gap:10px}
+.fld{display:grid;grid-template-columns:1fr 116px;gap:10px;align-items:center;font-size:14px}
+.fld input{text-align:right;font-variant-numeric:tabular-nums}
+.fld input.right{border-color:var(--good);background:var(--good-bg)}
+.fld input.wrong{border-color:var(--warn);background:var(--warn-bg)}
+.fld .ans{grid-column:1/-1;font-size:13px;color:var(--warn)}
+.fb{border-left:4px solid var(--good);padding:4px 0 4px 12px;display:flex;flex-direction:column;gap:8px}
+.fb.miss{border-color:var(--warn)}
+.fb b.v{font-family:var(--display)}
+.exam{font-size:14px;background:var(--idle-bg);border-radius:10px;padding:10px 12px}
+ol.steps{margin:0;padding-left:20px;font-size:14px;display:flex;flex-direction:column;gap:6px}
+.opts{display:flex;flex-direction:column;gap:8px}
+.opt{font:inherit;text-align:left;padding:11px 14px;border-radius:12px;border:1px solid var(--line);background:var(--bg);color:var(--ink);cursor:pointer}
+.opt[aria-pressed="true"]{border-color:var(--deep);background:var(--good-bg)}
+.opt.right{background:var(--good-bg);border-color:var(--good)}
+.opt.wrong{background:var(--warn-bg);border-color:var(--warn)}
+.opt[disabled]{cursor:default}
+.timer{font-family:var(--display);font-weight:700;font-size:44px;font-variant-numeric:tabular-nums;line-height:1}
+.dn{display:flex;flex-direction:column;gap:4px;padding:10px 0;border-top:1px solid var(--line);font-size:14px}
+.dn:first-of-type{border-top:0}
+.dn .q{font-weight:600}
+.dn .a{color:var(--muted)}
+footer{font-size:13px;color:var(--muted);display:flex;gap:14px;flex-wrap:wrap}
+/* 3D city: one visual world, same in both themes */
+.city{position:relative;border-radius:16px;overflow:hidden;background:radial-gradient(120% 90% at 50% 0%,#24493B 0%,#0E1814 70%);color:#E6ECE7}
+.city canvas{display:block;width:100%;height:300px;touch-action:pan-y;cursor:grab}
+.city .cap{position:absolute;left:14px;right:14px;bottom:10px;font-size:12px;color:#CFE3D8;text-shadow:0 1px 2px rgba(0,0,0,.6)}
+.city .hd{position:absolute;left:14px;top:12px;font-size:12px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#CFE3D8}
+.legend{display:flex;flex-wrap:wrap;gap:10px;font-size:12px;color:var(--muted)}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:4px;vertical-align:-1px}
+.medals{display:grid;grid-template-columns:repeat(3,1fr);gap:14px 8px}
+.medal{display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center;font-size:12px;line-height:1.25;color:var(--muted);perspective:300px}
+.medal .disc{width:52px;height:52px;border-radius:50%;border:2px dashed var(--line);display:flex;align-items:center;justify-content:center;font-family:var(--display);font-weight:700;font-size:18px;color:var(--muted)}
+.medal.on{color:var(--ink)}
+.medal.on .disc{border:0;color:#3A2A00;background:conic-gradient(from 210deg,#F6D77A,#E9A93B,#FBE9A8,#D9952A,#F6D77A);box-shadow:0 2px 0 #B67A1C,0 6px 12px rgba(0,0,0,.18)}
+.attach{display:flex;flex-wrap:wrap;gap:8px;align-items:center;font-size:13px;color:var(--muted)}
+.attach .fname{color:var(--ink);font-weight:600;overflow-wrap:anywhere}
+label.btn.small{display:inline-block;cursor:pointer}
+label.btn.small input{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none}
+label.btn.small:focus-within{outline:3px solid var(--accent);outline-offset:2px}
+.readbar{position:sticky;top:0;z-index:5;background:var(--deep);color:var(--on-deep);border-radius:12px;padding:10px 14px;display:flex;justify-content:space-between;align-items:center;gap:12px}
+.readbar .timer{font-size:28px}
+.readbar .pg{font-size:14px;font-weight:600}
+.pdfwrap{overflow:auto;border:1px solid var(--line);border-radius:10px;background:#fff;max-height:none}
+.pdfwrap canvas{display:block}
+.samplepg{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:18px 16px;display:flex;flex-direction:column;gap:12px;font-size:17px;line-height:1.6}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+#confetti{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:50}
+@media (prefers-reduced-motion: no-preference){
+  .card,.co{animation:in .22s ease-out}
+  .fb{animation:flip .4s ease-out;transform-origin:top}
+  .medal.on .disc{animation:spin 5s ease-in-out infinite}
+}
+@keyframes flip{from{transform:perspective(600px) rotateX(-65deg)}to{transform:none}}
+@keyframes spin{0%,70%,100%{transform:rotateY(0)}85%{transform:rotateY(360deg)}}
+@keyframes in{from{transform:translateY(5px)}to{transform:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <a class="brand" href="#map"><span class="flag" aria-hidden="true"></span>Finish Line</a>
+    <a class="proto" id="sync" href="#account" style="text-decoration:none">Prototype</a>
+  </header>
+  <nav class="tabs" id="nav" aria-label="Sections"></nav>
+  <main id="app" class="stack"></main>
+  <footer><a href="#dev-notes">Developer notes</a><span>IFRS (CM01) · built from your uploaded slides and cases</span></footer>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="pdf.min.js"></script>
+<script src="config.js"></script>
+<script src="supabase.js"></script>
+<script>
+(function(){
+"use strict";
+
+/* ================= course content (from the uploaded slides, cases and the Nov 2023 exam) ================= */
+var TOPICS = [
+ {n:1, title:"Introduction to IFRS and the financial statements", exam:"13 of 75 points in the Nov 2023 exam", playable:false,
+  question:"When you open an annual report, what exactly are you looking at, and who decided it has to look this way?",
+  kind:"Context topic. No calculations: you read real statements (Air France-KLM, Orange, L'Oréal) and learn the vocabulary every later topic uses.",
+  goals:["Explain why the EU made IFRS mandatory, and for whom","Describe what the Conceptual Framework is for","Name the five parts of IFRS financial statements","Tell current from non-current, and by nature from by function","Explain other comprehensive income"],
+  steps:[["t1a","IFRS in the EU: who must use it","Slides 8 to 11"],["t1b","Conceptual Framework and the IFRS hierarchy","Slides 12 to 13"],["t1c","Balance sheet: current versus non-current","Slides 15 to 19 · Case 3"],["t1d","Income statement: by nature versus by function","Slides 20 to 25 · Case 2"],["t1e","Other comprehensive income","Slides 22 to 27"],["t1f","Cash flow statement and changes in equity","Slides 28 to 33"],["t1g","Reading a real annual report","Case 1 (L'Oréal 2023)"]],
+  mat:[["Slides","ok"],["Cases","ok"],["Solutions","ok"]],
+  req:[["r1a","Elliott/Elliott, Financial Accounting and Reporting (19th ed.), ch. 3, 5, 6, 7"],["r1b","Refresher: Weygandt/Kimmel/Kieso ch. 1 and Weetman ch. 2, 3"],["r1c","Videos: Conceptual Framework, IAS 1, IAS 7 (IFRSbox)"]],
+  opt:[["o1a","Biondi and Suzuki (2007), Socio-Economic Review 5 (4)"],["o1b","Demerens, Hossfeld, Le Manh and Bonnier (2013), Issues in Accounting Education 28 (2)"],["o1c","Further papers listed on the last slide"]]},
+ {n:2, title:"Business combinations", exam:"26 of 75 points in the Nov 2023 exam", playable:true,
+  question:"Your company wants to buy 60% of a company that carries far more debt than you do. What happens to the group's debt-to-equity ratio after the deal?",
+  kind:"Calculation topic. The slides build one ladder of four example types, and the cases repeat the same ladder.",
+  goals:["Explain individual versus consolidated statements","List the steps of a consolidation","Prepare a consolidated balance sheet with full consolidation","Explain and calculate goodwill","Explain and calculate non-controlling interest"],
+  steps:[["e1","100% ownership, no goodwill","Slides: Example 1 · Cases 1, 2"],["e2","100% ownership with goodwill","Slides: Example 2 · Cases 3, 4, 5"],["e3","Less than 100%: non-controlling interest","Slides: Example 3 · Cases 6, 7"],["e4","Equity method for an associate","Slides: Example 4 · Cases 8, 9"]],
+  mat:[["Slides","ok"],["Cases","ok"],["Solutions","ok"]],
+  req:[["r2a","Elliott/Elliott ch. 22, 23"],["r2b","Stolowy/Ding/Paugam, Financial Accounting and Reporting (6th ed.), ch. 13"],["r2c","Video: IFRS 10 Consolidated Financial Statements (IFRSbox)"]],
+  opt:[["o2a","Alexander/Jorissen et al. ch. 25 to 27"],["o2b","Aerts/Walton ch. 12"],["o2c","Demerens, Delvaille, Le Manh and Pare (2014), Gestion 2000 31 (4)"],["o2d","Beiersdorf and Schmidt (2014), Zeitschrift für internationale Rechnungslegung"]]},
+ {n:3, title:"Non-current assets and leases", exam:"18 of 75 points in the Nov 2023 exam", playable:false,
+  question:"Is research spending an asset or an expense? When has a machine lost value? And does leasing really keep debt off the balance sheet?",
+  kind:"Mixed topic. Three management questions, each ending in a calculation type.",
+  goals:["Tell an intangible asset from an expense","Apply the cost model","Run an impairment test","Tell a lease from a service contract","Show what a lease does to the statements"],
+  steps:[["t3a","Intangibles: research versus development","Slides 9 to 15"],["t3b","Cost model: depreciation and amortisation","Slides 17 to 20 · Cases 1, 2"],["t3c","Impairment of a single asset","Slides: Exercise 3.1 · Case 3"],["t3d","Impairment of a group of assets with goodwill","Slides: Exercise 3.2 · Cases 4, 5"],["t3e","Lease or service contract?","Slides: Exercises 3.3, 3.4"],["t3f","Lease accounting for the lessee","Slides: Exercise 3.5"]],
+  mat:[["Slides","warn"],["Cases","ok"],["Solutions","ok"]],
+  matNote:"The slide file arrived incomplete. The text of 60 slides was recovered, but please upload it again.",
+  req:[["r3a","Weygandt/Kimmel/Kieso ch. 9"],["r3b","Weetman ch. 8"],["r3c","Elliott/Elliott ch. 17, 18"]],
+  opt:[["o3a","Review the pre-master material on acquisition cost and depreciation"]]},
+ {n:4, title:"Financial debt and equity", exam:"9 of 75 points in the Nov 2023 exam", playable:false,
+  question:"Your CFO wants to improve the debt-to-equity ratio with preferred shares that pay a guaranteed dividend and can be handed back after two years. Do they count as equity?",
+  kind:"Mixed topic. One classification test, then bookkeeping for equity transactions.",
+  goals:["Tell debt from equity instruments","Judge how much financial instruments matter in the statements","Account for debt, equity and hybrid instruments","Account for share issues and buy-backs"],
+  steps:[["t4a","Debt or equity? The contractual obligation test","Slides 13 to 17 · Exercises 1, 2"],["t4b","Hybrid instruments","Slides 18 to 22"],["t4c","Compound instruments: split accounting","Slides 23 to 25"],["t4d","Issuing shares and share premium","Slides 28 to 32"],["t4e","Treasury shares: buy-back, resale, cancellation","Slides 33 to 38"]],
+  mat:[["Slides","ok"],["Cases","ok"],["Solutions","ok"]],
+  req:[["r4a","Elliott/Elliott ch. 12 and ch. 14 (pp. 342 to 347, 350 to 353, 357 to 362)"],["r4b","Weetman ch. 11 (pp. 312 to 317) and ch. 12"],["r4c","Weygandt/Kimmel/Kieso ch. 10"]],
+  opt:[["o4a","Schmidt (2013), Accounting in Europe 10 (2)"],["o4b","Schmidt (2018), Die Wirtschaftsprüfung (8)"],["o4c","Schmidt and Schreiber (2010), Die Wirtschaftsprüfung (12)"]]},
+ {n:5, title:"KPIs and financial communication", exam:"Appears inside other questions in the Nov 2023 exam", playable:false,
+  question:"Which numbers tell you how a company is really doing, and where can those numbers mislead you?",
+  kind:"Analysis topic. Formulas applied to real reports (Orange, Veolia, Inditex).",
+  goals:["Get a first overview of a set of statements","Pick the KPIs that matter for a given company","Separate business changes from accounting-choice changes","Explain the limits of KPI comparisons"],
+  steps:[["t5a","KPIs and management-defined measures (IFRS 18)","Slides 7 to 16"],["t5b","EBITDA and absolute performance numbers","Slides 18 to 23"],["t5c","Return on capital employed (ROCE)","Slides 24 to 26"],["t5d","The Du Pont pyramid","Slides 27 to 30"],["t5e","Economic value added (EVA)","Slides 33 to 35"],["t5f","Free cash flow","Slides 36 to 37"]],
+  mat:[["Slides","ok"],["Cases","missing"],["Solutions","missing"]],
+  matNote:"No cases uploaded for this topic yet.",
+  req:[["r5a","Elliott/Elliott ch. 28, 29"],["r5b","Weygandt/Kimmel/Kieso ch. 13"],["r5c","Weetman ch. 13, 14"]],
+  opt:[["o5a","Marr, Key Performance Indicators, ch. 1 to 18"],["o5b","Walsh and Warner, 25 need-to-know management ratios, ch. 4 to 11"],["o5c","Biddle, Bowen and Wallace (1997), Journal of Accounting and Economics 24 (3)"],["o5d","Bennett (2019) and Milano (2019), Journal of Applied Corporate Finance 31 (3)"]]}
+];
+var RATINGS = [["","Not rated yet"],["never","Never seen this"],["seen","Seen it, can't do it"],["notes","Can do with notes"],["cold","Can do cold"]];
+
+var CO = {
+  verdant:{name:"Verdant Capital", role:"Your investment business", img:"verdant.jpg", desc:"A venture fund backing sustainable startups. We keep the fund, its investors and its management company apart.", where:"Topics 1 and 5: reading statements and judging performance"},
+  synapse:{name:"Synapse AI", role:"Your AI startup", img:"synapse.jpg", desc:"Sells subscriptions to software that automates invoices, email workflows and reporting.", where:"Topic 2: it acquires FlowDesk. Topic 4: it raises funding", target:"FlowDesk"},
+  apex:{name:"Apex Vault", role:"Your manufacturing company", img:"apex.jpg", desc:"Designs and makes premium vaulting poles, buys machinery and sells to clubs worldwide.", where:"Topic 2: it buys into Kestrel Grip. Topic 3: its machines lose value", target:"Kestrel Grip"},
+  terra:{name:"Terra Properties", role:"Your real estate company", img:"terra.jpg", desc:"Develops and owns sustainable buildings, finances them with debt and equity, and collects rent.", where:"Topic 2: it acquires Hofgarten Living. Topic 3: leases. Topic 4: debt", target:"Hofgarten Living"}
+};
+var PARENTS = ["synapse","apex","terra"];
+
+var CONTEXT2 = [
+ ["In Europe, the individual statements of each legal entity are usually prepared under IFRS.", false, "Individual statements mostly stay in local rules (German, French GAAP). IFRS is mandatory for the consolidated statements of listed groups."],
+ ["A group is one economic entity made up of several legal entities.", true, "That is why a group publishes one set of consolidated statements on top of each entity's own."],
+ ["A company that owns 10% of another must include it in its consolidation.", false, "10% without influence is a passive investment. Full consolidation needs control."],
+ ["Owning more than 50% of the voting rights is the only way to control a company.", false, "Control is about power over decisions. It can also come from contracts or board rights."],
+ ["Goodwill is always the purchase price minus the book value of the shares bought.", false, "It is the purchase price minus the fair value of the identifiable net assets."],
+ ["Consolidated net income includes 100% of the subsidiary's income, even if the parent owns less than 100%.", true, "All of it is included. The share belonging to the other owners is then shown separately."],
+ ["The equity method measures the investment in an associate at its market value.", false, "It starts at cost and then moves with the parent's share of the associate's profit."]
+];
+
+var DEVNOTES = [
+ ["Your experience and concerns", [
+  ["Chats lose track: memory needs updating, documents get re-submitted, discussions get lost (ADHD).","One persistent workspace per course. Material is uploaded once and progress is stored.","Built: with Supabase configured, every user signs in and progress, exam date and attached PDFs are saved to their account. Without it, the browser is the fallback"],
+  ["Chat tutors never end. Exams have deadlines, and this must not run on engagement tricks.","A daily finish line (two exercises, then done) and a visible count to exam-ready. No streaks, no nudges to stay longer.","Built"],
+  ["Understanding the logic of a course takes so long that little time is left to practise.","Course map as home. Each topic opens with the question it answers, the goals and its ladder of example types.","Built for all 5 topics"],
+  ["Anxiety: trust needs a comprehensive view and knowing exactly where in the lessons I am.","Every step of every topic is listed with a status. Material checklist per topic.","Built"],
+  ["Starting is the hardest part, so no hard gate before learning.","Completeness checklist per topic. Topics unlock with their own material.","Built as checklist, unlock logic later"],
+  ["Missing base knowledge compared with other students.","Level check starts in the middle of a ladder and moves up or down. Self-report separates a vocabulary gap from a method gap.","Built for Topic 2"],
+  ["Wants to say how the examples felt, typed or spoken.","Free-text box after each level-check exercise. Voice needs a microphone, which this prototype environment blocks.","Typed: built. Voice: live version"],
+  ["Material is boring unless it is about companies I care about.","Company universe from a short intro chat, with pictures. Exercises use those companies.","Built with your four companies; intro chat later"],
+  ["The slide examples are the real finish line.","Practice exercises copy the structure of the slide examples with new numbers.","Built for Topic 2 (four types)"],
+  ["Never sure how to treat intro lectures.","Context track: short true or false checks in the style of the quiz slides, no calculations.","Built for Topic 2; Topic 1 next"],
+  ["Unsure about textbook reading, and never know how long it takes.","Two tiers (required, optional). The chapter opens inside the tool as a PDF. A timer runs until the student presses a button on the last page, because the tool cannot know when the last page is finished. Speed then estimates each chapter from its page count.","Built"],
+  ["Collecting referenced papers wastes time.","Scan slides for references and list them per topic.","Listed by hand here; automatic scan later"],
+  ["Likes to know everything has been read.","Tick-off list for required and optional readings.","Built"],
+  ["Not every course has a practice exam.","Exam weights are optional. Without an exam, all ladder steps count equally, or the syllabus weights are used.","Noted, not built"],
+  ["AI can hallucinate.","The tool only teaches from uploaded material. Exercise numbers are calculated by code, so every balance sheet balances.","Built for Topic 2"]
+ ]],
+ ["Rules we agreed", [
+  ["Readiness","Two unaided correct answers per example type, on different days. Using a hint does not count.","Built"],
+  ["Practice mix","Each type starts equal. A miss doubles how often it appears. Exam-ready types drop to occasional review. Later: weight by exam points.","Built except exam weighting"],
+  ["Level check","Start at the middle step. Solve it and move up, miss it and move down. One or two problems per topic.","Built for Topic 2"],
+  ["Game elements","Rewards follow mastery only: a floor in the course city lights up when a step is exam-ready, and milestones mark learning events. Nothing rewards time spent, and there are no streaks.","Built"],
+  ["Level check for descriptive topics","Still open. Proposal: a short true or false set plus the self-rating.","Open"]
+ ]],
+ ["Keep for later", [
+  ["Licensing","Slides and cases belong to the professor and school. Textbooks are licensed. Ignored for the prototype by your decision; needs a professor on board before any public use.","Open"],
+  ["Pictures","The boardroom and the green-roof housing look like real photographs, not generated images. Replace them with generated ones before showing this publicly.","Open"],
+  ["Public link","While the prototype link is public, attached PDFs are stored with it. Keep the link private before attaching licensed chapters.","Open"],
+  ["Sci-Hub","Left out. It shares papers without publisher permission. Use open-access checks and library links.","Decided"],
+  ["Library login","Do not hand student credentials to the tool. Link out to the library reader.","Later"],
+  ["Professor view","Class-wide weak spots as discussion prompts, never individual answers.","Later"],
+  ["Positioning","Designed first for students with learning difficulties, not mentioned in marketing.","Decided"],
+  ["Pitch evidence","Classroom observations (AI used for quizzes, low participation) are personal experience. Do not name the school on stage.","Decided"],
+  ["Topic 3 slides","Upload arrived incomplete. Re-upload to check the recovered text.","Open"],
+  ["Topic 5","No cases yet. The ladder comes from the slides only.","Open"],
+  ["Bond question","The Nov 2023 exam has a 9-point bond question at the effective interest rate. Check which exercise in Topic 4 trains it.","Open"]
+ ]]
+];
+
+/* ================= state ================= */
+var KEY = "finishline-proto-v2";
+function fresh(){ return {examDate:"", dayOffset:0, rating:{}, credits:{}, misses:{}, tries:{}, attemptsByDay:{}, ex:null, check:null, ctx:null, ctxDone:null,
+  notes:[], read:{}, pages:{}, speed:null, timer:null, seenReady:[], files:{}, lastRead:null}; }
+var S = fresh();
+try{ var raw = localStorage.getItem(KEY); if(raw){ var o = JSON.parse(raw); for(var k in o){ S[k] = o[k]; } } }catch(e){}
+function saveLocal(){ try{ localStorage.setItem(KEY, JSON.stringify(S)); }catch(e){} }
+function save(){ saveLocal(); scheduleCloud(); }
+
+/* ---------- saving to the viewer's account (Claude artifact host), with the browser as fallback ---------- */
+var cloud = {ref:null, assets:null, state:"local", saving:false, dirty:false, timer:null, tried:0};
+var uploading = {}, pendingRemove = "", attachMsg = {};
+function setSync(){
+  var el = document.getElementById("sync"); if(!el) return;
+  el.textContent = ({local:"Saved on this device only", loading:"Connecting…", on:"Saved to your account", saving:"Saving…", error:"Not saved to account", signedout:"Sign in to save"})[cloud.state];
+}
+function scheduleCloud(){ if(!cloud.ref) return; cloud.dirty = true; clearTimeout(cloud.timer); cloud.timer = setTimeout(pushCloud, 900); }
+function pushCloud(){
+  if(!cloud.ref || cloud.saving) return;
+  cloud.saving = true; cloud.dirty = false; cloud.state = "saving"; setSync();
+  var body = JSON.parse(JSON.stringify(S)); body.timer = null;
+  cloud.ref.set({v:2, state:body}).then(function(){ cloud.state = "on"; }, function(e){
+    cloud.state = "error"; if(e && e.code === "invalid_argument"){ cloud.ref = null; }
+  }).then(function(){ cloud.saving = false; setSync(); if(cloud.dirty && cloud.ref) pushCloud(); });
+}
+function hasProgress(){ return !!(S.examDate || Object.keys(S.rating).length || Object.keys(S.tries).length || S.check || S.ctxDone || S.speed || Object.keys(S.read).length); }
+function loadRemote(ref){
+  var to = new Promise(function(_, rej){ setTimeout(function(){ rej({code:"timeout"}); }, 10000); });
+  return Promise.race([ref.get(), to]).then(function(snap){
+    cloud.ref = ref;
+    var d = snap && snap.exists ? snap.data() : null;
+    if(d && d.state && Object.keys(d.state).length){
+      var t = S.timer, f = fresh(), remote = JSON.parse(JSON.stringify(d.state)), k;
+      for(k in remote){ f[k] = remote[k]; }
+      S = f; S.timer = t; saveLocal(); cloud.state = "on";
+    } else { cloud.state = "on"; if(hasProgress()) pushCloud(); }
+    setSync(); render();
+  });
+}
+/* Supabase: used when config.js holds a project URL and publishable key */
+var sb = null, sbUser = null, acctMsg = "";
+function attachSupabase(user){
+  sbUser = user; var uid = user.id;
+  cloud.maxBytes = 50*1024*1024;
+  cloud.assets = {
+    upload: function(file){ var path = uid+"/"+Date.now()+"-"+Math.random().toString(36).slice(2,8)+".pdf";
+      return sb.storage.from("readings").upload(path, file, {contentType:"application/pdf"}).then(function(r){ if(r.error) throw {code: /exceed|too large|413/i.test(r.error.message||"") ? "too_large" : "upstream_error"}; return {id:path, sizeBytes:file.size}; }); },
+    delete: function(id){ return sb.storage.from("readings").remove([id]).then(function(r){ if(r.error) throw r.error; }); }
+  };
+  cloud.fetchFile = function(id){ return sb.storage.from("readings").download(id).then(function(r){ if(r.error) throw r.error; return r.data.arrayBuffer(); }); };
+  var ref = {
+    get: function(){ return sb.from("user_state").select("state").eq("user_id", uid).maybeSingle().then(function(r){ if(r.error) throw r.error; return {exists:!!r.data, data:function(){ return r.data; }}; }); },
+    set: function(body){ return sb.from("user_state").upsert({user_id:uid, state:body.state, updated_at:new Date().toISOString()}).then(function(r){ if(r.error) throw r.error; }); }
+  };
+  cloud.state = "loading"; setSync();
+  return loadRemote(ref).catch(function(){ cloud.state = "error"; acctMsg = "Signed in, but the saved progress could not be loaded. Check that supabase_setup.sql was run in your project."; setSync(); render(); });
+}
+function initCloud(){
+  var cfg = window.FL_CONFIG || {};
+  if(cfg.supabaseUrl && cfg.supabaseKey && window.supabase && window.supabase.createClient){
+    try{
+      sb = window.supabase.createClient(cfg.supabaseUrl, cfg.supabaseKey);
+      sb.auth.onAuthStateChange(function(ev, sess){
+        if(ev === "PASSWORD_RECOVERY"){ recovery = true; if(sess && sess.user && !sbUser){ attachSupabase(sess.user).then(function(){ go("account"); }); } else { go("account"); } }
+      });
+      cloud.state = "loading"; setSync();
+      sb.auth.getSession().then(function(r){
+        var sess = r && r.data && r.data.session;
+        if(sess && sess.user){ return attachSupabase(sess.user).then(function(){ if(recovery) go("account"); }); }
+        cloud.state = "signedout"; setSync(); render();
+      }).catch(function(){ cloud.state = "local"; setSync(); render(); });
+      return;
+    }catch(e){ sb = null; }
+  }
+  var c = window.claude;
+  if(!c || typeof c.use !== "function"){ if(cloud.tried++ < 3) setTimeout(initCloud, 900); return; }
+  cloud.state = "loading"; setSync();
+  Promise.all([c.use("db"), c.use("user"), c.use("assets")]).then(function(r){
+    var db = r[0], user = r[1]; cloud.assets = r[2] || null; cloud.maxBytes = 20*1024*1024;
+    cloud.fetchFile = function(id){ return fetch("/_blob/"+id).then(function(res){ if(!res.ok) throw 0; return res.arrayBuffer(); }); };
+    if(!db || !user){ cloud.state = "local"; setSync(); render(); return; }
+    return user.id().then(function(id){
+      if(!id){ cloud.state = "local"; setSync(); render(); return; }
+      return loadRemote(db.doc("data/users/"+id+"/state"));
+    });
+  }).catch(function(){ cloud.state = "local"; setSync(); render(); });
+}
+var recovery = /type=recovery/.test(location.hash||""), showPw = false, acctBusy = false;
+function vAccount(){
+  var h = '<a class="back" href="#map">← Course map</a><div class="stack"><h1>Your account</h1></div>';
+  if(!sb){
+    return h+'<section class="card"><p>'+({on:"Your progress is saved to your account.", saving:"Your progress is saved to your account.", loading:"Connecting…"}[cloud.state] || "This copy saves in this browser only. Progress stays on this device and can be lost if the browser clears its data.")+'</p></section>';
+  }
+  var msg = acctMsg ? '<p class="exam" role="status">'+esc(acctMsg)+'</p>' : '';
+  var pwStyle = 'font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:9px 11px;width:100%';
+  if(recovery && sbUser){
+    return h+'<section class="card"><h2>Choose a new password</h2>'+
+      '<form id="pw-form" class="stack" autocomplete="on">'+
+      '<input type="email" name="email" autocomplete="username" value="'+esc(sbUser.email||"")+'" readonly hidden>'+
+      '<label class="f" for="pw-new">New password (8 characters or more)<input type="'+(showPw?"text":"password")+'" name="new-password" autocomplete="new-password" id="pw-new" style="'+pwStyle+'"></label>'+
+      '<label class="check"><input type="checkbox" id="pw-show"'+(showPw?" checked":"")+'><span>Show password</span></label>'+
+      msg+'<button class="btn" type="submit"'+(acctBusy?" disabled":"")+'>Save new password</button></form></section>';
+  }
+  if(sbUser){
+    return h+'<section class="card"><p>Signed in as <b>'+esc(sbUser.email||"")+'</b>.</p><p class="lead">Progress, exam date and attached PDFs are saved to this account and follow you to any device. This device stays signed in until you sign out.</p>'+msg+'<button class="btn ghost" id="ac-out">Sign out</button></section>';
+  }
+  return h+'<section class="card"><p class="lead">Sign in to save your progress, exam date and PDFs, and to pick up on any device.</p>'+
+    '<form id="ac-form" class="stack" autocomplete="on" action="#account" method="post">'+
+    '<label class="f" for="ac-email">Email<input type="email" name="email" autocomplete="username" inputmode="email" autocapitalize="none" spellcheck="false" id="ac-email" value="'+esc(acctEmail)+'"></label>'+
+    '<label class="f" for="ac-pass">Password (8 characters or more)<input type="'+(showPw?"text":"password")+'" name="password" autocomplete="current-password" id="ac-pass" value="'+esc(acctPw)+'" style="'+pwStyle+'"></label>'+
+    '<label class="check"><input type="checkbox" id="ac-show"'+(showPw?" checked":"")+'><span>Show password</span></label>'+
+    msg+
+    '<button class="btn" type="submit" value="in"'+(acctBusy?" disabled":"")+'>Sign in</button>'+
+    '<button class="btn ghost" type="submit" value="up"'+(acctBusy?" disabled":"")+'>Create account</button>'+
+    '</form><button class="btn ghost" id="ac-forgot" type="button">Forgot password?</button>'+
+    '<p class="note">Your browser can save the password when you sign in. Progress you made before signing in moves into a new account.</p></section>';
+}
+var acctEmail = "", acctPw = "";
+function acct(kind){
+  var em = (document.getElementById("ac-email").value||"").trim(), pw = document.getElementById("ac-pass").value||"";
+  acctEmail = em; acctPw = pw;
+  if(!/^\S+@\S+\.\S+$/.test(em)){ acctMsg = "Enter a valid email address."; render(); return; }
+  if(pw.length < 8){ acctMsg = "The password needs 8 characters or more."; render(); return; }
+  acctBusy = true; acctMsg = kind==="in" ? "Signing in…" : "Creating your account…"; render();
+  var call = kind==="in" ? sb.auth.signInWithPassword({email:em, password:pw}) : sb.auth.signUp({email:em, password:pw, options:{emailRedirectTo: location.origin}});
+  call.then(function(r){
+    acctBusy = false;
+    if(r.error){
+      var c = r.error.code || "", m = r.error.message || "";
+      if(kind==="in" && (c==="invalid_credentials" || /invalid login/i.test(m))) acctMsg = "This email and password don't match. Check the password, or tap \"Forgot password?\" to set a new one.";
+      else if(c==="email_not_confirmed") acctMsg = "This account still needs its email confirmed. Tap \"Forgot password?\" to get a link that signs you in.";
+      else if(c==="user_already_exists" || /already registered/i.test(m)) acctMsg = "There is already an account with this email. Tap \"Sign in\" instead, or \"Forgot password?\" if you don't remember the password.";
+      else if(c==="over_email_send_rate_limit" || r.error.status===429) acctMsg = "Too many attempts in a short time. Wait a minute and try again.";
+      else if(c==="weak_password") acctMsg = "That password is too easy to guess. Try a longer one.";
+      else acctMsg = m || "That did not work. Try again.";
+      render(); return;
+    }
+    var sess = r.data && r.data.session;
+    if(!sess){ acctMsg = "Account created. Open the confirmation email, then sign in here."; render(); return; }
+    acctMsg = ""; acctPw = ""; attachSupabase(sess.user).then(function(){ go("map"); });
+  }).catch(function(){ acctBusy = false; acctMsg = "The server could not be reached. Check your connection and try again."; render(); });
+}
+function forgot(){
+  var el = document.getElementById("ac-email"), em = ((el && el.value) || acctEmail || "").trim(); acctEmail = em;
+  if(!/^\S+@\S+\.\S+$/.test(em)){ acctMsg = "Enter your email address above first, then tap \"Forgot password?\" again."; render(); return; }
+  acctBusy = true; acctMsg = "Sending the email…"; render();
+  sb.auth.resetPasswordForEmail(em, {redirectTo: location.origin}).then(function(r){
+    acctBusy = false;
+    acctMsg = (r && r.error) ? ((r.error.status===429) ? "An email was sent very recently. Wait a minute and try again." : (r.error.message || "The email could not be sent.")) : "If an account exists for "+em+", an email with a link is on its way. Open it on this device to choose a new password.";
+    render();
+  }).catch(function(){ acctBusy = false; acctMsg = "The server could not be reached. Try again."; render(); });
+}
+function savePw(){
+  var pw = document.getElementById("pw-new").value||"";
+  if(pw.length < 8){ acctMsg = "The password needs 8 characters or more."; render(); return; }
+  acctBusy = true; acctMsg = "Saving…"; render();
+  sb.auth.updateUser({password:pw}).then(function(r){
+    acctBusy = false;
+    if(r.error){ acctMsg = r.error.message || "The password could not be saved."; render(); return; }
+    recovery = false; acctMsg = "New password saved. You are signed in."; render();
+  }).catch(function(){ acctBusy = false; acctMsg = "The server could not be reached. Try again."; render(); });
+}
+function esc(t){ return String(t).replace(/[&<>"']/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];}); }
+function today(){ var d = new Date(); d.setDate(d.getDate() + (S.dayOffset||0)); return d.getFullYear()+"-"+("0"+(d.getMonth()+1)).slice(-2)+"-"+("0"+d.getDate()).slice(-2); }
+function fmt(n){ return String(n).replace(/\B(?=(\d{3})+(?!\d))/g, ","); }
+function pick(a){ return a[Math.floor(Math.random()*a.length)]; }
+
+/* ================= status ================= */
+function creditDays(id){ var c = S.credits[id]||[], u = {}; c.forEach(function(d){u[d]=1;}); return Object.keys(u).length; }
+function stepStatus(t, id){
+  if(t.playable){
+    var d = creditDays(id);
+    if(d >= 2) return ["solid","Exam-ready"];
+    if(d === 1) return ["prog","1 of 2 unaided"];
+    if(S.misses[id]) return ["gap","Practising"];
+    if(S.tries[id]) return ["prog","Practising"];
+    return ["todo","Not started"];
+  }
+  var r = S.rating[id]||"";
+  return ({"":["todo","Not rated"], never:["gap","New to you"], seen:["gap","Seen, can't do yet"], notes:["prog","Can do with notes"], cold:["solid","Self-rated ready"]})[r];
+}
+function totals(){
+  var all = 0, proven = 0, self = 0;
+  TOPICS.forEach(function(t){ t.steps.forEach(function(s){ all++; var st = stepStatus(t, s[0]); if(st[0]==="solid"){ if(t.playable) proven++; else self++; } }); });
+  return {all:all, proven:proven, self:self};
+}
+function topicShare(t){ var n = 0; t.steps.forEach(function(s){ if(stepStatus(t,s[0])[0]==="solid") n++; }); return n / t.steps.length; }
+function doneToday(){ return (S.attemptsByDay[today()]||0) >= 2; }
+function daysToExam(){ if(!S.examDate) return null; var d = new Date(S.examDate+"T00:00:00"), n = new Date(today()+"T00:00:00"); return Math.round((d-n)/864e5); }
+
+/* ================= exercise generators (numbers by code, so every sheet balances) ================= */
+var TYPE_NAME = {e1:"100% ownership, no goodwill", e2:"100% ownership with goodwill", e3:"Non-controlling interest", e4:"Equity method"};
+function sheet(title, left, right){ return {title:title, left:left, right:right}; }
+function gen(type){
+  var pk = pick(PARENTS), P = CO[pk].name, T = CO[pk].target;
+  var Es = pick([100,150,200]), Ls = pick([20,40,60]), As = Es + Ls;
+  var Ep = pick([400,500,600]), Lp = pick([150,200,300]);
+  var x = {type:type, P:P, T:T, hint:false, checked:false, values:{}, ok:null};
+  if(type==="e1"){
+    var I = Es, Ap = Ep + Lp - I;
+    x.intro = P+" buys 100% of "+T+" for €"+I+"k. These are the two balance sheets on the acquisition date (in €k).";
+    x.sheets = [sheet(P, [["Investment in "+T, I],["Other assets", Ap]], [["Equity", Ep],["Liabilities", Lp]]), sheet(T, [["Assets", As]], [["Equity", Es],["Liabilities", Ls]])];
+    x.fields = [["gw","Goodwill",0],["ta","Total consolidated assets",Ap+As],["eq","Consolidated equity",Ep],["li","Consolidated liabilities",Lp+Ls]];
+    x.hintText = "Compare the price with "+T+"'s equity. If they are equal and nothing is said about fair values, nothing is left over.";
+    x.sol = ["Purchase price allocation: price "+I+" − book value of "+T+"'s equity "+Es+" = 0. No fair value differences are given, so there is no goodwill.",
+      "Add 100% of both companies' assets and liabilities: assets "+Ap+" + "+As+" = "+(Ap+As)+", liabilities "+Lp+" + "+Ls+" = "+(Lp+Ls)+".",
+      "Eliminate the investment ("+I+") against "+T+"'s equity ("+Es+").",
+      "What remains in equity is "+P+"'s own equity: "+Ep+". Check: "+(Ap+As)+" = "+Ep+" + "+(Lp+Ls)+"."];
+  }
+  if(type==="e2"){
+    var V = pick([30,40,60,80]), G = pick([10,20,30,50]); I = Es + V + G; Ap = Ep + Lp - I;
+    x.intro = P+" buys 100% of "+T+" for €"+I+"k. "+T+" has built a brand that is not on its balance sheet. Its fair value is €"+V+"k. Balance sheets on the acquisition date (in €k):";
+    x.sheets = [sheet(P, [["Investment in "+T, I],["Other assets", Ap]], [["Equity", Ep],["Liabilities", Lp]]), sheet(T, [["Assets", As]], [["Equity", Es],["Liabilities", Ls]])];
+    x.fields = [["vd","Valuation difference (brand)",V],["gw","Goodwill",G],["ta","Total consolidated assets",Ap+As+V+G],["eq","Consolidated equity",Ep]];
+    x.hintText = "Split the gap between the price and "+T+"'s book equity in two: first what you can name and value (the brand), then the rest.";
+    x.sol = ["Purchase price allocation: price "+I+" − book value of net assets "+Es+" = total difference "+(I-Es)+".",
+      "Valuation difference for the brand: "+V+" − 0 = "+V+". It is an identifiable asset, so it goes on the balance sheet as a brand.",
+      "Goodwill is the remainder: "+(I-Es)+" − "+V+" = "+G+". Same result the other way: price "+I+" − fair value of net assets "+(Es+V)+" = "+G+".",
+      "Consolidated assets: "+Ap+" + "+As+" + brand "+V+" + goodwill "+G+" = "+(Ap+As+V+G)+". The investment is eliminated against "+T+"'s revalued equity.",
+      "Consolidated equity is "+P+"'s own: "+Ep+". Liabilities: "+(Lp+Ls)+". Check: "+(Ap+As+V+G)+" = "+Ep+" + "+(Lp+Ls)+"."];
+  }
+  if(type==="e3"){
+    var p = pick([60,70,80]); I = Es*p/100; Ap = Ep + Lp - I; var nci = Es - I;
+    x.intro = P+" buys "+p+"% of "+T+" for €"+I+"k and controls it. Balance sheets on the acquisition date (in €k):";
+    x.sheets = [sheet(P, [["Investment in "+T, I],["Other assets", Ap]], [["Equity", Ep],["Liabilities", Lp]]), sheet(T, [["Assets", As]], [["Equity", Es],["Liabilities", Ls]])];
+    x.fields = [["nci","Non-controlling interest",nci],["eq","Equity, group share",Ep],["ta","Total consolidated assets",Ap+As],["li","Consolidated liabilities",Lp+Ls]];
+    x.hintText = "Control means you add 100% of "+T+"'s assets and liabilities. Then ask who owns the part of "+T+"'s equity that "+P+" did not buy.";
+    x.sol = ["Purchase price allocation: price "+I+" − "+p+"% of "+T+"'s equity ("+p+"% × "+Es+" = "+I+") = 0. No goodwill.",
+      "Because "+P+" controls "+T+", include 100% of its assets and liabilities: assets "+Ap+" + "+As+" = "+(Ap+As)+", liabilities "+(Lp+Ls)+".",
+      "Eliminate the investment ("+I+") against "+p+"% of "+T+"'s equity.",
+      "The other "+(100-p)+"% of "+T+"'s equity is shown on its own line: non-controlling interest = "+(100-p)+"% × "+Es+" = "+nci+".",
+      "Equity, group share: "+Ep+". Check: "+(Ap+As)+" = "+Ep+" + "+nci+" + "+(Lp+Ls)+"."];
+  }
+  if(type==="e4"){
+    var q = pick([20,30,40]), Ea = pick([100,150,200]), N = pick([20,30,50]), NIp = pick([30,40,60]); I = Ea*q/100; var sh = N*q/100;
+    x.intro = "A year ago "+P+" bought "+q+"% of "+T+" for €"+I+"k. That gives significant influence, not control. This year "+T+" earned a net income of €"+N+"k and paid no dividend. "+P+"'s own net income is €"+NIp+"k.";
+    x.sheets = [];
+    x.fields = [["sh","Share of profit in associate",sh],["inv","Investment in associate, end of year",I+sh],["ni","Net profit, group share",NIp+sh]];
+    x.hintText = "With significant influence you do not add "+T+"'s assets and liabilities. One line in the balance sheet and one line in the income statement move with your share of its profit.";
+    x.sol = ["Equity method: "+T+"'s assets, liabilities, revenues and expenses are not integrated.",
+      "Share of profit in associate: "+q+"% × "+N+" = "+sh+". It is one line in the income statement.",
+      "The investment follows "+T+"'s equity: "+I+" + "+sh+" = "+(I+sh)+". It is one line in the balance sheet.",
+      "Net profit, group share: "+NIp+" + "+sh+" = "+(NIp+sh)+"."];
+  }
+  return x;
+}
+function nextType(){
+  var ids = ["e1","e2","e3","e4"], w = ids.map(function(id){
+    var base = creditDays(id) >= 2 ? 0.25 : 1;
+    var credToday = (S.credits[id]||[]).indexOf(today()) > -1 ? 0.4 : 1;
+    return base * Math.pow(2, Math.min(S.misses[id]||0, 3)) * credToday;
+  });
+  var sum = w.reduce(function(a,b){return a+b;},0), r = Math.random()*sum, i;
+  for(i=0;i<ids.length;i++){ r -= w[i]; if(r <= 0) return ids[i]; }
+  return ids[0];
+}
+function whyThis(id){
+  if(S.misses[id]) return "You missed this type "+(S.misses[id]===1?"once":S.misses[id]+" times")+", so it comes up more often.";
+  if(creditDays(id) >= 2) return "You are exam-ready on this type. This is an occasional review.";
+  if(creditDays(id) === 1) return "One unaided answer so far. A second one on another day makes it exam-ready.";
+  return "You have not solved this type unaided yet.";
+}
+function parseNum(v){ v = String(v).replace(/[\s,€k]/gi,""); if(v==="") return NaN; return Number(v); }
+
+/* ================= milestones, confetti, 3D city ================= */
+function milestones(){
+  var anyCredit = Object.keys(S.credits).some(function(k){return (S.credits[k]||[]).length;});
+  var anyReady = ["e1","e2","e3","e4"].some(function(k){return creditDays(k) >= 2;});
+  var allReady = ["e1","e2","e3","e4"].every(function(k){return creditDays(k) >= 2;});
+  var mapped = TOPICS.every(function(t){ return t.steps.every(function(s){ return stepStatus(t,s[0])[0] !== "todo"; }); });
+  return [
+    ["1","Level found", !!(S.check && S.check.done), "Finish the level check"],
+    ["2","First unaided answer", anyCredit, "Solve one without a hint"],
+    ["3","Words in place", !!S.ctxDone, "Do the context check"],
+    ["4","First floor built", anyReady, "One step exam-ready"],
+    ["5","Tower complete", allReady, "All of Topic 2 exam-ready"],
+    ["6","Whole course mapped", mapped, "Rate or start every step"]
+  ];
+}
+var calm = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+function confetti(){
+  if(calm || document.getElementById("confetti")) return;
+  var c = document.createElement("canvas"); c.id = "confetti"; document.body.appendChild(c);
+  var w = c.width = window.innerWidth, h = c.height = window.innerHeight, g = c.getContext("2d"), cols = ["#58D69A","#F0633F","#F6D77A","#7FA4F0","#FFFFFF"], ps = [], i, t0 = null;
+  for(i=0;i<90;i++) ps.push({x:w/2+(Math.random()-.5)*w*.5, y:h*.35, vx:(Math.random()-.5)*9, vy:-Math.random()*11-3, s:5+Math.random()*6, r:Math.random()*6, c:cols[i%cols.length]});
+  (function step(ts){ if(!t0) t0 = ts; var el = ts - t0; g.clearRect(0,0,w,h);
+    ps.forEach(function(p){ p.vy += .35; p.x += p.vx; p.y += p.vy; p.r += .2; g.save(); g.translate(p.x,p.y); g.rotate(p.r); g.globalAlpha = Math.max(0, 1 - el/1500); g.fillStyle = p.c; g.fillRect(-p.s/2,-p.s/3,p.s,p.s*.66); g.restore(); });
+    if(el < 1500) requestAnimationFrame(step); else c.remove(); })(performance.now());
+}
+var city = null;
+function killCity(){ if(city){ cancelAnimationFrame(city.raf); try{ city.renderer.dispose(); }catch(e){} city = null; } }
+function mountCity(){
+  var cv = document.getElementById("city"), box = document.getElementById("citybox");
+  if(!cv) return;
+  if(!window.THREE){ box.style.display = "none"; return; }
+  try{
+    var T = window.THREE, w = cv.clientWidth, h = cv.clientHeight;
+    var renderer = new T.WebGLRenderer({canvas:cv, antialias:true, alpha:true});
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio||1, 2)); renderer.setSize(w, h, false);
+    var scene = new T.Scene(), cam = new T.PerspectiveCamera(36, w/h, 0.1, 100);
+    cam.position.set(0, 6.8, 12.6); cam.lookAt(0, 1.0, 0);
+    scene.add(new T.AmbientLight(0xffffff, 0.72));
+    var sun = new T.DirectionalLight(0xffffff, 0.95); sun.position.set(5, 9, 6); scene.add(sun);
+    var g = new T.Group(); scene.add(g);
+    var island = new T.Mesh(new T.CylinderGeometry(4.3, 4.7, 0.4, 56), new T.MeshStandardMaterial({color:0x1F5A45, roughness:.9})); island.position.y = -0.2; g.add(island);
+    var track = new T.Mesh(new T.TorusGeometry(3.9, 0.07, 8, 72), new T.MeshStandardMaterial({color:0xF0633F, emissive:0x7A2414})); track.rotation.x = Math.PI/2; track.position.y = 0.03; g.add(track);
+    var COL = {solid:[0x58D69A,0x1E7A4F,1], prog:[0x7FA4F0,0x1C2A4A,1], gap:[0xF2B45A,0x4A3206,1], todo:[0x8A9A92,0x000000,.42]};
+    var picks = [], drops = [], fresh = false, FH = 0.36, GAP = 0.05;
+    TOPICS.forEach(function(t, i){
+      var a = i/TOPICS.length*Math.PI*2 + Math.PI/2, x = Math.cos(a)*2.45, z = Math.sin(a)*2.45, top = 0, done = true;
+      t.steps.forEach(function(s, k){
+        var st = stepStatus(t, s[0])[0], c = COL[st];
+        var m = new T.Mesh(new T.BoxGeometry(1, FH, 1), new T.MeshStandardMaterial({color:c[0], emissive:c[1], emissiveIntensity: st==="solid"?0.55:0.15, transparent:c[2]<1, opacity:c[2], roughness:.55}));
+        var y = FH/2 + k*(FH+GAP); m.position.set(x, y, z); m.userData.topic = t.n; g.add(m); picks.push(m); top = y + FH/2;
+        if(st !== "solid") done = false;
+        else if(S.seenReady.indexOf(s[0]) < 0){ S.seenReady.push(s[0]); fresh = true; if(!calm){ m.position.y = y + 4; drops.push({m:m, y:y, t:-k*90}); } }
+      });
+      if(done){
+        var pole = new T.Mesh(new T.CylinderGeometry(0.03,0.03,0.8,8), new T.MeshStandardMaterial({color:0xffffff})); pole.position.set(x, top+0.4, z); g.add(pole);
+        var flag = new T.Mesh(new T.BoxGeometry(0.42,0.26,0.03), new T.MeshStandardMaterial({color:0xF0633F, emissive:0x7A2414})); flag.position.set(x+0.22, top+0.66, z); g.add(flag); top += 0.8;
+      }
+      var lc = document.createElement("canvas"); lc.width = lc.height = 128; var lg = lc.getContext("2d");
+      lg.fillStyle = "rgba(14,24,20,.78)"; lg.beginPath(); lg.arc(64,64,54,0,Math.PI*2); lg.fill();
+      lg.fillStyle = "#fff"; lg.font = "700 66px sans-serif"; lg.textAlign = "center"; lg.textBaseline = "middle"; lg.fillText(String(t.n), 64, 68);
+      var sp = new T.Sprite(new T.SpriteMaterial({map:new T.CanvasTexture(lc), transparent:true})); sp.scale.set(0.62,0.62,1); sp.position.set(x, top+0.48, z); sp.userData.topic = t.n; g.add(sp); picks.push(sp);
+    });
+    if(fresh){ save(); setTimeout(confetti, 350); }
+    g.rotation.y = 0.5;
+    var drag = null, moved = 0, last = performance.now();
+    cv.addEventListener("pointerdown", function(e){ drag = e.clientX; moved = 0; });
+    cv.addEventListener("pointermove", function(e){ if(drag === null) return; var dx = e.clientX - drag; drag = e.clientX; moved += Math.abs(dx); g.rotation.y += dx*0.012; });
+    var end = function(e){
+      if(drag !== null && moved < 6 && e.type === "pointerup"){
+        var r = cv.getBoundingClientRect(), v = new T.Vector2(((e.clientX-r.left)/r.width)*2-1, -((e.clientY-r.top)/r.height)*2+1), rc = new T.Raycaster();
+        rc.setFromCamera(v, cam); var hit = rc.intersectObjects(picks)[0];
+        if(hit){ drag = null; go("topic-"+hit.object.userData.topic); return; }
+      }
+      drag = null;
+    };
+    cv.addEventListener("pointerup", end); cv.addEventListener("pointercancel", end); cv.addEventListener("pointerleave", end);
+    city = {renderer:renderer, raf:0};
+    (function loop(now){
+      if(!city || city.renderer !== renderer) return;
+      var dt = now - last; last = now;
+      if(!calm && drag === null) g.rotation.y += dt*0.00022;
+      drops.forEach(function(d){ d.t += dt; if(d.t > 0){ var p = Math.min(d.t/650, 1), e = 1 - Math.pow(1-p, 3); d.m.position.y = d.y + 4*(1-e) + (p<1 ? Math.sin(p*Math.PI)*0.25 : 0); } });
+      renderer.render(scene, cam);
+      city.raf = requestAnimationFrame(loop);
+    })(last);
+  }catch(err){ killCity(); box.style.display = "none"; }
+}
+
+/* ================= views ================= */
+var app = document.getElementById("app"), nav = document.getElementById("nav"), tick = null;
+var TABS = [["map","Course map"],["universe","Universe"],["reading","Reading speed"]];
+function route(){ var h = (location.hash||"").replace("#",""); if(/access_token=|error=|type=recovery/.test(h)) return recovery ? "account" : "map"; return h || "map"; }
+function go(h){ if(location.hash === "#"+h){ render(); } else { location.hash = h; } window.scrollTo(0,0); }
+
+function lane(){ return TOPICS.map(function(t){ var s = topicShare(t); return '<i class="'+(s>=1?"full":"")+'">'+(s>0&&s<1?'<b style="width:'+Math.round(s*100)+'%"></b>':'')+'</i>'; }).join("")+'<span class="end"></span>'; }
+
+function vMap(){
+  var tt = totals(), d = daysToExam(), ready = tt.proven + tt.self;
+  var h = '<section class="city" id="citybox"><span class="hd">Your course city</span><canvas id="city" role="img" aria-label="Five towers, one per topic. Each floor is a step and lights up when the step is exam-ready."></canvas><p class="cap">Drag to turn. Tap a tower to open its topic.</p></section>'+
+    '<div class="legend"><span><i style="background:#58D69A"></i>Exam-ready</span><span><i style="background:#7FA4F0"></i>In progress</span><span><i style="background:#F2B45A"></i>Gap found</span><span><i style="background:#8A9A92"></i>Not started</span></div>';
+  h += '<section class="card finish"><div class="eyebrow">IFRS (CM01) · your finish line</div>'+
+    '<div class="row" style="align-items:flex-end"><div><div class="big">'+ready+'<span style="font-size:22px"> of '+tt.all+'</span></div><p>steps exam-ready</p></div>'+
+    '<label class="note" for="exam" style="display:flex;flex-direction:column;gap:4px">Exam date<input type="date" id="exam" value="'+esc(S.examDate)+'"></label></div>'+
+    '<div class="lane" aria-hidden="true">'+lane()+'</div>'+
+    '<p class="note">'+tt.proven+' confirmed by practice, '+tt.self+' self-rated. '+(d===null?"":(d<0?"The exam date has passed. ":"Exam in "+d+" day"+(d===1?"":"s")+". "))+'One lane segment per topic.</p></section>';
+  h += doneToday()
+    ? '<section class="card"><h2>Done for today</h2><p class="lead">Two exercises finished. The second unaided answer for each type has to be on another day, so there is nothing more to gain now.</p></section>'
+    : '<a class="btn" href="#practice">Today: 2 exercises on Topic 2 · about 20 min</a>';
+  if(cloud.state==="signedout") h += '<a class="btn ghost" href="#account">Sign in to save your progress on every device</a>';
+  if(!S.check || !S.check.done) h += '<a class="btn ghost" href="#level-check">Find my level in Topic 2 first</a>';
+  h += '<section class="card"><h2>Your course in five topics</h2>'+TOPICS.map(function(t){
+    var missing = t.mat.filter(function(m){return m[1]!=="ok";}).length;
+    return '<a class="topic" href="#topic-'+t.n+'"><span class="num">'+t.n+'</span><span class="stack" style="gap:6px"><h3>'+t.title+'</h3>'+
+      '<span class="dots" aria-label="Progress by step">'+t.steps.map(function(s){return '<i class="'+stepStatus(t,s[0])[0]+'"></i>';}).join("")+'</span>'+
+      '<span class="meta"><span class="note">'+t.exam+'</span>'+(t.playable?'<span class="pill solid">Playable</span>':'')+(missing?'<span class="pill gap">Material: '+missing+' to fix</span>':'<span class="pill todo">Material complete</span>')+'</span></span></a>';
+  }).join('<hr style="border:0;border-top:1px solid var(--line);margin:0;width:100%">')+
+  '<p class="note">Exam weights come from the Nov 2023 exam (75 points in 75 minutes). This year can differ.</p></section>';
+  var ms = milestones(), got = ms.filter(function(m){return m[2];}).length;
+  h += '<section class="card"><div class="row"><h2>Milestones</h2><span class="note">'+got+' of '+ms.length+'</span></div><div class="medals">'+ms.map(function(m){
+    return '<div class="medal'+(m[2]?" on":"")+'"><span class="disc" aria-hidden="true">'+m[0]+'</span><span><b>'+m[1]+'</b><br>'+m[3]+'</span></div>'; }).join("")+
+    '</div><p class="note">Milestones mark things you learned or set up. None of them reward time spent.</p></section>';
+  return h;
+}
+
+function readRow(r, opt){
+  var id = r[0], pages = S.pages[id]||"", est = (S.speed && pages) ? Math.round(pages * S.speed) : null;
+  var f = S.files[id], att;
+  if(uploading[id]) att = '<span>Uploading…</span>';
+  else if(f) att = '<span class="fname">'+esc(f.name)+'</span><span>'+(f.pages? f.pages+" pages":"")+'</span><button class="btn small ghost" data-openfile="'+id+'">Read with timer</button>'+(cloud.assets?'<button class="btn small ghost" data-rmfile="'+id+'">'+(pendingRemove===id?"Tap again to remove":"Remove file")+'</button>':'');
+  else if(cloud.assets) att = '<label class="btn small ghost">Attach PDF<input type="file" accept="application/pdf,.pdf" data-attach="'+id+'" aria-label="Attach a PDF for this reading"></label>';
+  else att = '<button class="btn small ghost" data-readnow="'+id+'">Read with timer</button><span>'+(cloud.state==="signedout" ? '<a href="#account">Sign in</a> to attach and keep PDFs.' : 'This copy cannot store files.')+'</span>';
+  if(attachMsg[id]) att += '<span style="color:var(--warn)">'+esc(attachMsg[id])+'</span>';
+  return '<div class="readrow"><label class="check"><input type="checkbox" data-read="'+id+'"'+(S.read[id]?" checked":"")+'><span>'+r[1]+'</span></label><div class="attach">'+att+'</div>'+
+    (opt ? "" : '<div class="tools"><label for="pg-'+id+'">Pages</label><input type="number" min="0" inputmode="numeric" id="pg-'+id+'" data-pages="'+id+'" value="'+esc(pages)+'"><span>'+(est!==null? "about "+(est>=90? (Math.round(est/6)/10)+" h" : est+" min") : (S.speed?"enter pages for a time":"measure your speed first"))+'</span></div>')+'</div>';
+}
+
+function vTopic(n){
+  var t = TOPICS[n-1]; if(!t) return vMap();
+  var firstOpen = -1; t.steps.forEach(function(s,i){ if(firstOpen<0 && stepStatus(t,s[0])[0]!=="solid") firstOpen = i; });
+  var h = '<a class="back" href="#map">← Course map</a><div class="stack"><div class="eyebrow">Topic '+t.n+' of 5 · '+t.exam+'</div><h1>'+t.title+'</h1></div>'+
+    '<section class="card"><div class="eyebrow">The question this topic answers</div><p style="font-size:17px">'+t.question+'</p><p class="note">'+t.kind+'</p></section>'+
+    '<section class="card"><h2>By the end you can</h2><ul class="plain">'+t.goals.map(function(g){return "<li>"+g+"</li>";}).join("")+'</ul></section>';
+  h += '<section class="card"><div class="row"><h2>The ladder</h2><span class="note">'+t.steps.length+' steps</span></div><ol class="ladder">'+t.steps.map(function(s,i){
+    var st = stepStatus(t, s[0]);
+    var ctl = t.playable
+      ? '<div class="row" style="justify-content:flex-start"><a class="btn small ghost" href="#practice" data-start="'+s[0]+'">Practise this type</a></div>'
+      : '<select aria-label="How well do you know this step?" data-rate="'+s[0]+'">'+RATINGS.map(function(r){return '<option value="'+r[0]+'"'+((S.rating[s[0]]||"")===r[0]?" selected":"")+'>'+r[1]+'</option>';}).join("")+'</select>';
+    return '<li><span class="n'+(i===firstOpen?" here":"")+'">'+(i+1)+'</span><div class="body"><div class="row"><h3>'+s[1]+'</h3><span class="pill '+st[0]+'">'+st[1]+'</span></div><span class="note">'+s[2]+(i===firstOpen?" · you are here":"")+'</span>'+ctl+'</div></li>';
+  }).join("")+'</ol>'+(t.playable
+     ? '<p class="note">Exam-ready means two unaided correct answers on different days. Exercises copy the structure of the slide examples with new numbers and your companies.</p>'
+     : '<p class="note">Practice for this topic is not built yet. Rate each step so your map is complete.</p>')+'</section>';
+  if(t.n===2){
+    h += '<section class="card"><div class="row"><h2>Context check</h2>'+(S.ctxDone?'<span class="pill solid">'+S.ctxDone.right+' of '+CONTEXT2.length+'</span>':'<span class="pill todo">Not done</span>')+'</div>'+
+      '<p class="lead">Seven true or false statements in the style of the quiz slides. No calculations, about 4 minutes.</p><a class="btn ghost" href="#context-check">'+(S.ctxDone?"Redo":"Start")+' the context check</a></section>';
+  }
+  h += '<section class="card"><h2>Material</h2><div class="mat">'+t.mat.map(function(m){ return '<span class="pill '+({ok:"solid",warn:"gap",missing:"gap"})[m[1]]+'">'+m[0]+': '+({ok:"uploaded",warn:"re-upload",missing:"missing"})[m[1]]+'</span>'; }).join("")+'</div>'+
+    (t.matNote?'<p class="note">'+t.matNote+'</p>':'')+
+    '<h3>Required reading</h3><div>'+t.req.map(function(r){return readRow(r,false);}).join("")+'</div>'+
+    '<h3>Optional depth</h3><div>'+t.opt.map(function(r){return readRow(r,true);}).join("")+'</div>'+
+    '<p class="note">Readings were collected from the readings and further-readings slides. '+(S.speed?'Your speed: '+(Math.round(S.speed*10)/10)+' min per page.':'<a href="#reading">Measure your reading speed</a> to get a time per chapter.')+'</p></section>';
+  var mine = S.notes.filter(function(x){return x.topic===t.n;});
+  if(mine.length){ h += '<section class="card"><h2>What you said about this topic</h2>'+mine.map(function(x){ return '<div class="dn"><span class="q">'+esc(TYPE_NAME[x.type]||"")+' · '+esc((RATINGS.filter(function(r){return r[0]===x.rating;})[0]||["",""])[1])+'</span>'+(x.text?'<span class="a">'+esc(x.text)+'</span>':'')+'</div>'; }).join("")+'</section>'; }
+  return h;
+}
+
+function sheetHtml(s){
+  var tot = function(a){ return a.reduce(function(x,y){return x+y[1];},0); };
+  var col = function(hd, rows){ return '<div class="col"><span class="h">'+hd+'</span>'+rows.map(function(r){return '<span class="ln"><span>'+esc(r[0])+'</span><span>'+fmt(r[1])+'</span></span>';}).join("")+'<span class="ln tot"><span>Total</span><span>'+fmt(tot(rows))+'</span></span></div>'; };
+  return '<div class="sheet"><div class="ti">'+esc(s.title)+'</div><div class="cols">'+col("Assets", s.left)+col("Equity and liabilities", s.right)+'</div></div>';
+}
+function exHtml(x, label){
+  var h = '<section class="card"><div class="row"><span class="eyebrow">'+label+'</span><span class="pill todo">'+TYPE_NAME[x.type]+'</span></div>'+
+    '<p>'+esc(x.intro)+'</p>'+x.sheets.map(sheetHtml).join("")+
+    '<h2>'+(x.type==="e4"?"Enter the three figures (in €k)":"Prepare the consolidated balance sheet. Enter the key lines (in €k)")+'</h2><div class="fields">'+
+    x.fields.map(function(f){ var v = x.values[f[0]], cls = "", ans = "";
+      if(x.checked){ var okf = parseNum(v) === f[2]; cls = okf ? " right" : " wrong"; if(!okf) ans = '<span class="ans">Correct: '+fmt(f[2])+'</span>'; }
+      return '<div class="fld"><label for="f-'+f[0]+'">'+f[1]+'</label><input class="'+cls.trim()+'" type="text" inputmode="numeric" autocomplete="off" id="f-'+f[0]+'" data-field="'+f[0]+'" value="'+esc(v===undefined?"":v)+'"'+(x.checked?" disabled":"")+'>'+ans+'</div>'; }).join("")+'</div>';
+  if(x.hint) h += '<p class="exam"><b>Hint.</b> '+esc(x.hintText)+'</p>';
+  if(!x.checked){
+    h += '<button class="btn" id="check">Check my answer</button>'+(x.hint?'':'<button class="btn ghost" id="hint">Show a hint (this attempt will not count as unaided)</button>');
+  } else {
+    h += '<div class="fb'+(x.ok?"":" miss")+'" role="status"><b class="v">'+(x.ok?(x.hint?"Correct, with a hint.":"Correct, unaided."):"Not yet.")+'</b><p>'+esc(x.msg||"")+'</p></div>'+
+      '<h3>Worked solution, in the order the slides use</h3><ol class="steps">'+x.sol.map(function(s){return "<li>"+esc(s)+"</li>";}).join("")+'</ol>';
+  }
+  return h+'</section>';
+}
+function gradeEx(x){
+  x.checked = true;
+  x.ok = x.fields.every(function(f){ return parseNum(x.values[f[0]]) === f[2]; });
+  var id = x.type, d = today();
+  S.tries[id] = (S.tries[id]||0)+1;
+  S.attemptsByDay[d] = (S.attemptsByDay[d]||0)+1;
+  if(x.ok && !x.hint){
+    var c = S.credits[id] = S.credits[id]||[];
+    if(c.indexOf(d) < 0){ c.push(d); x.msg = creditDays(id) >= 2 ? "That is your second unaided answer on a different day. This type is exam-ready." : "First unaided answer for this type. Solve one more on another day and it is exam-ready."; }
+    else x.msg = "You already have today's unaided answer for this type. The next one counts from tomorrow.";
+  } else if(x.ok){ x.msg = "Right result. Because you used the hint, it does not count towards exam-ready yet."; }
+  else { S.misses[id] = (S.misses[id]||0)+1; x.msg = "The fields marked in amber are off. Read the solution, then this type will come up again soon."; }
+}
+
+function vPractice(){
+  if(!S.ex) S.ex = gen(nextType()), save();
+  var x = S.ex, n = S.attemptsByDay[today()]||0;
+  var h = '<a class="back" href="#topic-2">← Topic 2</a><div class="stack"><h1>Practice: business combinations</h1><p class="lead">'+whyThis(x.type)+'</p></div>'+
+    exHtml(x, "Exercise "+(x.checked?n:n+1)+" today");
+  if(x.checked){
+    h += doneToday()
+      ? '<section class="card finish"><div class="eyebrow">Today</div><div class="big" style="font-size:32px">Done for today.</div><p>Two exercises finished. Come back tomorrow for the second unaided answers.</p></section><a class="btn" href="#map">Back to the course map</a><button class="btn ghost" id="next-ex">Optional extra exercise</button>'
+      : '<button class="btn" id="next-ex">Next exercise</button>';
+  }
+  return h;
+}
+
+function vCheck(){
+  var c = S.check;
+  if(!c){ return '<a class="back" href="#map">← Course map</a><div class="stack"><h1>Find your level in Topic 2</h1><p class="lead">One or two exercises. You start in the middle of the ladder. Solve it and you move up, miss it and you move down. Nothing is graded.</p></div>'+
+    '<section class="card"><h2>How it works</h2><ul class="plain"><li>Try the exercise on your own, with paper if you like.</li><li>Afterwards you say how it went, in one tap and in your own words.</li><li>The result sets the step where your practice starts.</li></ul></section><button class="btn" id="check-start">Start</button>'; }
+  if(c.done){
+    var st = c.startStep, t = TOPICS[1];
+    return '<a class="back" href="#map">← Course map</a><div class="stack"><h1>Your starting point: step '+st+'</h1><p class="lead">'+t.steps[st-1][1]+'.</p></div>'+
+      '<section class="card"><h2>What the check showed</h2><ul class="plain">'+c.log.map(function(l){return "<li>"+esc(TYPE_NAME[l.type])+": "+(l.ok?"solved":"not yet")+(l.rating?" · you said: "+esc((RATINGS.filter(function(r){return r[0]===l.rating;})[0]||["",""])[1].toLowerCase()):"")+"</li>";}).join("")+'</ul>'+
+      (c.log.some(function(l){return l.rating==="never";})?'<p class="exam">You marked something as never seen. Start with the context check and the required reading for this topic, then practise.</p>':'')+'</section>'+
+      '<a class="btn" href="#topic-2">Open Topic 2</a><button class="btn ghost" id="check-redo">Redo the level check</button>';
+  }
+  var x = c.ex, h = '<a class="back" href="#map">← Course map</a><div class="stack"><h1>Level check</h1><p class="lead">Exercise '+(c.log.length+1)+' of 2 at most.</p></div>'+exHtml(x, "Level check");
+  if(x.checked){
+    h += '<section class="card"><h2>How did that go?</h2><div class="opts">'+RATINGS.slice(1).map(function(r){return '<button type="button" class="opt" data-selfrate="'+r[0]+'" aria-pressed="'+(c.rating===r[0])+'">'+r[1]+'</button>';}).join("")+'</div>'+
+      '<label class="f" for="feel">How do you feel about this kind of example? Anything unfamiliar?<textarea id="feel" placeholder="For example: I know what goodwill is but I did not know where the brand goes.">'+esc(c.text||"")+'</textarea></label>'+
+      '<p class="note">Typed for now. In the live version you can also speak and it is written down for you.</p>'+
+      '<button class="btn" id="check-next"'+(c.rating?"":" disabled")+'>Continue</button></section>';
+  }
+  return h;
+}
+
+function vContext(){
+  var c = S.ctx || (S.ctx = {i:0, picked:null, right:0});
+  if(c.i >= CONTEXT2.length){
+    return '<a class="back" href="#topic-2">← Topic 2</a><div class="stack"><h1>Context check done</h1><p class="lead">'+c.right+' of '+CONTEXT2.length+' right.</p></div><a class="btn" href="#topic-2">Back to Topic 2</a><button class="btn ghost" id="ctx-redo">Redo</button>';
+  }
+  var q = CONTEXT2[c.i], ans = c.picked !== null;
+  var h = '<a class="back" href="#topic-2">← Topic 2</a><section class="card"><div class="row"><span class="eyebrow">Context check · true or false</span><span class="note">'+(c.i+1)+' of '+CONTEXT2.length+'</span></div><h2>'+q[0]+'</h2><div class="opts">'+
+    [true,false].map(function(v){ var cls = ans ? (v===q[1]?" right":(v===c.picked?" wrong":"")) : ""; return '<button type="button" class="opt'+cls+'" data-tf="'+v+'"'+(ans?" disabled":"")+'>'+(v?"True":"False")+'</button>'; }).join("")+'</div>';
+  if(ans){ h += '<div class="fb'+(c.picked===q[1]?"":" miss")+'" role="status"><b class="v">'+(c.picked===q[1]?"Correct.":"Not yet. It is "+(q[1]?"true":"false")+".")+'</b><p>'+q[2]+'</p></div><button class="btn" id="ctx-next">'+(c.i+1<CONTEXT2.length?"Next":"Finish")+'</button>'; }
+  return h+'</section>';
+}
+
+function vUniverse(){
+  return '<div class="hero"><img src="hero.jpg" alt=""><div class="ov"><span class="eyebrow">Your universe</span><h1>Four companies. Every concept in the course happens to one of them.</h1><p>Built from what you said you care about: sustainable investing, AI, pole vault and real estate.</p></div></div>'+
+  Object.keys(CO).map(function(k){ var c = CO[k]; return '<article class="co"><div class="ph"><img src="'+c.img+'" alt="" loading="lazy"><span class="tag">'+c.role+'</span></div><div class="tx"><h2>'+c.name+'</h2><p>'+c.desc+'</p><p class="note"><b>Where you meet it:</b> '+c.where+'</p></div></article>'; }).join("")+
+  '<section class="card"><h2>How they connect</h2><ul class="plain"><li>Verdant Capital invests in Synapse AI.</li><li>Synapse AI sells software to Apex Vault.</li><li>Terra Properties leases office space to Synapse AI.</li><li>In Topic 2, each of them buys into a smaller company.</li></ul><p class="note">The companies are fictional, so exercise figures never get confused with real ones.</p></section>'+
+  '<a class="btn" href="#map">Open the course map</a>';
+}
+
+var R = null, rdFor = "", rdMsg = "";
+var SAMPLE = [
+ "<h3>Why goodwill exists</h3><p>When one company buys another, it rarely pays exactly what the target's balance sheet says the target is worth. The balance sheet lists what can be counted: buildings, machines, inventory, cash, and what is owed. It does not list a loyal customer base, a strong team or the savings the buyer expects from combining the two businesses.</p><p>Buyers pay for those things anyway. The amount paid on top of everything that can be identified and valued has a name in accounting: goodwill.</p>",
+ "<h3>Finding the number</h3><p>The buyer first restates what it bought at today's values. A brand the target built itself may not be on the target's books at all, but if it can be identified and valued, the buyer records it. The same goes for a building that is worth more than its book value.</p><p>Only then is goodwill calculated. Take the price paid. Subtract the fair value of everything identifiable, net of the debts taken over. What is left is goodwill. It appears as an asset in the group's balance sheet, not in the buyer's own.</p>",
+ "<h3>What happens afterwards</h3><p>A machine wears out, so its cost is spread over the years it is used. Goodwill has no such lifespan. Under IFRS it is not written down by a fixed slice each year.</p><p>The group must check at least once a year whether the business it bought is still worth what the books say. If it is worth less, goodwill is reduced and the loss hits profit. That loss is never taken back later, even if the business recovers.</p>"
+];
+function clock(el){ return Math.floor(el/60)+":"+("0"+(el%60)).slice(-2); }
+function reqList(){ var o = []; TOPICS.forEach(function(t){ t.req.forEach(function(r){ o.push([r[0], "Topic "+t.n+": "+r[1]]); }); }); return o; }
+function vReader(){
+  var el = Math.floor((Date.now()-S.timer.start)/1000), last = R.page >= R.total;
+  var h = '<div class="readbar" role="timer"><span class="timer" id="clock">'+clock(el)+'</span><span class="pg">'+(R.kind==="paper" ? R.total+" pages on paper" : "Page "+R.page+" of "+R.total)+'</span></div>';
+  if(R.kind==="pdf") h += '<div class="pdfwrap"><canvas id="pdfc" aria-label="Page '+R.page+' of your chapter"></canvas></div>';
+  if(R.kind==="sample") h += '<article class="samplepg">'+SAMPLE[R.page-1]+'</article>';
+  if(R.kind==="paper") h += '<section class="card"><h2>Read your '+R.total+' pages</h2><p class="lead">The timer keeps running. Press the button the moment you finish the last page.</p></section>';
+  if(R.kind!=="paper"){
+    h += '<div class="two"><button class="btn ghost" id="rd-prev"'+(R.page<=1?" disabled":"")+'>Previous page</button>'+
+      (last ? '<button class="btn ghost" id="rd-zoom"'+(R.kind==="pdf"?"":" disabled")+'>'+(R.zoom>1?"Fit to screen":"Zoom in")+'</button>' : '<button class="btn" id="rd-next">Next page</button>')+'</div>';
+    if(!last && R.kind==="pdf") h += '<button class="btn ghost" id="rd-zoom">'+(R.zoom>1?"Fit to screen":"Zoom in")+'</button>';
+  }
+  if(last) h += '<button class="btn" id="rd-finish">I finished the last page</button><p class="note">The timer only stops when you press this.</p>';
+  else h += '<button class="btn ghost" id="rd-early">Stop here, I read up to page '+R.page+'</button>';
+  h += '<button class="btn ghost" id="rd-cancel">Cancel without saving</button>';
+  return h;
+}
+function drawPage(){
+  var cv = document.getElementById("pdfc"); if(!cv || !R || !R.doc) return;
+  var want = R.page;
+  R.doc.getPage(want).then(function(pg){
+    if(!R || R.page !== want) return;
+    var wrap = cv.parentNode.clientWidth, base = pg.getViewport({scale:1}), css = wrap * R.zoom, dpr = Math.min(window.devicePixelRatio||1, 2);
+    var vp = pg.getViewport({scale: css/base.width*dpr});
+    cv.width = vp.width; cv.height = vp.height; cv.style.width = css+"px"; cv.style.height = (css*base.height/base.width)+"px";
+    return pg.render({canvasContext:cv.getContext("2d"), viewport:vp}).promise;
+  }).catch(function(){});
+}
+function vReading(){
+  if(S.timer && S.timer.start && R) return vReader();
+  if(S.timer){ S.timer = null; save(); if(!R) rdMsg = "Your last reading was interrupted, so nothing was saved. Start again when you are ready."; }
+  var h = '<div class="stack"><h1>How long will the reading take you?</h1><p class="lead">Open a chapter here and read it. The timer runs until you press the button on the last page. Your speed then gives a time estimate for every chapter.</p></div>';
+  if(rdMsg){ h += '<p class="exam">'+esc(rdMsg)+'</p>'; }
+  h += '<section class="card"><h2>1. Choose what you will read</h2>'+
+    '<label class="f" for="rd-for">Which reading is this? (optional)<select id="rd-for"><option value="">Not on the list</option>'+reqList().map(function(r){return '<option value="'+r[0]+'"'+(rdFor===r[0]?" selected":"")+'>'+r[1]+'</option>';}).join("")+'</select></label>'+
+    '<label class="f" for="rd-file">Upload the chapter as a PDF<input type="file" id="rd-file" accept="application/pdf,.pdf"></label>'+
+    '<p class="note">The file is opened on your device only. It is not uploaded anywhere and is gone when you close the page.</p>';
+  if(R && R.kind==="pdf") h += '<p class="exam"><b>Ready:</b> '+esc(R.name)+' · '+R.total+' page'+(R.total===1?"":"s")+'</p><button class="btn" id="rd-start">Start reading</button>';
+  h += '</section>';
+  h += '<section class="card"><h2>No PDF at hand?</h2><button class="btn ghost" id="rd-sample">Read the sample chapter (3 short pages)</button>'+
+    '<label class="f" for="rd-paper-pages">Or read on paper: how many pages?<input type="number" min="1" inputmode="numeric" id="rd-paper-pages"></label><button class="btn ghost" id="rd-paper">Start the timer for paper reading</button></section>';
+  h += '<section class="card"><h2>Your speed</h2>'+(S.speed ? '<p style="font-size:17px">'+(S.speed < 1 ? Math.round(S.speed*60)+' seconds per page' : (Math.round(S.speed*10)/10)+' minutes per page')+'</p>'+
+      (S.lastRead ? '<p class="note">Last measurement: '+S.lastRead.pages+' page'+(S.lastRead.pages===1?"":"s")+' in '+clock(S.lastRead.sec)+' ('+esc(S.lastRead.name)+').</p>' : '')+
+      '<p class="note">Enter the page count of a chapter on any topic page to see how long it will take.</p>' : '<p class="lead">Not measured yet.</p>')+'</section>'+
+    '<section class="card"><h2>Where reading fits</h2><ul class="plain"><li>First the context check, so you know the words.</li><li>Then the required chapter, with the ladder open next to you.</li><li>Then practice. Practice is what makes a step exam-ready.</li></ul></section>';
+  return h;
+}
+function finishReading(pagesRead, full){
+  var sec = Math.max(1, Math.floor((Date.now()-S.timer.start)/1000));
+  S.speed = (sec/60)/pagesRead; S.lastRead = {pages:pagesRead, sec:sec, name:R.name};
+  if(R.rid){ S.read[R.rid] = full || S.read[R.rid] || false; if(full && R.kind!=="sample") S.pages[R.rid] = String(R.total); }
+  S.timer = null; R = null; rdMsg = ""; save(); render(); window.scrollTo(0,0);
+}
+
+function vDev(){
+  return '<div class="stack"><h1>Developer notes</h1><p class="lead">Not part of the product. A running record of what you raised, what it means for the build, and where it stands.</p></div>'+
+    DEVNOTES.map(function(g){ return '<section class="card"><h2>'+g[0]+'</h2>'+g[1].map(function(x){ return '<div class="dn"><span class="q">'+x[0]+'</span><span>'+x[1]+'</span><span class="a">'+x[2]+'</span></div>'; }).join("")+'</section>'; }).join("")+
+    '<section class="card"><h2>Demo controls</h2><p class="note">Exam-ready needs answers on two different days. For a demo you can move the clock. Current prototype date: '+today()+'.</p><button class="btn ghost" id="tomorrow">Pretend it is tomorrow</button><button class="btn ghost" id="reset">Reset all progress</button></section>';
+}
+
+function render(){
+  if(tick){ clearInterval(tick); tick = null; }
+  killCity();
+  var r = route(), m = r.match(/^topic-(\d)$/);
+  nav.innerHTML = TABS.map(function(x){ var cur = x[0]===r || (x[0]==="map" && (m || r==="practice" || r==="level-check" || r==="context-check")); return '<a href="#'+x[0]+'"'+(cur?' aria-current="page"':'')+'>'+x[1]+'</a>'; }).join("");
+  var v = m ? vTopic(+m[1]) : ({map:vMap, universe:vUniverse, practice:vPractice, "level-check":vCheck, "context-check":vContext, reading:vReading, "dev-notes":vDev, account:vAccount}[r] || vMap)();
+  app.innerHTML = v;
+  if(document.getElementById("city")) mountCity();
+  if(r==="reading" && S.timer && S.timer.start && R){
+    if(R.kind==="pdf") drawPage();
+    tick = setInterval(function(){ var c = document.getElementById("clock"); if(!c || !S.timer) return; c.textContent = clock(Math.floor((Date.now()-S.timer.start)/1000)); }, 1000);
+  }
+}
+
+/* ================= events ================= */
+function curEx(){ var r = route(); return r==="practice" ? S.ex : (r==="level-check" && S.check ? S.check.ex : null); }
+function checkAdvance(){
+  var c = S.check, x = c.ex;
+  c.log.push({type:x.type, ok:x.ok && !x.hint, rating:c.rating});
+  S.notes.push({topic:2, type:x.type, rating:c.rating, text:(c.text||"").slice(0,600)});
+  var first = c.log[0], second = c.log[1];
+  if(!second){
+    c.ex = gen(first.ok ? "e3" : "e1"); c.rating = null; c.text = "";
+  } else {
+    c.startStep = first.ok ? (second.ok ? 4 : 3) : (second.ok ? 2 : 1);
+    c.done = true; c.ex = null;
+  }
+}
+app.addEventListener("click", function(e){
+  var a = e.target.closest("a[data-start]");
+  if(a){ S.ex = gen(a.dataset.start); save(); return; }
+  var t = e.target.closest("button"); if(!t) return;
+  var x = curEx();
+  if(t.id==="hint" && x){ x.hint = true; save(); render(); return; }
+  if(t.id==="check" && x){ gradeEx(x); save(); render(); if(x.ok && !x.hint) confetti(); var fb = app.querySelector(".fb"); if(fb) fb.scrollIntoView({block:"center"}); return; }
+  if(t.id==="next-ex"){ S.ex = gen(nextType()); save(); render(); window.scrollTo(0,0); return; }
+  if(t.id==="check-start"){ S.check = {ex:gen("e2"), log:[], rating:null, text:"", done:false}; save(); render(); window.scrollTo(0,0); return; }
+  if(t.dataset.selfrate){ S.check.rating = t.dataset.selfrate; var f = document.getElementById("feel"); if(f) S.check.text = f.value; save(); render(); var b = document.getElementById("check-next"); if(b) b.scrollIntoView({block:"nearest"}); return; }
+  if(t.id==="check-next"){ var f2 = document.getElementById("feel"); if(f2) S.check.text = f2.value; checkAdvance(); save(); render(); window.scrollTo(0,0); return; }
+  if(t.id==="check-redo"){ S.check = null; save(); render(); return; }
+  if(t.dataset.tf !== undefined){ var c = S.ctx, v = t.dataset.tf === "true"; c.picked = v; if(v === CONTEXT2[c.i][1]) c.right++; save(); render(); return; }
+  if(t.id==="ctx-next"){ S.ctx.i++; S.ctx.picked = null; if(S.ctx.i >= CONTEXT2.length) S.ctxDone = {right:S.ctx.right}; save(); render(); window.scrollTo(0,0); return; }
+  if(t.id==="ctx-redo"){ S.ctx = null; save(); render(); return; }
+  if(t.id==="ac-forgot"){ forgot(); return; }
+  if(t.id==="ac-out" && sb){ sb.auth.signOut().then(function(){ sbUser = null; cloud.ref = null; cloud.assets = null; cloud.fetchFile = null; cloud.state = "signedout"; S = fresh(); saveLocal(); acctMsg = ""; setSync(); go("map"); }); return; }
+  if(t.dataset.readnow){ rdFor = t.dataset.readnow; go("reading"); return; }
+  if(t.dataset.openfile){ var oid = t.dataset.openfile, of = S.files[oid]; if(!of) return;
+    if(!window.pdfjsLib){ attachMsg[oid] = "The PDF viewer could not load."; render(); return; }
+    rdFor = oid; R = null; rdMsg = "Opening "+of.name+" …"; go("reading");
+    window.pdfjsLib.GlobalWorkerOptions.workerSrc = "pdf.worker.min.js";
+    (cloud.fetchFile ? cloud.fetchFile(of.id) : Promise.reject(0)).then(function(buf){ return window.pdfjsLib.getDocument({data:new Uint8Array(buf)}).promise; }).then(function(doc){
+      R = {kind:"pdf", doc:doc, total:doc.numPages, page:1, zoom:1, name:of.name, rid:oid}; rdMsg = ""; if(route()==="reading") render();
+    }).catch(function(){ rdMsg = "The stored file could not be opened. Attach it again on the topic page."; if(route()==="reading") render(); });
+    return; }
+  if(t.dataset.rmfile){ var rid = t.dataset.rmfile, rf = S.files[rid];
+    if(pendingRemove !== rid){ pendingRemove = rid; render(); return; }
+    pendingRemove = ""; if(!rf || !cloud.assets) return;
+    cloud.assets.delete(rf.id).then(function(){ delete S.files[rid]; save(); render(); }, function(){ attachMsg[rid] = "Could not remove the file. Try again."; render(); });
+    return; }
+  if(t.id==="rd-start" && R){ R.page = 1; R.rid = rdFor; S.timer = {start:Date.now()}; save(); render(); window.scrollTo(0,0); return; }
+  if(t.id==="rd-sample"){ R = {kind:"sample", total:SAMPLE.length, page:1, zoom:1, name:"Sample chapter", rid:""}; S.timer = {start:Date.now()}; save(); render(); window.scrollTo(0,0); return; }
+  if(t.id==="rd-paper"){ var pp = +document.getElementById("rd-paper-pages").value; if(!(pp > 0)){ rdMsg = "Enter how many pages you will read on paper, then start the timer."; render(); return; }
+    R = {kind:"paper", total:pp, page:pp, zoom:1, name:"paper reading", rid:rdFor}; S.timer = {start:Date.now()}; save(); render(); window.scrollTo(0,0); return; }
+  if(t.id==="rd-next" && R){ R.page = Math.min(R.total, R.page+1); render(); window.scrollTo(0,0); return; }
+  if(t.id==="rd-prev" && R){ R.page = Math.max(1, R.page-1); render(); window.scrollTo(0,0); return; }
+  if(t.id==="rd-zoom" && R){ R.zoom = R.zoom > 1 ? 1 : 1.8; render(); return; }
+  if(t.id==="rd-finish" && R){ finishReading(R.total, true); return; }
+  if(t.id==="rd-early" && R){ finishReading(R.page, false); return; }
+  if(t.id==="rd-cancel"){ S.timer = null; R = null; rdMsg = ""; save(); render(); window.scrollTo(0,0); return; }
+  if(t.id==="tomorrow"){ S.dayOffset = (S.dayOffset||0)+1; save(); render(); return; }
+  if(t.id==="reset"){ S = fresh(); save(); go("map"); return; }
+});
+app.addEventListener("input", function(e){
+  var t = e.target, x = curEx();
+  if(t.dataset.field && x){ x.values[t.dataset.field] = t.value; save(); }
+  if(t.id==="feel" && S.check){ S.check.text = t.value; save(); }
+});
+app.addEventListener("change", function(e){
+  var t = e.target;
+  if(t.id==="exam"){ S.examDate = t.value; save(); render(); }
+  if(t.id==="rd-for"){ rdFor = t.value; }
+  if(t.dataset.attach && t.files && t.files[0] && cloud.assets){
+    var aid = t.dataset.attach, af = t.files[0]; attachMsg[aid] = "";
+    if(af.size > (cloud.maxBytes||20*1024*1024)){ attachMsg[aid] = "This file is over "+Math.round((cloud.maxBytes||20*1024*1024)/1048576)+" MB. Split the chapter or export a smaller PDF."; render(); return; }
+    uploading[aid] = true; render();
+    var pagesP = new Promise(function(res){
+      if(!window.pdfjsLib){ res(0); return; }
+      window.pdfjsLib.GlobalWorkerOptions.workerSrc = "pdf.worker.min.js";
+      var fr2 = new FileReader(); fr2.onerror = function(){ res(0); };
+      fr2.onload = function(){ window.pdfjsLib.getDocument({data:new Uint8Array(fr2.result)}).promise.then(function(d){ res(d.numPages); }, function(){ res(0); }); };
+      fr2.readAsArrayBuffer(af);
+    });
+    Promise.all([cloud.assets.upload(af, {type:"application/pdf"}), pagesP]).then(function(r){
+      S.files[aid] = {id:r[0].id, name:String(af.name).slice(0,80), size:r[0].sizeBytes, pages:r[1]||0};
+      if(r[1]) S.pages[aid] = String(r[1]);
+      delete uploading[aid]; save(); render();
+    }, function(e){
+      delete uploading[aid];
+      attachMsg[aid] = ({too_large:"This file is too large to store.", unsupported_type:"Only PDF files can be attached.", quota_or_state:"Storage for this prototype is full. Remove a file first.", rate_limited:"Too many uploads at once. Wait a moment and try again."})[e && e.code] || "The upload did not go through. Try again.";
+      render();
+    });
+  }
+  if(t.id==="rd-file" && t.files && t.files[0]){
+    var f = t.files[0];
+    if(!window.pdfjsLib){ rdMsg = "The PDF viewer could not load. Use paper reading for now."; render(); return; }
+    window.pdfjsLib.GlobalWorkerOptions.workerSrc = "pdf.worker.min.js";
+    var fr = new FileReader();
+    fr.onload = function(){
+      window.pdfjsLib.getDocument({data:new Uint8Array(fr.result)}).promise.then(function(doc){
+        R = {kind:"pdf", doc:doc, total:doc.numPages, page:1, zoom:1, name:f.name, rid:rdFor}; rdMsg = ""; render();
+      }, function(){ R = null; rdMsg = "This file could not be opened as a PDF. Try another file, or export the chapter as a PDF first."; render(); });
+    };
+    fr.onerror = function(){ rdMsg = "The file could not be read. Try again."; render(); };
+    fr.readAsArrayBuffer(f);
+  }
+  if(t.dataset.rate){ S.rating[t.dataset.rate] = t.value; save(); render(); }
+  if(t.dataset.read){ S.read[t.dataset.read] = t.checked; save(); }
+  if(t.dataset.pages){ S.pages[t.dataset.pages] = t.value; save(); render(); }
+});
+app.addEventListener("submit", function(e){
+  var f = e.target; e.preventDefault();
+  if(f.id==="ac-form"){ var sub = e.submitter, kind = (sub && sub.value) || "in"; acct(kind==="up" ? "up" : "in"); }
+  if(f.id==="pw-form"){ savePw(); }
+});
+document.addEventListener("change", function(e){
+  if(e.target && (e.target.id==="ac-show" || e.target.id==="pw-show")){
+    showPw = e.target.checked; var a = document.getElementById("ac-pass") || document.getElementById("pw-new"); if(a) a.type = showPw ? "text" : "password";
+  }
+});
+window.addEventListener("hashchange", function(){ render(); window.scrollTo(0,0); });
+render(); setSync(); initCloud();
+})();
+</script>
+</body>
+</html>
