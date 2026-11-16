@@ -206,7 +206,7 @@ var TOPICS = [
   question:"When you open an annual report, what exactly are you looking at, and who decided it has to look this way?",
   kind:"Context topic. No calculations: you read real statements (Air France-KLM, Orange, L'Oréal) and learn the vocabulary every later topic uses.",
   goals:["Explain why the EU made IFRS mandatory, and for whom","Describe what the Conceptual Framework is for","Name the five parts of IFRS financial statements","Tell current from non-current, and by nature from by function","Explain other comprehensive income"],
-  steps:[["t1a","IFRS in the EU: who must use it","Slides 8 to 11"],["t1b","Conceptual Framework and the IFRS hierarchy","Slides 12 to 13"],["t1c","Balance sheet: current versus non-current","Slides 15 to 19 · Case 3"],["t1d","Income statement: by nature versus by function","Slides 20 to 25 · Case 2"],["t1e","Other comprehensive income","Slides 22 to 27"],["t1f","Cash flow statement and changes in equity","Slides 28 to 33"],["t1g","Reading a real annual report","Case 1 (L'Oréal 2023)"]],
+  steps:[["t1a","IFRS in the EU: who must use it","Slides 8 to 11",8,11],["t1b","Conceptual Framework and the IFRS hierarchy","Slides 12 to 13",12,13],["t1c","Balance sheet: current versus non-current","Slides 14 to 19 · Case 3 (GSK)",14,19],["t1d","Income statement: by nature versus by function","Slides 20 to 25 · Cases 2, 3 (Air France-KLM, Danone)",20,25],["t1e","Other comprehensive income","Slides 22 to 27",22,27],["t1f","Cash flow statement and changes in equity","Slides 28 to 33 · Case 3 (Vodafone)",28,33],["t1h","IFRS 18: the new income statement from 2027","Slides 35 to 37",35,37],["t1g","Reading a real annual report","Case 1 (L'Oréal 2023)",0,0]],
   mat:[["Slides","ok"],["Cases","ok"],["Solutions","ok"]],
   req:[["r1a","Elliott/Elliott, Financial Accounting and Reporting (19th ed.), ch. 3, 5, 6, 7"],["r1b","Refresher: Weygandt/Kimmel/Kieso ch. 1 and Weetman ch. 2, 3"],["r1c","Videos: Conceptual Framework, IAS 1, IAS 7 (IFRSbox)"]],
   opt:[["o1a","Biondi and Suzuki (2007), Socio-Economic Review 5 (4)"],["o1b","Demerens, Hossfeld, Le Manh and Bonnier (2013), Issues in Accounting Education 28 (2)"],["o1c","Further papers listed on the last slide"]]},
@@ -214,7 +214,7 @@ var TOPICS = [
   question:"Your company wants to buy 60% of a company that carries far more debt than you do. What happens to the group's debt-to-equity ratio after the deal?",
   kind:"Calculation topic. The slides build one ladder of four example types, and the cases repeat the same ladder.",
   goals:["Explain individual versus consolidated statements","List the steps of a consolidation","Prepare a consolidated balance sheet with full consolidation","Explain and calculate goodwill","Explain and calculate non-controlling interest"],
-  steps:[["e1","100% ownership, no goodwill","Slides: Example 1 · Cases 1, 2"],["e2","100% ownership with goodwill","Slides: Example 2 · Cases 3, 4, 5"],["e3","Less than 100%: non-controlling interest","Slides: Example 3 · Cases 6, 7"],["e4","Equity method for an associate","Slides: Example 4 · Cases 8, 9"]],
+  steps:[["e1","100% ownership, no goodwill","Slides 18 to 21 (Example 1) · Cases 1, 2",18,21],["e2","100% ownership with goodwill","Slides 22 to 27 (Example 2) · Cases 3, 4, 5",22,27],["e3","Less than 100%: non-controlling interest","Slides 28 to 30 (Example 3) · Cases 6, 7",28,30],["e4","Equity method for an associate","Slides 31 to 37 (Example 4) · Cases 8, 9",31,37]],
   mat:[["Slides","ok"],["Cases","ok"],["Solutions","ok"]],
   req:[["r2a","Elliott/Elliott ch. 22, 23"],["r2b","Stolowy/Ding/Paugam, Financial Accounting and Reporting (6th ed.), ch. 13"],["r2c","Video: IFRS 10 Consolidated Financial Statements (IFRSbox)"]],
   opt:[["o2a","Alexander/Jorissen et al. ch. 25 to 27"],["o2b","Aerts/Walton ch. 12"],["o2c","Demerens, Delvaille, Le Manh and Pare (2014), Gestion 2000 31 (4)"],["o2d","Beiersdorf and Schmidt (2014), Zeitschrift für internationale Rechnungslegung"]]},
@@ -222,16 +222,15 @@ var TOPICS = [
   question:"Is research spending an asset or an expense? When has a machine lost value? And does leasing really keep debt off the balance sheet?",
   kind:"Mixed topic. Three management questions, each ending in a calculation type.",
   goals:["Tell an intangible asset from an expense","Apply the cost model","Run an impairment test","Tell a lease from a service contract","Show what a lease does to the statements"],
-  steps:[["t3a","Intangibles: research versus development","Slides 9 to 15"],["t3b","Cost model: depreciation and amortisation","Slides 17 to 20 · Cases 1, 2"],["t3c","Impairment of a single asset","Slides: Exercise 3.1 · Case 3"],["t3d","Impairment of a group of assets with goodwill","Slides: Exercise 3.2 · Cases 4, 5"],["t3e","Lease or service contract?","Slides: Exercises 3.3, 3.4"],["t3f","Lease accounting for the lessee","Slides: Exercise 3.5"]],
-  mat:[["Slides","warn"],["Cases","ok"],["Solutions","ok"]],
-  matNote:"The slide file arrived incomplete. The text of 60 slides was recovered, but please upload it again.",
+  steps:[["t3a","Intangibles: research versus development","Slides 7 to 15 · Case 2 (Malaga)",7,15],["t3b","Cost model: depreciation and amortisation","Slides 16 to 20 · Cases 1, 2 (Malaga)",16,20],["t3c","Impairment of a single asset","Slides 21 to 30 (Exercise 3.1) · Case 3 (Bilbao)",21,30],["t3d","Impairment of a group of assets with goodwill","Slides 31 to 38 (Exercise 3.2) · Cases 4, 5 (SEAT, Porto)",31,38],["t3e","Lease or service contract?","Slides 39 to 50 (Exercises 3.3, 3.4) · Cases 6, 7",39,50],["t3f","Lease accounting for the lessee","Slides 51 to 59 (Exercise 3.5) · Cases 8, 9",51,59]],
+  mat:[["Slides","ok"],["Cases","ok"],["Solutions","ok"]],
   req:[["r3a","Weygandt/Kimmel/Kieso ch. 9"],["r3b","Weetman ch. 8"],["r3c","Elliott/Elliott ch. 17, 18"]],
   opt:[["o3a","Review the pre-master material on acquisition cost and depreciation"]]},
  {n:4, title:"Financial debt and equity", exam:"9 of 75 points in the Nov 2023 exam", playable:false,
   question:"Your CFO wants to improve the debt-to-equity ratio with preferred shares that pay a guaranteed dividend and can be handed back after two years. Do they count as equity?",
   kind:"Mixed topic. One classification test, then bookkeeping for equity transactions.",
   goals:["Tell debt from equity instruments","Judge how much financial instruments matter in the statements","Account for debt, equity and hybrid instruments","Account for share issues and buy-backs"],
-  steps:[["t4a","Debt or equity? The contractual obligation test","Slides 13 to 17 · Exercises 1, 2"],["t4b","Hybrid instruments","Slides 18 to 22"],["t4c","Compound instruments: split accounting","Slides 23 to 25"],["t4d","Issuing shares and share premium","Slides 28 to 32"],["t4e","Treasury shares: buy-back, resale, cancellation","Slides 33 to 38"]],
+  steps:[["t4a","Debt or equity? The contractual obligation test","Slides 11 to 17 · Exercises 1, 2",11,17],["t4b","Hybrid instruments","Slides 18 to 22 · Exercise 4",18,22],["t4c","Compound instruments: split accounting","Slides 23 to 26",23,26],["t4d","Issuing shares and share premium","Slides 27 to 32 · Exercise 3 (Airbus)",27,32],["t4e","Treasury shares: buy-back, resale, cancellation","Slides 33 to 38 · Exercise 3 (Airbus)",33,38]],
   mat:[["Slides","ok"],["Cases","ok"],["Solutions","ok"]],
   req:[["r4a","Elliott/Elliott ch. 12 and ch. 14 (pp. 342 to 347, 350 to 353, 357 to 362)"],["r4b","Weetman ch. 11 (pp. 312 to 317) and ch. 12"],["r4c","Weygandt/Kimmel/Kieso ch. 10"]],
   opt:[["o4a","Schmidt (2013), Accounting in Europe 10 (2)"],["o4b","Schmidt (2018), Die Wirtschaftsprüfung (8)"],["o4c","Schmidt and Schreiber (2010), Die Wirtschaftsprüfung (12)"]]},
@@ -239,12 +238,38 @@ var TOPICS = [
   question:"Which numbers tell you how a company is really doing, and where can those numbers mislead you?",
   kind:"Analysis topic. Formulas applied to real reports (Orange, Veolia, Inditex).",
   goals:["Get a first overview of a set of statements","Pick the KPIs that matter for a given company","Separate business changes from accounting-choice changes","Explain the limits of KPI comparisons"],
-  steps:[["t5a","KPIs and management-defined measures (IFRS 18)","Slides 7 to 16"],["t5b","EBITDA and absolute performance numbers","Slides 18 to 23"],["t5c","Return on capital employed (ROCE)","Slides 24 to 26"],["t5d","The Du Pont pyramid","Slides 27 to 30"],["t5e","Economic value added (EVA)","Slides 33 to 35"],["t5f","Free cash flow","Slides 36 to 37"]],
-  mat:[["Slides","ok"],["Cases","missing"],["Solutions","missing"]],
-  matNote:"No cases uploaded for this topic yet.",
+  steps:[["t5a","KPIs and management-defined measures (IFRS 18)","Slides 6 to 16",6,16],["t5b","EBITDA and absolute performance numbers","Slides 17 to 23",17,23],["t5c","Return on capital employed (ROCE)","Slides 24 to 26 · Exercise 2 (CleanMotors)",24,26],["t5d","The Du Pont pyramid","Slides 27 to 31 · Exercises 1, 4 (VW, Lufthansa)",27,31],["t5e","Economic value added (EVA)","Slides 32 to 35 · Exercise 1 (VW)",32,35],["t5f","Free cash flow","Slides 36 to 37 · Exercise 3 (VW)",36,37]],
+  mat:[["Slides","ok"],["Cases","ok"],["Solutions","ok"]],
+  matNote:"One or two Topic 5 documents are still to come (for example the Volkswagen 2021 statements used in Exercises 1 and 3).",
   req:[["r5a","Elliott/Elliott ch. 28, 29"],["r5b","Weygandt/Kimmel/Kieso ch. 13"],["r5c","Weetman ch. 13, 14"]],
   opt:[["o5a","Marr, Key Performance Indicators, ch. 1 to 18"],["o5b","Walsh and Warner, 25 need-to-know management ratios, ch. 4 to 11"],["o5c","Biddle, Bowen and Wallace (1997), Journal of Accounting and Economics 24 (3)"],["o5d","Bennett (2019) and Milano (2019), Journal of Applied Corporate Finance 31 (3)"]]}
 ];
+
+/* course documents: course files are encrypted (opened only for accounts with course access); further readings are public reports */
+var DOCS = {
+ "t1-slides":{t:"Topic 1 slides",c:1,p:40},"t1-cases":{t:"Topic 1 cases",c:1,p:14},"t1-solutions":{t:"Topic 1 solutions",c:1,p:12},
+ "t2-slides":{t:"Topic 2 slides",c:1,p:41},"t2-cases":{t:"Topic 2 cases",c:1,p:14},"t2-solutions":{t:"Topic 2 solutions",c:1,p:24},
+ "t3-slides":{t:"Topic 3 slides",c:1,p:60},"t3-cases":{t:"Topic 3 cases",c:1,p:6},"t3-solutions":{t:"Topic 3 solutions",c:1,p:13},
+ "t4-slides":{t:"Topic 4 slides",c:1,p:40},"t4-cases":{t:"Topic 4 exercises",c:1,p:3},"t4-solutions":{t:"Topic 4 solutions",c:1,p:6},
+ "t5-slides":{t:"Topic 5 slides",c:1,p:40},"t5-cases":{t:"Topic 5 exercises",c:1,p:9},"t5-solutions":{t:"Topic 5 solutions",c:1,p:15},
+ "exam-2023":{t:"Exam CM01, November 2023",c:1,p:9},
+ "airfrance-urd-2023":{t:"Air France-KLM, Universal Registration Document 2023",p:488},
+ "orange-ar-2023":{t:"Orange, Annual Report 2023",p:145},
+ "orange-urd-2023":{t:"Orange, Universal Registration Document 2023",p:496},
+ "orange-fy2023-presentation":{t:"Orange, FY 2023 results presentation",p:36},
+ "iag-ar-2023":{t:"IAG, Annual Report 2023",p:316},
+ "vw-ar-2023":{t:"Volkswagen, Annual Report 2023",p:468},
+ "veolia-urd-2023":{t:"Veolia, Universal Registration Document 2023",p:548},
+ "dt-ar-2023":{t:"Deutsche Telekom, Annual Report 2023",p:313},
+ "ifrs18-summary":{t:"IFRS 18 project summary (IASB, April 2024)",p:17}
+};
+var FURTHER = {
+ 1:[["airfrance-urd-2023","The income statement and balance sheet behind slides 16 to 17 and Case 3"],["orange-ar-2023","The income statement examples on slides 24 and 26"],["ifrs18-summary","Background to slides 35 to 37: what IFRS 18 changes"]],
+ 2:[["iag-ar-2023","The group structure example on slide 6"],["airfrance-urd-2023","Case 11: did the asset increase come from acquisitions?"]],
+ 3:[["orange-urd-2023","Right-of-use assets and lease liabilities, slides 57 to 59"],["vw-ar-2023","The group behind the SEAT goodwill case (Case 4)"]],
+ 4:[["orange-urd-2023","The equity and debt examples on slides 19 to 25"],["airfrance-urd-2023","The instruments in Exercise 1 and slide 32"]],
+ 5:[["orange-fy2023-presentation","How Orange presents its KPIs, slides 8 to 11"],["orange-ar-2023","Orange KPIs in the annual report, slide 23"],["dt-ar-2023","Deutsche Telekom's performance measures, slide 20"],["veolia-urd-2023","Veolia's indicators, slide 26"],["iag-ar-2023","Airline KPIs compared on slide 13"],["vw-ar-2023","Context for Exercises 1 and 3 (Volkswagen)"],["ifrs18-summary","Management-defined performance measures, slides 14 to 16"]]
+};
 var RATINGS = [["","Not rated yet"],["never","Never seen this"],["seen","Seen it, can't do it"],["notes","Can do with notes"],["cold","Can do cold"]];
 
 var CO = {
@@ -271,7 +296,8 @@ var DEVNOTES = [
   ["Chat tutors never end. Exams have deadlines, and this must not run on engagement tricks.","A daily finish line (two exercises, then done) and a visible count to exam-ready. No streaks, no nudges to stay longer.","Built"],
   ["Understanding the logic of a course takes so long that little time is left to practise.","Course map as home. Each topic opens with the question it answers, the goals and its ladder of example types.","Built for all 5 topics"],
   ["Anxiety: trust needs a comprehensive view and knowing exactly where in the lessons I am.","Every step of every topic is listed with a status. Material checklist per topic.","Built"],
-  ["Starting is the hardest part, so no hard gate before learning.","Completeness checklist per topic. Topics unlock with their own material.","Built as checklist, unlock logic later"],
+  ["Starting is the hardest part, so no hard gate before learning.","Material is a tick list, not a key. Slides, cases and solutions open inside the site, and each ladder step links to its slides.","Built"],
+  ["The documents must be reachable on the site and usable in the backend.","Course files open in the site's own viewer. A backend file describes the logic of every case so exercises can be re-skinned to the student's companies.","Built: viewer and case logic. Generators for Topics 1, 3, 4, 5 next"],
   ["Missing base knowledge compared with other students.","Level check starts in the middle of a ladder and moves up or down. Self-report separates a vocabulary gap from a method gap.","Built for Topic 2"],
   ["Wants to say how the examples felt, typed or spoken.","Free-text box after each level-check exercise. Voice needs a microphone, which this prototype environment blocks.","Typed: built. Voice: live version"],
   ["Material is boring unless it is about companies I care about.","Company universe from a short intro chat, with pictures. Exercises use those companies.","Built with your four companies; intro chat later"],
@@ -293,14 +319,16 @@ var DEVNOTES = [
  ["Keep for later", [
   ["Licensing","Slides and cases belong to the professor and school. Textbooks are licensed. Ignored for the prototype by your decision; needs a professor on board before any public use.","Open"],
   ["Pictures","The boardroom and the green-roof housing look like real photographs, not generated images. Replace them with generated ones before showing this publicly.","Open"],
+  ["Course files","Slides, cases, solutions and the 2023 exam are stored encrypted. They open only for signed-in accounts on the course access list (now: Lea). Add people in Supabase, table course_access.","Built"],
+  ["Further readings","Company annual reports are public documents and are served openly. Official links would be the cleaner long-term choice.","Open"],
   ["Public link","While the prototype link is public, attached PDFs are stored with it. Keep the link private before attaching licensed chapters.","Open"],
   ["Sci-Hub","Left out. It shares papers without publisher permission. Use open-access checks and library links.","Decided"],
   ["Library login","Do not hand student credentials to the tool. Link out to the library reader.","Later"],
   ["Professor view","Class-wide weak spots as discussion prompts, never individual answers.","Later"],
   ["Positioning","Designed first for students with learning difficulties, not mentioned in marketing.","Decided"],
   ["Pitch evidence","Classroom observations (AI used for quizzes, low participation) are personal experience. Do not name the school on stage.","Decided"],
-  ["Topic 3 slides","Upload arrived incomplete. Re-upload to check the recovered text.","Open"],
-  ["Topic 5","No cases yet. The ladder comes from the slides only.","Open"],
+  ["Topic 3 slides","Complete deck received (60 slides). Ladder rebuilt with exact slide numbers.","Done"],
+  ["Missing documents","Topic 5: Volkswagen 2021 statements (Exercises 1, 3). Topic 4: Airbus Annual Report 2023 (Exercise 3). Topic 1: L'Oréal 2023 URD (link only).","Open"],
   ["Bond question","The Nov 2023 exam has a 9-point bond question at the effective interest rate. Check which exercise in Topic 4 trains it.","Open"]
  ]]
 ];
@@ -308,7 +336,7 @@ var DEVNOTES = [
 /* ================= state ================= */
 var KEY = "finishline-proto-v2";
 function fresh(){ return {examDate:"", dayOffset:0, rating:{}, credits:{}, misses:{}, tries:{}, attemptsByDay:{}, ex:null, check:null, ctx:null, ctxDone:null,
-  notes:[], read:{}, pages:{}, speed:null, timer:null, seenReady:[], files:{}, lastRead:null}; }
+  notes:[], read:{}, pages:{}, speed:null, timer:null, seenReady:[], files:{}, lastRead:null, have:{}, docPos:{}}; }
 var S = fresh();
 try{ var raw = localStorage.getItem(KEY); if(raw){ var o = JSON.parse(raw); for(var k in o){ S[k] = o[k]; } } }catch(e){}
 function saveLocal(){ try{ localStorage.setItem(KEY, JSON.stringify(S)); }catch(e){} }
@@ -680,10 +708,10 @@ function vMap(){
   if(cloud.state==="signedout") h += '<a class="btn ghost" href="#account">Sign in to save your progress on every device</a>';
   if(!S.check || !S.check.done) h += '<a class="btn ghost" href="#level-check">Find my level in Topic 2 first</a>';
   h += '<section class="card"><h2>Your course in five topics</h2>'+TOPICS.map(function(t){
-    var missing = t.mat.filter(function(m){return m[1]!=="ok";}).length;
+    var mats = ["slides","cases","solutions"], ticked = mats.filter(function(k){return S.have && S.have["t"+t.n+"-"+k];}).length;
     return '<a class="topic" href="#topic-'+t.n+'"><span class="num">'+t.n+'</span><span class="stack" style="gap:6px"><h3>'+t.title+'</h3>'+
       '<span class="dots" aria-label="Progress by step">'+t.steps.map(function(s){return '<i class="'+stepStatus(t,s[0])[0]+'"></i>';}).join("")+'</span>'+
-      '<span class="meta"><span class="note">'+t.exam+'</span>'+(t.playable?'<span class="pill solid">Playable</span>':'')+(missing?'<span class="pill gap">Material: '+missing+' to fix</span>':'<span class="pill todo">Material complete</span>')+'</span></span></a>';
+      '<span class="meta"><span class="note">'+t.exam+'</span>'+(t.playable?'<span class="pill solid">Playable</span>':'')+(ticked===3?'<span class="pill solid">Material ticked</span>':'<span class="pill todo">Material: '+ticked+' of 3 ticked</span>')+'</span></span></a>';
   }).join('<hr style="border:0;border-top:1px solid var(--line);margin:0;width:100%">')+
   '<p class="note">Exam weights come from the Nov 2023 exam (75 points in 75 minutes). This year can differ.</p></section>';
   var ms = milestones(), got = ms.filter(function(m){return m[2];}).length;
@@ -716,7 +744,8 @@ function vTopic(n){
     var ctl = t.playable
       ? '<div class="row" style="justify-content:flex-start"><a class="btn small ghost" href="#practice" data-start="'+s[0]+'">Practise this type</a></div>'
       : '<select aria-label="How well do you know this step?" data-rate="'+s[0]+'">'+RATINGS.map(function(r){return '<option value="'+r[0]+'"'+((S.rating[s[0]]||"")===r[0]?" selected":"")+'>'+r[1]+'</option>';}).join("")+'</select>';
-    return '<li><span class="n'+(i===firstOpen?" here":"")+'">'+(i+1)+'</span><div class="body"><div class="row"><h3>'+s[1]+'</h3><span class="pill '+st[0]+'">'+st[1]+'</span></div><span class="note">'+s[2]+(i===firstOpen?" · you are here":"")+'</span>'+ctl+'</div></li>';
+    var sl = s[3] ? '<a class="btn small ghost" href="#doc/t'+t.n+'-slides/'+s[3]+'">Open slides '+s[3]+(s[4]&&s[4]!==s[3]?'–'+s[4]:'')+'</a>' : '<a class="btn small ghost" href="#doc/t'+t.n+'-cases/1">Open the cases</a>';
+    return '<li><span class="n'+(i===firstOpen?" here":"")+'">'+(i+1)+'</span><div class="body"><div class="row"><h3>'+s[1]+'</h3><span class="pill '+st[0]+'">'+st[1]+'</span></div><span class="note">'+s[2]+(i===firstOpen?" · you are here":"")+'</span><div class="row" style="justify-content:flex-start">'+sl+'</div>'+ctl+'</div></li>';
   }).join("")+'</ol>'+(t.playable
      ? '<p class="note">Exam-ready means two unaided correct answers on different days. Exercises copy the structure of the slide examples with new numbers and your companies.</p>'
      : '<p class="note">Practice for this topic is not built yet. Rate each step so your map is complete.</p>')+'</section>';
@@ -724,8 +753,15 @@ function vTopic(n){
     h += '<section class="card"><div class="row"><h2>Context check</h2>'+(S.ctxDone?'<span class="pill solid">'+S.ctxDone.right+' of '+CONTEXT2.length+'</span>':'<span class="pill todo">Not done</span>')+'</div>'+
       '<p class="lead">Seven true or false statements in the style of the quiz slides. No calculations, about 4 minutes.</p><a class="btn ghost" href="#context-check">'+(S.ctxDone?"Redo":"Start")+' the context check</a></section>';
   }
-  h += '<section class="card"><h2>Material</h2><div class="mat">'+t.mat.map(function(m){ return '<span class="pill '+({ok:"solid",warn:"gap",missing:"gap"})[m[1]]+'">'+m[0]+': '+({ok:"uploaded",warn:"re-upload",missing:"missing"})[m[1]]+'</span>'; }).join("")+'</div>'+
-    (t.matNote?'<p class="note">'+t.matNote+'</p>':'')+
+  h += '<section class="card"><h2>Course material</h2><p class="note">Tick each file once you have it. Open it here to read the slides with the ladder next to you.</p>'+
+    [["slides","Slides"],["cases","Cases"],["solutions","Solutions"]].map(function(m){ var id = "t"+t.n+"-"+m[0], d = DOCS[id];
+      return '<div class="readrow"><label class="check"><input type="checkbox" data-have="'+id+'"'+(S.have[id]?" checked":"")+'><span>'+m[1]+' <span class="note">· '+d.p+' pages</span></span></label><div class="attach"><a class="btn small ghost" href="#doc/'+id+'/'+(S.docPos[id]||1)+'">'+(m[0]==="solutions"?"Open after trying the cases":(S.docPos[id]>1?"Continue at page "+S.docPos[id]:"Open"))+'</a></div></div>'; }).join("")+
+    (t.n===2?'<div class="readrow"><label class="check"><input type="checkbox" data-have="exam-2023"'+(S.have["exam-2023"]?" checked":"")+'><span>Past exam, November 2023</span></label><div class="attach"><a class="btn small ghost" href="#doc/exam-2023/1">Open</a></div></div>':'')+
+    (t.matNote?'<p class="note">'+t.matNote+'</p>':'')+'</section>';
+  h += '<section class="card"><h2>Further reading (optional)</h2><p class="note">The real reports the slides and cases draw on. Open them when you want to see the example in its original setting.</p>'+
+    (FURTHER[t.n]||[]).map(function(r){ var id = "fr-"+r[0], d = DOCS[r[0]];
+      return '<div class="readrow"><label class="check"><input type="checkbox" data-read="'+id+'"'+(S.read[id]?" checked":"")+'><span>'+esc(d.t)+'<br><span class="note">'+esc(r[1])+' · '+d.p+' pages</span></span></label><div class="attach"><a class="btn small ghost" href="#doc/'+r[0]+'/'+(S.docPos[r[0]]||1)+'">Open</a></div></div>'; }).join("")+'</section>';
+  h += '<section class="card"><h2>Textbook reading</h2>'+
     '<h3>Required reading</h3><div>'+t.req.map(function(r){return readRow(r,false);}).join("")+'</div>'+
     '<h3>Optional depth</h3><div>'+t.opt.map(function(r){return readRow(r,true);}).join("")+'</div>'+
     '<p class="note">Readings were collected from the readings and further-readings slides. '+(S.speed?'Your speed: '+(Math.round(S.speed*10)/10)+' min per page.':'<a href="#reading">Measure your reading speed</a> to get a time per chapter.')+'</p></section>';
@@ -883,6 +919,70 @@ function finishReading(pagesRead, full){
   S.timer = null; R = null; rdMsg = ""; save(); render(); window.scrollTo(0,0);
 }
 
+
+/* ---------- document viewer: slides, cases, solutions and further readings ---------- */
+var DV = {cache:{}, loading:"", err:"", key:null, doc:null, id:"", page:1, zoom:1};
+function courseKey(){
+  if(DV.key) return Promise.resolve(DV.key);
+  if(!sb || !sbUser) return Promise.reject("signin");
+  return sb.from("course_keys").select("k").eq("course","ifrs-cm01").maybeSingle().then(function(r){
+    if(r.error || !r.data) throw "noaccess";
+    var raw = Uint8Array.from(atob(r.data.k), function(c){ return c.charCodeAt(0); });
+    return crypto.subtle.importKey("raw", raw, "AES-GCM", false, ["decrypt"]).then(function(k){ DV.key = k; return k; });
+  });
+}
+function loadDoc(id){
+  if(DV.cache[id]) return Promise.resolve(DV.cache[id]);
+  var d = DOCS[id]; if(!d) return Promise.reject("missing");
+  if(!window.pdfjsLib) return Promise.reject("viewer");
+  window.pdfjsLib.GlobalWorkerOptions.workerSrc = "pdf.worker.min.js";
+  var bytes = d.c
+    ? courseKey().then(function(k){ return fetch("course/"+id+".bin").then(function(r){ if(!r.ok) throw "missing"; return r.arrayBuffer(); }).then(function(buf){
+        return crypto.subtle.decrypt({name:"AES-GCM", iv:new Uint8Array(buf, 0, 12)}, k, new Uint8Array(buf, 12)); }); })
+    : fetch("readings/"+id+".pdf").then(function(r){ if(!r.ok) throw "missing"; return r.arrayBuffer(); });
+  return bytes.then(function(b){ return window.pdfjsLib.getDocument({data:new Uint8Array(b)}).promise; }).then(function(doc){ DV.cache[id] = doc; return doc; });
+}
+function docRoute(r){ var m = r.match(/^doc\/([a-z0-9-]+)(?:\/(\d+))?$/); return m ? {id:m[1], page:+(m[2]||1)} : null; }
+function topicOfDoc(id){ var m = id.match(/^t(\d)-/); return m ? +m[1] : (id==="exam-2023" ? 2 : 0); }
+function vDoc(dr){
+  var d = DOCS[dr.id]; if(!d) return '<a class="back" href="#map">← Course map</a><p class="lead">This document does not exist.</p>';
+  var tn = topicOfDoc(dr.id), back = tn ? '<a class="back" href="#topic-'+tn+'">← Topic '+tn+'</a>' : '<a class="back" href="javascript:history.back()">← Back</a>';
+  var h = back+'<div class="stack"><h1>'+esc(d.t)+'</h1></div>';
+  if(DV.err){
+    var msg = {signin:'Course files open for signed-in accounts with course access. <a href="#account">Sign in</a> first.', noaccess:'Your account does not have access to the course files yet. Ask the course owner to add your email.', viewer:'The PDF viewer could not load. Reload the page.', missing:'This file is not on the site yet.'}[DV.err] || 'The file could not be opened. Check your connection and try again.';
+    return h+'<section class="card"><p>'+msg+'</p></section>';
+  }
+  if(!DV.doc || DV.id !== dr.id) return h+'<section class="card"><p class="lead">Opening '+esc(d.t)+' …</p><p class="note">'+d.p+' pages'+(d.p>200?'. Large report: this can take a little while on mobile data.':'.')+'</p></section>';
+  var total = DV.doc.numPages, pg = Math.min(Math.max(1, dr.page), total);
+  if(/-solutions$/.test(dr.id)) h += '<p class="exam"><b>Solutions.</b> Try the case on paper first. Reading a solution before trying does not train the step.</p>';
+  if(/-slides$/.test(dr.id)){
+    var t = TOPICS[tn-1], cur = t.steps.filter(function(s){ return s[3] && pg>=s[3] && pg<=s[4]; })[0];
+    h += '<div class="mat" role="navigation" aria-label="Ladder steps">'+t.steps.filter(function(s){return s[3];}).map(function(s,i){ return '<a class="pill '+(cur&&cur[0]===s[0]?"prog":"todo")+'" href="#doc/'+dr.id+'/'+s[3]+'">'+(t.steps.indexOf(s)+1)+'. '+esc(s[1])+'</a>'; }).join("")+'</div>';
+    if(cur) h += '<p class="note">You are in step '+(t.steps.indexOf(cur)+1)+': '+esc(cur[1])+' (slides '+cur[3]+' to '+cur[4]+').</p>';
+  }
+  h += '<div class="readbar"><span class="pg">Page '+pg+' of '+total+'</span><label class="pg">Go to <input type="number" min="1" max="'+total+'" inputmode="numeric" id="dv-go" value="'+pg+'" style="width:70px"></label></div>';
+  h += '<div class="pdfwrap"><canvas id="dvc" aria-label="Page '+pg+'"></canvas></div>';
+  h += '<div class="two"><a class="btn ghost" href="#doc/'+dr.id+'/'+Math.max(1,pg-1)+'"'+(pg<=1?' aria-disabled="true"':'')+'>Previous</a><a class="btn" href="#doc/'+dr.id+'/'+Math.min(total,pg+1)+'"'+(pg>=total?' aria-disabled="true"':'')+'>Next</a></div>';
+  h += '<button class="btn ghost" id="dv-zoom">'+(DV.zoom>1?"Fit to screen":"Zoom in")+'</button>';
+  return h;
+}
+function drawDoc(pg){
+  var cv = document.getElementById("dvc"); if(!cv || !DV.doc) return;
+  DV.doc.getPage(pg).then(function(p){
+    var wrap = cv.parentNode.clientWidth, base = p.getViewport({scale:1}), css = wrap*DV.zoom, dpr = Math.min(window.devicePixelRatio||1, 2);
+    var vp = p.getViewport({scale: css/base.width*dpr});
+    cv.width = vp.width; cv.height = vp.height; cv.style.width = css+"px"; cv.style.height = (css*base.height/base.width)+"px";
+    return p.render({canvasContext:cv.getContext("2d"), viewport:vp}).promise;
+  }).catch(function(){});
+}
+function openDoc(dr){
+  if(DV.err==="signin" && (sbUser || cloud.state==="loading")) DV.err = "", DV.id = "";
+  if(DV.id === dr.id && (DV.doc || DV.loading === dr.id || DV.err)) return;
+  if(DOCS[dr.id] && DOCS[dr.id].c && sb && !sbUser && cloud.state==="loading"){ DV.id = dr.id; DV.loading = dr.id; setTimeout(function(){ DV.loading = ""; DV.id = ""; if(docRoute(route())) render(); }, 1200); return; }
+  DV.id = dr.id; DV.doc = null; DV.err = ""; DV.loading = dr.id;
+  loadDoc(dr.id).then(function(doc){ if(DV.id !== dr.id) return; DV.doc = doc; DV.loading = ""; render(); },
+    function(e){ if(DV.id !== dr.id) return; DV.err = typeof e === "string" ? e : "net"; DV.loading = ""; render(); });
+}
 function vDev(){
   return '<div class="stack"><h1>Developer notes</h1><p class="lead">Not part of the product. A running record of what you raised, what it means for the build, and where it stands.</p></div>'+
     DEVNOTES.map(function(g){ return '<section class="card"><h2>'+g[0]+'</h2>'+g[1].map(function(x){ return '<div class="dn"><span class="q">'+x[0]+'</span><span>'+x[1]+'</span><span class="a">'+x[2]+'</span></div>'; }).join("")+'</section>'; }).join("")+
@@ -893,10 +993,14 @@ function render(){
   if(tick){ clearInterval(tick); tick = null; }
   killCity();
   var r = route(), m = r.match(/^topic-(\d)$/);
-  nav.innerHTML = TABS.map(function(x){ var cur = x[0]===r || (x[0]==="map" && (m || r==="practice" || r==="level-check" || r==="context-check")); return '<a href="#'+x[0]+'"'+(cur?' aria-current="page"':'')+'>'+x[1]+'</a>'; }).join("");
-  var v = m ? vTopic(+m[1]) : ({map:vMap, universe:vUniverse, practice:vPractice, "level-check":vCheck, "context-check":vContext, reading:vReading, "dev-notes":vDev, account:vAccount}[r] || vMap)();
+  nav.innerHTML = TABS.map(function(x){ var cur = x[0]===r || (x[0]==="map" && (m || /^doc\//.test(r) || r==="practice" || r==="level-check" || r==="context-check")); return '<a href="#'+x[0]+'"'+(cur?' aria-current="page"':'')+'>'+x[1]+'</a>'; }).join("");
+  var dr = docRoute(r);
+  if(!dr && DV.err){ DV.err = ""; DV.id = ""; }
+  if(dr){ openDoc(dr); if(DV.doc && DV.id===dr.id){ S.docPos[dr.id] = dr.page; saveLocal(); } }
+  var v = dr ? vDoc(dr) : m ? vTopic(+m[1]) : ({map:vMap, universe:vUniverse, practice:vPractice, "level-check":vCheck, "context-check":vContext, reading:vReading, "dev-notes":vDev, account:vAccount}[r] || vMap)();
   app.innerHTML = v;
   if(document.getElementById("city")) mountCity();
+  if(dr && DV.doc) drawDoc(Math.min(Math.max(1, dr.page), DV.doc.numPages));
   if(r==="reading" && S.timer && S.timer.start && R){
     if(R.kind==="pdf") drawPage();
     tick = setInterval(function(){ var c = document.getElementById("clock"); if(!c || !S.timer) return; c.textContent = clock(Math.floor((Date.now()-S.timer.start)/1000)); }, 1000);
@@ -933,7 +1037,8 @@ app.addEventListener("click", function(e){
   if(t.id==="ctx-next"){ S.ctx.i++; S.ctx.picked = null; if(S.ctx.i >= CONTEXT2.length) S.ctxDone = {right:S.ctx.right}; save(); render(); window.scrollTo(0,0); return; }
   if(t.id==="ctx-redo"){ S.ctx = null; save(); render(); return; }
   if(t.id==="ac-forgot"){ forgot(); return; }
-  if(t.id==="ac-out" && sb){ sb.auth.signOut().then(function(){ sbUser = null; cloud.ref = null; cloud.assets = null; cloud.fetchFile = null; cloud.state = "signedout"; S = fresh(); saveLocal(); acctMsg = ""; setSync(); go("map"); }); return; }
+  if(t.id==="dv-zoom"){ DV.zoom = DV.zoom>1 ? 1 : 2; render(); return; }
+  if(t.id==="ac-out" && sb){ sb.auth.signOut().then(function(){ sbUser = null; cloud.ref = null; cloud.assets = null; cloud.fetchFile = null; cloud.state = "signedout"; S = fresh(); saveLocal(); DV.key = null; DV.cache = {}; DV.doc = null; DV.id = ""; acctMsg = ""; setSync(); go("map"); }); return; }
   if(t.dataset.readnow){ rdFor = t.dataset.readnow; go("reading"); return; }
   if(t.dataset.openfile){ var oid = t.dataset.openfile, of = S.files[oid]; if(!of) return;
     if(!window.pdfjsLib){ attachMsg[oid] = "The PDF viewer could not load."; render(); return; }
@@ -1006,6 +1111,8 @@ app.addEventListener("change", function(e){
   }
   if(t.dataset.rate){ S.rating[t.dataset.rate] = t.value; save(); render(); }
   if(t.dataset.read){ S.read[t.dataset.read] = t.checked; save(); }
+  if(t.dataset.have){ S.have[t.dataset.have] = t.checked; save(); }
+  if(t.id==="dv-go"){ var dr0 = docRoute(route()); if(dr0){ var n0 = parseInt(t.value,10); if(n0>0) go("doc/"+dr0.id+"/"+n0); } }
   if(t.dataset.pages){ S.pages[t.dataset.pages] = t.value; save(); render(); }
 });
 app.addEventListener("submit", function(e){
