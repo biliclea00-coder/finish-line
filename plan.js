@@ -8,31 +8,16 @@ var FL = window.FL; if(!FL) return;
 var esc = FL.esc;
 function S(){ return FL.S; }
 
-/* ---------- seed: Lea's week, used only when no plan exists yet ---------- */
+/* ---------- empty plan for a new learner ---------- */
 function seed(){
+  /* a blank plan: the learner fills in their own places and week. Personal plans live in the learner's account, never in this file. */
+  var d = new Date(); d.setDate(d.getDate()+7);
   return {
     v:1, confirmed:false, mode:"car", stepMin:50,
-    exam:{date:"2026-11-24", time:"10:00", place:"escp"},
+    exam:{date:d.getFullYear()+"-"+("0"+(d.getMonth()+1)).slice(-2)+"-"+("0"+d.getDate()).slice(-2), time:"10:00", place:"home"},
     sleep:{bed:"23:30", wake:"07:30"},
-    places:[
-      {id:"home", name:"Home", kind:"home", addr:"Bouchéstraße 33, 12435 Berlin", lat:52.4936, lon:13.4497, park:5},
-      {id:"work", name:"John Reed (work)", kind:"work", addr:"Landsberger Allee 104A, 10249 Berlin", lat:52.5279, lon:13.4497, park:15},
-      {id:"train", name:"Luftschiffhafen (training)", kind:"training", addr:"Olympischer Weg 4, 14471 Potsdam", lat:52.3935, lon:13.0233, park:10},
-      {id:"delta", name:"The Delta (hackathon)", kind:"other", addr:"Donaustraße 44, 12043 Berlin", lat:52.4792, lon:13.4389, park:10},
-      {id:"escp", name:"ESCP Berlin", kind:"uni", addr:"Heubnerweg 8-10, 14059 Berlin", lat:52.5197, lon:13.2843, park:10}
-    ],
-    events:[
-      {id:"e1", title:"Hackathon", kind:"other", place:"delta", date:"2026-11-17", start:"09:00", end:"20:00", flex:"fixed"},
-      {id:"e2", title:"Training", kind:"training", place:"train", date:"2026-11-18", start:"15:00", end:"18:30", flex:"fixed"},
-      {id:"e3", title:"Training", kind:"training", place:"train", date:"2026-11-19", start:"15:00", end:"17:20", flex:"fixed"},
-      {id:"e4", title:"Work shift", kind:"work", place:"work", date:"2026-11-19", start:"19:00", end:"23:00", flex:"fixed"},
-      {id:"e5", title:"Class", kind:"class", place:"escp", date:"2026-11-20", start:"08:00", end:"12:45", flex:"skip"},
-      {id:"e6", title:"Training", kind:"training", place:"train", date:"2026-11-20", start:"14:00", end:"17:00", flex:"fixed"},
-      {id:"e7", title:"Class", kind:"class", place:"escp", date:"2026-11-21", start:"15:00", end:"17:00", flex:"skip"},
-      {id:"e8", title:"Work shift", kind:"work", place:"work", date:"2026-11-22", start:"08:00", end:"15:00", flex:"fixed"},
-      {id:"e9", title:"Work shift", kind:"work", place:"work", date:"2026-11-23", start:"14:00", end:"19:00", flex:"swap"}
-    ],
-    travel:{}, decisions:{}, done:{}, geo:{}
+    places:[{id:"home", name:"Home", kind:"home", addr:"", lat:52.52, lon:13.405, park:5}],
+    events:[], travel:{}, decisions:{}, done:{}, geo:{home:"none"}
   };
 }
 function P(){ var s = S(); if(!s.plan) s.plan = seed(); return s.plan; }
