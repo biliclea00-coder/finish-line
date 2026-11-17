@@ -385,6 +385,19 @@ function bookPicker(only){
   return Object.keys(BOOKS).filter(function(k){ return !only || k===only; }).map(function(k){ var b = BOOKS[k];
     return haveBooks[k] ? '<p class="note">✓ '+esc(b.s)+' is on this device.</p>' : '<label class="btn small ghost">Add my '+esc(b.s)+' PDF<input type="file" accept="application/pdf,.pdf" data-bookpick="'+k+'" style="display:none"></label>'; }).join("")+(bookMsg?'<p class="note">'+esc(bookMsg)+'</p>':'');
 }
+var bookKey = null;
+function bookFromServer(k){
+  if(!sb) return Promise.reject("nolocal");
+  if(!sbUser) return Promise.reject("booksignin");
+  var key = bookKey ? Promise.resolve(bookKey) : sb.from("book_keys").select("k").eq("book","textbooks").maybeSingle().then(function(r){
+    if(r.error || !r.data) throw "booknoaccess";
+    var raw = Uint8Array.from(atob(r.data.k), function(c){ return c.charCodeAt(0); });
+    return crypto.subtle.importKey("raw", raw, "AES-GCM", false, ["decrypt"]).then(function(x){ bookKey = x; return x; });
+  });
+  return key.then(function(x){ return fetch("books/"+k+".bin").then(function(r){ if(!r.ok) throw "missing"; return r.arrayBuffer(); }).then(function(buf){
+    return crypto.subtle.decrypt({name:"AES-GCM", iv:new Uint8Array(buf, 0, 12)}, x, new Uint8Array(buf, 12)); }); })
+    .then(function(pdf){ bookPut(k, pdf.slice(0)).then(function(){ haveBooks[k] = true; }).catch(function(){}); return pdf; });
+}
 function bookPage(k, pg){ return pg + BOOKS[k].off; }
 /* what can be read inside the site with the timer */
 var READABLE = [
@@ -904,7 +917,7 @@ function vTopic(n){
     (FURTHER[t.n]||[]).map(function(r){ var id = "fr-"+r[0], d = DOCS[r[0]];
       return '<div class="readrow"><label class="check"><input type="checkbox" data-read="'+id+'"'+(S.read[id]?" checked":"")+'><span>'+esc(d.t)+'<br><span class="note">'+esc(r[1])+' · '+d.p+' pages</span></span></label><div class="attach"><a class="btn small ghost" href="#doc/'+r[0]+'/'+(S.docPos[r[0]]||1)+'">Open</a></div></div>'; }).join("")+'</section>';
   if(BOOKMAP[t.n]){
-    h += '<section class="card"><h2>Your textbooks</h2><p class="note">Elliott is the course textbook the slides cite (19th edition, so the chapter numbers match). Melville is the practice book: short chapters, current standards, exercises with answers at the back. Page numbers are the books\' own.</p>'+bookPicker()+
+    h += '<section class="card"><h2>Your textbooks</h2><p class="note">Elliott is the course textbook the slides cite (19th edition, so the chapter numbers match). Melville is the practice book: short chapters, current standards, exercises with answers at the back. Page numbers are the books\' own. Both are stored for your account: sign in and they open here; after the first time they open straight from this device.</p>'+
       ["elliott","melville"].map(function(k){ var rows = BOOKMAP[t.n].map(function(r, i){ return [r, i]; }).filter(function(x){ return x[0][0]===k; }); if(!rows.length) return "";
         return '<h3>'+esc(BOOKS[k].s)+'</h3>'+rows.map(function(x){ var r = x[0], id = "bm-"+t.n+"-"+x[1];
           return '<div class="readrow"><label class="check"><input type="checkbox" data-read="'+id+'"'+(S.read[id]?" checked":"")+'><span>'+esc(r[1])+'<br><span class="note">pp. '+r[2]+'–'+r[3]+' · '+(r[3]-r[2]+1)+' pages'+(S.speed?' · about '+Math.round((r[3]-r[2]+1)*S.speed)+' min':'')+'</span></span></label><div class="attach"><a class="btn small ghost" href="#doc/bk-'+k+'/'+bookPage(k, r[2])+'">Open</a><button class="btn small ghost" data-readdoc="'+id+'">Read with timer</button></div></div>'; }).join(""); }).join("")+
@@ -1095,7 +1108,7 @@ function loadDoc(id){
   if(!window.pdfjsLib) return Promise.reject("viewer");
   window.pdfjsLib.GlobalWorkerOptions.workerSrc = "pdf.worker.min.js";
   var bytes = d.local
-    ? bookGet(d.local).then(function(b){ if(!b) throw "nolocal"; return b; })
+    ? bookGet(d.local).then(function(b){ return b || bookFromServer(d.local); })
     : d.c
     ? courseKey().then(function(k){ return fetch("course/"+id+".bin").then(function(r){ if(!r.ok) throw "missing"; return r.arrayBuffer(); }).then(function(buf){
         return crypto.subtle.decrypt({name:"AES-GCM", iv:new Uint8Array(buf, 0, 12)}, k, new Uint8Array(buf, 12)); }); })
@@ -1109,6 +1122,8 @@ function vDoc(dr){
   var tn = topicOfDoc(dr.id), back = tn ? '<a class="back" href="#topic-'+tn+'">← Topic '+tn+'</a>' : '<a class="back" href="javascript:history.back()">← Back</a>';
   var h = back+'<div class="stack"><h1>'+esc(d.t)+'</h1></div>';
   if(DV.err){
+    if(DV.err==="booksignin") return h+'<section class="card"><p>The textbooks are stored for your account. <a href="#account">Sign in</a> and this page opens. The first time takes a moment (Elliott is 20 MB); after that it opens straight from this device.</p></section>';
+    if(DV.err==="booknoaccess") return h+'<section class="card"><p>This account cannot open the textbooks. They open only for the course owner\'s account.</p></section>';
     if(DV.err==="nolocal") return h+'<section class="card"><p>Your copy of this book is not on this device yet. Choose the PDF once; it stays on this phone or computer only and is never uploaded.</p>'+bookPicker(d.local)+'</section>';
     var msg = {signin:'Course files open for signed-in accounts with course access. <a href="#account">Sign in</a> first.', noaccess:'Your account does not have access to the course files yet. Ask the course owner to add your email.', viewer:'The PDF viewer could not load. Reload the page.', missing:'This file is not on the site yet.'}[DV.err] || 'The file could not be opened. Check your connection and try again.';
     return h+'<section class="card"><p>'+msg+'</p></section>';
@@ -1137,9 +1152,9 @@ function drawDoc(pg){
   }).catch(function(){});
 }
 function openDoc(dr){
-  if(DV.err==="signin" && (sbUser || cloud.state==="loading")) DV.err = "", DV.id = "";
+  if((DV.err==="signin" || DV.err==="booksignin") && (sbUser || cloud.state==="loading")) DV.err = "", DV.id = "";
   if(DV.id === dr.id && (DV.doc || DV.loading === dr.id || DV.err)) return;
-  if(DOCS[dr.id] && DOCS[dr.id].c && sb && !sbUser && cloud.state==="loading"){ DV.id = dr.id; DV.loading = dr.id; setTimeout(function(){ DV.loading = ""; DV.id = ""; if(docRoute(route())) render(); }, 1200); return; }
+  if(DOCS[dr.id] && (DOCS[dr.id].c || DOCS[dr.id].local) && sb && !sbUser && cloud.state==="loading"){ DV.id = dr.id; DV.loading = dr.id; setTimeout(function(){ DV.loading = ""; DV.id = ""; if(docRoute(route())) render(); }, 1200); return; }
   DV.id = dr.id; DV.doc = null; DV.err = ""; DV.loading = dr.id;
   loadDoc(dr.id).then(function(doc){ if(DV.id !== dr.id) return; DV.doc = doc; DV.loading = ""; render(); },
     function(e){ if(DV.id !== dr.id) return; DV.err = typeof e === "string" ? e : "net"; DV.loading = ""; render(); });
@@ -1308,7 +1323,7 @@ document.addEventListener("change", function(e){
   }
 });
 window.addEventListener("hashchange", function(){ render(); window.scrollTo(0,0); });
-window.FL = {get S(){ return S; }, get signedOut(){ return !!(sb && !sbUser && cloud.state==="signedout"); }, save:save, render:render, go:go, esc:esc, TOPICS:TOPICS, confetti:confetti};
+window.FL = {get S(){ return S; }, get signedOut(){ return !!(sb && !sbUser && cloud.state==="signedout"); }, save:save, render:render, go:go, esc:esc, TOPICS:TOPICS, BOOKMAP:BOOKMAP, confetti:confetti};
 render(); setSync(); initCloud(); bookCheck().then(render);
 })();
 </script>

@@ -179,9 +179,13 @@ function stepQueue(){
       if(dec === "dropT4" && n===4) return;
       q.push({topic:n, id:st[0], name:st[1], slides:st[3] ? "slides "+st[3]+"–"+st[4] : "cases", mins:mins});
     });
+    if(p.decisions.books === "read23" && (n===2 || n===3)) bookReads(n).forEach(function(r){ q.push(r); });
   });
   return q;
 }
+function readRate(){ return Math.max(+FL.S.speed || 0, 1.5); }
+function bookReads(n){ return ((FL.BOOKMAP||{})[n]||[]).map(function(r, i){ return [r, i]; }).filter(function(x){ return x[0][0]==="melville"; }).map(function(x){ var pg = x[0][3]-x[0][2]+1;
+  return {topic:n, id:"bm-"+n+"-"+x[1], name:"Read Melville "+x[0][1], slides:"pp. "+x[0][2]+"–"+x[0][3], mins:Math.round(pg*readRate()), read:true}; }); }
 function plan(){
   var p = P(), ds = days(), models = ds.map(dayModel), q = stepQueue(), qi = 0, left = q.length ? q[0].mins : 0, learned = [], allSlots = [];
   var lastDay = addDays(p.exam.date, -1), lastN = 0, tot = {}, got = {};
@@ -413,7 +417,7 @@ function gmaps(l){ var A = place(l.from), B = place(l.to); return "https://www.g
 function cards(pl){
   var p = P(), out = [], lastDay = addDays(p.exam.date,-1);
   /* recommendations are judged against the week before any of these choices, so they don't flip once you choose */
-  var keep = {}; Object.keys(p.decisions).forEach(function(k){ if(/^ev-|^coverage/.test(k)){ keep[k] = p.decisions[k]; delete p.decisions[k]; } });
+  var keep = {}; Object.keys(p.decisions).forEach(function(k){ if(/^ev-|^coverage|^books/.test(k)){ keep[k] = p.decisions[k]; delete p.decisions[k]; } });
   var base = plan(); Object.keys(keep).forEach(function(k){ p.decisions[k] = keep[k]; });
   var short = base.minsLeft > 0, nowShort = pl.minsLeft > 0; pl = {minsLeft:base.minsLeft};
   p.events.forEach(function(e){
@@ -437,6 +441,12 @@ function cards(pl){
     why:"For people with ADHD, steady background noise such as pink noise helped a little in lab tasks, while it hurt people without ADHD (Nigg et al. 2024). So new steps go to quiet places and reviews can go anywhere.",
     opts:[["split","Quiet for new steps, noise is fine for reviews"],["quiet","Always somewhere quiet"],["noisy","I focus better with background noise"]],
     cost:{split:"Recommended balance.", quiet:"Short slots at the café become cards only.", noisy:"New steps can also go to noisy places."}});
+  var all = 0; Object.keys(FL.BOOKMAP||{}).forEach(function(n){ FL.BOOKMAP[n].forEach(function(r){ all += r[3]-r[2]+1; }); });
+  var extra = bookReads(2).concat(bookReads(3)).reduce(function(a,b){ return a+b.mins; }, 0);
+  out.push({id:"books", title:"Textbook reading", rec:"lookup",
+    why:"All the Elliott and Melville chapters for your five topics are about "+all+" pages, roughly "+fmtDur(all*readRate())+" at "+(Math.round(readRate()*10)/10)+" min per page, which is more than your free time this week. Testing yourself helps learning much more than rereading (Dunlosky et al. 2013). So the books are best for looking up a step when you are stuck: each ladder step has a button to the right pages.",
+    opts:[["lookup","Look things up when stuck"],["read23","Also read the Melville chapters for Topics 2 and 3"]],
+    cost:{lookup:"No extra time in the plan.", read23:"About "+fmtDur(extra)+" more in the plan. It goes after the steps of each topic."}});
   if(nowShort || p.decisions.coverage) out.push({id:"coverage", title:"Not everything fits", rec:"focus",
     why:"Topics 2 and 3 were 47 of 75 points in the 2023 exam. Learning them properly and keeping the rest as question cards gives the most points per hour. This year's exam can be weighted differently.",
     opts:[["focus","Deep on Topics 2 and 3, question cards for 1, 4 and 5"],["once","Everything once, nothing twice"],["dropT4","Leave out Topic 4 practice (13 points in 2023)"]],
