@@ -401,6 +401,8 @@ function bookFromServer(k){
 function bookPage(k, pg){ return pg + BOOKS[k].off; }
 /* what can be read inside the site with the timer */
 var READABLE = [
+ ["sp-cf","What makes financial information useful (3 pages)","harrison",44,46,1],
+ ["sp-is","The income statement (3 pages)","harrison",50,52,1],
  ["bk-cf","Book ch. 1: The Conceptual Framework (pp. 8–13)","harrison",43,48],
  ["bk-fs","Book ch. 1: The four financial statements (pp. 14–23)","harrison",49,58],
  ["r1h","Book ch. 1: the whole chapter text (pp. 1–29)","harrison",36,64],
@@ -1061,7 +1063,8 @@ function vReading(){
   var h = '<div class="stack"><h1>How long will the reading take you?</h1><p class="lead">Open a chapter here and read it. The timer runs until you press the button on the last page. Your speed then gives a time estimate for every chapter.</p></div>';
   if(rdMsg){ h += '<p class="exam">'+esc(rdMsg)+'</p>'; }
   h += '<section class="card"><h2>1. Choose what you will read</h2>'+
-    '<label class="f" for="rd-here">Read something here<select id="rd-here"><option value="">Choose a reading</option>'+READABLE.map(function(r){return '<option value="'+r[0]+'"'+(rdFor===r[0]?" selected":"")+'>'+esc(r[1])+'</option>';}).join("")+'</select></label>'+
+    '<label class="f" for="rd-here">Read something here<select id="rd-here"><option value="">Choose a reading</option>'+[[1,"Recommended: 3 pages to measure your speed"],[0,"Longer readings"]].map(function(g){ return '<optgroup label="'+g[1]+'">'+READABLE.filter(function(r){ return !!r[5]===!!g[0]; }).map(function(r){return '<option value="'+r[0]+'"'+(rdFor===r[0]?" selected":"")+'>'+esc(r[1])+'</option>';}).join("")+'</optgroup>'; }).join("")+'</select></label>'+
+    '<p class="note">To measure your speed, pick one of the two recommended sections. Three pages are enough.</p>'+
     '<p class="note">The Harrison chapter and the IFRS 18 readings are always here. The Elliott and Melville chapters open once you have added your copies on a topic page; they stay on this device.</p>'+
     '<details class="pl-more"><summary>Or upload a chapter you have as a PDF</summary><label class="f" for="rd-for">Which reading is it? (optional)<select id="rd-for"><option value="">Not on the list</option>'+reqList().map(function(r){return '<option value="'+r[0]+'"'+(rdFor===r[0]?" selected":"")+'>'+r[1]+'</option>';}).join("")+'</select></label>'+
     '<label class="f" for="rd-file">PDF file<input type="file" id="rd-file" accept="application/pdf,.pdf"></label></details>'+
