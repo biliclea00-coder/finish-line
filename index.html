@@ -227,6 +227,16 @@ label.btn.small:focus-within{outline:3px solid var(--accent);outline-offset:2px}
 .pl-one{font-family:var(--display);font-size:22px;font-weight:700;line-height:1.25}
 .pl-more summary{cursor:pointer;color:var(--deep);font-weight:600;padding:6px 0}
 .pl-more[open]{display:flex;flex-direction:column;gap:12px}
+.pl-big{gap:14px}
+.pl-big h1{font-size:24px}
+.pl-calm{font-family:var(--display);font-size:18px;color:var(--good)}
+.pl-cost{margin-top:-6px}
+.btn.picked{outline:3px solid var(--good);outline-offset:2px}
+.pl-sleep{flex-direction:row;align-items:flex-start;gap:10px;background:var(--info-bg)}
+.pl-dayrow summary{list-style:none;cursor:pointer;display:flex;flex-direction:column;gap:8px}
+.pl-dayrow summary::-webkit-details-marker{display:none}
+.pl-progress.small{height:6px}
+.pl-steps,.pl-ev{}
 .pl-pin.home span{border-color:var(--deep)}
 </style>
 </head>
@@ -379,7 +389,7 @@ var DEVNOTES = [
  ["Keep for later", [
   ["Licensing","Slides and cases belong to the professor and school. Textbooks are licensed. Ignored for the prototype by your decision; needs a professor on board before any public use.","Open"],
   ["Pictures","The boardroom and the green-roof housing look like real photographs, not generated images. Replace them with generated ones before showing this publicly.","Open"],
-  ["Course files","Slides, cases, solutions and the 2023 exam are stored encrypted. They open only for signed-in accounts on the course access list (now: Lea). Add people in Supabase, table course_access.","Built"],
+  ["Course files","Slides, cases, solutions and the 2023 exam are open to anyone with the link, by Lea's decision for the prototype. Licensing still needs the professor before any real launch.","Decided"],
   ["Further readings","Company annual reports are public documents and are served openly. Official links would be the cleaner long-term choice.","Open"],
   ["Public link","While the prototype link is public, attached PDFs are stored with it. Keep the link private before attaching licensed chapters.","Open"],
   ["Sci-Hub","Left out. It shares papers without publisher permission. Use open-access checks and library links.","Decided"],
@@ -985,7 +995,7 @@ function finishReading(pagesRead, full){
 var DV = {cache:{}, loading:"", err:"", key:null, doc:null, id:"", page:1, zoom:1};
 function courseKey(){
   if(DV.key) return Promise.resolve(DV.key);
-  if(!sb || !sbUser) return Promise.reject("signin");
+  if(!sb) return Promise.reject("viewer");
   return sb.from("course_keys").select("k").eq("course","ifrs-cm01").maybeSingle().then(function(r){
     if(r.error || !r.data) throw "noaccess";
     var raw = Uint8Array.from(atob(r.data.k), function(c){ return c.charCodeAt(0); });

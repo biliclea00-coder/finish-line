@@ -15,12 +15,12 @@ function seed(){
   return {
     v:1, confirmed:false, mode:"car", stepMin:50,
     exam:{date:d.getFullYear()+"-"+("0"+(d.getMonth()+1)).slice(-2)+"-"+("0"+d.getDate()).slice(-2), time:"10:00", place:"home"},
-    sleep:{bed:"23:30", wake:"07:30"},
+    sleepNow:{bed:"00:30", wake:"08:30"},
     places:[{id:"home", name:"Home", kind:"home", addr:"", lat:52.52, lon:13.405, park:5}],
     events:[], travel:{}, decisions:{}, done:{}, geo:{home:"none"}
   };
 }
-function P(){ var s = S(); if(!s.plan) s.plan = seed(); return s.plan; }
+function P(){ var s = S(); if(!s.plan) s.plan = seed(); if(!s.plan.sleepNow) s.plan.sleepNow = {bed:"00:30", wake:"08:30"}; return s.plan; }
 function save(){ FL.save(); }
 
 /* ---------- time helpers ---------- */
@@ -69,11 +69,45 @@ function geocodeSeeds(){
   });
 }
 
+/* ---------- sleep, one night at a time: from when you fall asleep now towards what exam morning needs ---------- */
+function leaveFor(date){
+  var p = P(), evs = p.events.filter(function(e){ return e.date===date && !removed(e) && e.place && e.place!=="home"; }).map(function(e){ return {place:e.place, s:m(e.start), exam:false}; });
+  if(date === p.exam.date) evs.push({place:p.exam.place, s:m(p.exam.time)-15, exam:true});
+  evs.sort(function(a,b){ return a.s-b.s; }); var ev = evs[0]; if(!ev) return null;
+  var t = travel("home", ev.place), B = place(ev.place), lv = ev.s - t.min - (B ? +B.park||0 : 0);
+  if(p.mode==="car" && rush(lv)) lv -= Math.round(t.min*0.25);
+  return lv;
+}
+function bedMin(t){ var x = m(t); return x < 720 ? x + 1440 : x; }
+var nightCache = null;
+function nights(){
+  var p = P(), ds = days(), n = ds.length - 1, start = bedMin(p.sleepNow.bed), out = {bed:{}, wake:{}, natural:{}};
+  var exLeave = leaveFor(p.exam.date); var end = (exLeave === null ? 480 : exLeave - 60) + 1440 - 480;
+  for(var i=0;i<n;i++){
+    var b = n ? start + (end - start) * (i+1) / n : end; b = Math.round(b/15)*15;
+    var nl = leaveFor(ds[i+1]); if(nl !== null) b = Math.min(b, nl - 60 + 1440 - 450);
+    out.bed[ds[i]] = b;
+  }
+  out.bed[ds[n]] = start;
+  ds.forEach(function(d, i){
+    var nat = i === 0 ? m(p.sleepNow.wake) : out.bed[ds[i-1]] - 1440 + 480, lv = leaveFor(d);
+    out.natural[d] = nat; out.wake[d] = lv !== null ? Math.min(nat, lv - 60) : nat;
+  });
+  return out;
+}
+var KIND_WORDS = ["One night at a time.", "Small steps count.", "You don't have to be perfect, just a little earlier than last night.", "Future you on Tuesday morning says thank you.", "Lights off is the whole task. Sleep follows."];
+function tonightLine(date){
+  var p = P(), nt = nights(), ds = days(), i = ds.indexOf(date), b = nt.bed[date]; if(b === undefined || date === p.exam.date) return "";
+  var prev = i > 0 ? nt.bed[ds[i-1]] : bedMin(p.sleepNow.bed), diff = prev - b;
+  var w = KIND_WORDS[i % KIND_WORDS.length];
+  return "Tonight: in bed by "+hm(b)+". "+(diff > 0 ? diff+" min earlier than "+(i>0?"last night":"lately")+". " : diff===0 ? "Same as last night. " : "")+w;
+}
+
 /* ---------- the day model: fixed events, travel legs with leave / park / inside, free slots ---------- */
 function removed(ev){ var d = P().decisions["ev-"+ev.id]; return d === "drop"; }
 function dayModel(date){
-  var p = P(), wake = m(p.sleep.wake), bed = m(p.sleep.bed); if(bed < wake) bed += 1440;
-  if(p.decisions.sleep === "late" && date !== p.exam.date && date !== addDays(p.exam.date,-1)) bed = Math.max(bed, 1470);
+  var p = P(), nt = nights(), wake = nt.wake[date], bed = nt.bed[date] !== undefined ? nt.bed[date] : 1440 + 0;
+  if(date === p.exam.date) bed = 1380;
   var evs = p.events.filter(function(e){ return e.date===date && !removed(e); }).map(function(e){ return {id:e.id, title:e.title, kind:e.kind, place:e.place, s:m(e.start), e:m(e.end), flex:e.flex}; });
   if(date === p.exam.date) evs.push({id:"exam", title:"IFRS exam", kind:"exam", place:p.exam.place, s:m(p.exam.time), e:m(p.exam.time)+120, flex:"fixed"});
   evs.sort(function(a,b){ return a.s-b.s; });
@@ -83,8 +117,8 @@ function dayModel(date){
       var t = travel(at, ev.place), B = place(ev.place), park = B ? (+B.park||0) : 0;
       var buffer = 0, drive = t.min, inside = ev.s - (ev.kind==="exam" ? 15 : 0), leave = inside - drive - park;
       if(p.mode==="car" && rush(leave)) { buffer = Math.round(drive*0.25); leave -= buffer; }
-      if(!items.length && leave - 30 < wake){ issues.push({type:"early", date:date, text:"To be at "+ev.title+" on time you leave at "+hm(leave)+". Set your alarm for about "+hm(leave-45)+" that day (normally "+hm(wake)+")."}); free = leave - 45; }
-      else if(leave < free) issues.push({type:"tight", date:date, text:"Tight: from "+(place(at)||{}).name+" to "+ev.title+" you would need to leave at "+hm(leave)+", but you are only free at "+hm(free)+". Check this drive below."});
+      if(!items.length && nt.natural[date] > wake + 45){ var slept = Math.round((wake + 1440 - (nt.bed[addDays(date,-1)] || bedMin(p.sleepNow.bed)))/30)/2; issues.push({type:"early", date:date, text:"Early start: you leave at "+hm(leave)+", so your alarm is "+hm(wake)+". That is about "+slept+" h of sleep if you're in bed by the target the night before. The plan already moved that bedtime earlier for you.", calm:"Good to know now, not that morning."}); }
+      else if(leave < free) issues.push({type:"tight", date:date, text:"From "+(place(at)||{}).name+" to "+ev.title+" you would need to leave at "+hm(leave)+", but you're only free at "+hm(free)+". The double-check on this drive will tell you if it's really that tight.", calm:"Estimates are often too careful. Let's check it."});
       legs.push({from:at, to:ev.place, leave:leave, park:inside-park, inside:inside, drive:drive, buffer:buffer, src:t.src, line:t.line, date:date, key:tkey(at, ev.place, p.mode), forEvent:ev.title});
       items.push({type:"travel", s:leave, e:inside, leg:legs[legs.length-1]});
       at = ev.place;
@@ -109,7 +143,7 @@ function dayModel(date){
     if(b[2].type==="event" && (b[2].ev.kind==="work" || b[2].ev.kind==="training") && b[1] >= 1260) after = bed;
     cur = Math.max(cur, after);
   });
-  var stopStudy = Math.min(bed - 60, date === addDays(p.exam.date,-1) ? Math.min(bed-60, 1290) : bed - 60);
+  var stopStudy = date === addDays(p.exam.date,-1) ? Math.min(bed-60, 1290) : bed - 60;
   if(stopStudy - cur >= 20) slots.push({s:cur, e:stopStudy, place:where});
   [[750,795],[1140,1185]].forEach(function(meal){
     var out = []; slots.forEach(function(sl){
@@ -166,7 +200,7 @@ function plan(){
 }
 
 /* ---------- shared rendering pieces ---------- */
-var STEPS = [["1","Exam & travel"],["2","Places"],["3","Fixed week"],["4","Study slots"]];
+var STEPS = [["1","Exam & travel"],["2","Places"],["3","Fixed week"],["4","Study days"]];
 function stepper(cur){
   return '<ol class="pl-steps">'+STEPS.map(function(s){ return '<li'+(s[0]===cur?' aria-current="step"':'')+'><a href="#plan/setup/'+s[0]+'">'+s[0]+'. '+s[1]+'</a></li>'; }).join("")+'<li'+(cur==="check"?' aria-current="step"':'')+'><a href="#plan/check">5. Check</a></li></ol>';
 }
@@ -191,7 +225,7 @@ function timeline(md){
   });
   md.slots.forEach(function(sl){ rows.push([sl.s, '<div class="pl-row st'+(P().done[sl.id]?" done":"")+'">'+slotText(sl)+'</div>']); });
   rows.sort(function(a,b){ return a[0]-b[0]; });
-  return '<div class="pl-tl"><div class="pl-row wake">'+hm(md.wake)+' · wake up · lunch 12:30 and dinner 19:00 are kept free · 15 min to get ready before each departure</div>'+rows.map(function(r){ return r[1]; }).join("")+'<div class="pl-row wake">'+hm(md.bed)+' · sleep</div></div>';
+  return '<div class="pl-tl"><div class="pl-row wake">'+hm(md.wake)+' · wake up</div>'+rows.map(function(r){ return r[1]; }).join("")+'<div class="pl-row wake">'+hm(md.bed)+' · in bed</div></div>';
 }
 var selDay = null, moreOpen = false;
 
@@ -218,7 +252,9 @@ function vHome(){
   else if(nx && nx.n && nx.n.kind==="leave"){ var l = nx.n.x.leg; line = (nx.day===today?"":dayName(nx.day)+": ")+"Leave at "+hm(l.leave)+" for "+((place(l.to)||{}).name||""); sub = "Park "+hm(l.park)+" · inside "+hm(l.inside); }
   else if(nx && nx.n){ var sl = nx.n.x; line = (nx.day===today?"Next":dayName(nx.day))+": "+hm(sl.s)+" · "+(sl.kind==="learn" && sl.parts && sl.parts[0] ? "Topic "+sl.parts[0].step.topic+", "+sl.parts[0].step.name : sl.kind==="cards" ? "question cards" : "review"); sub = ((place(sl.place)||{}).name||"")+" · "+Math.round(sl.len)+" min"; }
   else { line = "Nothing planned right now."; }
+  var tl = tonightLine(today);
   h += '<section class="card pl-next"><div class="eyebrow">Only this</div><p class="pl-one">'+esc(line)+'</p>'+(sub?'<p class="note">'+esc(sub)+'</p>':'')+'</section>';
+  if(tl) h += '<section class="card pl-sleep"><span aria-hidden="true">🌙</span><p>'+esc(tl)+'</p></section>';
   h += '<details class="pl-more"><summary>Show my whole day</summary>';
   h += '<div class="pl-days" role="tablist">'+ds.map(function(d){ return '<button role="tab" class="pl-day'+(d===selDay?" on":"")+(d===p.exam.date?" exam":"")+'" data-pday="'+d+'"><span>'+dayName(d)+'</span></button>'; }).join("")+'</div>';
   var md = pl.models[ds.indexOf(selDay)];
@@ -234,8 +270,10 @@ function vStep1(){
     '<label class="f">Where<select data-pf="exam.place">'+p.places.map(function(x){ return '<option value="'+x.id+'"'+(x.id===p.exam.place?" selected":"")+'>'+esc(x.name)+'</option>'; }).join("")+'</select></label><p class="note">On exam day the plan aims for you to be inside 15 minutes early.</p></section>';
   h += '<section class="card"><h2>How do you usually get around?</h2><div class="opts">'+Object.keys(MODE).map(function(k){ return '<button type="button" class="opt" data-pmode="'+k+'" aria-pressed="'+(p.mode===k)+'">'+MODE[k]+'</button>'; }).join("")+'</div>'+
     '<p class="note">Car, bike and walking times come from OpenStreetMap routing. Public transport times come from the BVG timetable. In rush hour (7:00–9:30, 16:00–19:00) driving gets 25% extra.</p></section>';
-  h += '<section class="card"><h2>Your usual sleep</h2><p class="note">Every night from now until the exam. The plan keeps these hours free on all days and never puts studying in them.</p><div class="two"><label class="f">Usually in bed by<input type="text" inputmode="numeric" data-pf="sleep.bed" value="'+esc(p.sleep.bed)+'"></label><label class="f">Usually up at<input type="text" inputmode="numeric" data-pf="sleep.wake" value="'+esc(p.sleep.wake)+'"></label></div>'+
-    '<label class="f">Minutes per ladder step, first pass<input type="number" min="15" max="120" data-pf="stepMin" value="'+esc(p.stepMin)+'"></label><p class="note">Your measured pace from practice will replace this later.</p></section>';
+  h += '<section class="card"><h2>Sleep, honestly</h2><p class="lead">When do you fall asleep these days? No judgement. Lots of people with ADHD drift late. This only tells the plan where to start.</p>'+
+    '<div class="two"><label class="f">Lately I fall asleep around<input type="text" inputmode="numeric" data-pf="sleepNow.bed" value="'+esc(p.sleepNow.bed)+'"></label><label class="f">and wake up around<input type="text" inputmode="numeric" data-pf="sleepNow.wake" value="'+esc(p.sleepNow.wake)+'"></label></div>'+
+    '<p class="note">From there the plan moves bedtime a little earlier each night, so that on exam morning you wake up rested without a shock. You only ever see tonight\'s target.</p>'+
+    '<label class="f">Minutes per ladder step, first pass<input type="number" min="15" max="120" data-pf="stepMin" value="'+esc(p.stepMin)+'"></label></section>';
   return h+'<a class="btn" href="#plan/setup/2">Next: your places</a>';
 }
 var searchRes = [], searchMsg = "";
@@ -269,19 +307,30 @@ function vStep3(){
   return h+'<a class="btn" href="#plan/setup/4">Next: see your study slots</a>';
 }
 function vStep4(){
-  var pl = plan(), tot = pl.slots.reduce(function(a,b){ return a+b.len; },0);
-  var h = stepper("4")+'<div class="stack"><h1>Potential study slots</h1><p class="lead">'+(Math.round(tot/6)/10)+' hours of free time across '+pl.models.length+' days. Long quiet slots get new ladder steps, highest exam points first. Short or noisy slots get question cards.</p></div>';
+  var pl = plan(), tot = pl.slots.reduce(function(a,b){ return a+b.len; },0), doneSteps = {}, count = 0;
+  var h = stepper("4")+'<div class="stack"><h1>Your study days</h1><p class="lead">'+(Math.round(tot/6)/10)+' free hours until the exam. Topics with the most exam points come first. Tap a day for its details.</p></div>';
+  var per = {}; pl.queue.forEach(function(q){ per[q.topic] = (per[q.topic]||0)+1; });
   pl.models.forEach(function(md){
-    h += '<section class="card"><div class="row"><h2>'+dayName(md.date,true)+'</h2><span class="note">'+md.slots.length+' slot'+(md.slots.length===1?"":"s")+'</span></div>'+(md.slots.length?md.slots.map(function(sl){ return '<div class="pl-row st">'+slotText(sl)+'</div>'; }).join(""):'<p class="note">No study slot on this day.</p>')+'</section>';
+    var touched = {};
+    md.slots.forEach(function(sl){ (sl.parts||[]).forEach(function(x){ touched[x.step.topic] = 1; if(!x.cont && !doneSteps[x.step.id]){ doneSteps[x.step.id] = 1; count++; } }); });
+    var byTopic = {}; Object.keys(doneSteps).forEach(function(id){ pl.queue.forEach(function(q){ if(q.id===id) byTopic[q.topic] = (byTopic[q.topic]||0)+1; }); });
+    var chips = Object.keys(touched).map(function(t){ var pc = Math.round((byTopic[t]||0)/per[t]*100); return '<span class="pill '+(pc>=100?"solid":"prog")+'">Topic '+t+(pc>=100?" ✓":" "+pc+"%")+'</span>'; }).join(" ");
+    var hrs = Math.round(md.slots.reduce(function(a,b){ return a+b.len; },0)/6)/10, pct = Math.round(count/pl.total*100);
+    h += '<details class="card pl-dayrow"><summary><div class="row"><b>'+dayName(md.date)+'</b><span class="note">'+(md.rest?"rest day":md.date===P().exam.date?"exam":hrs+" h")+'</span></div><div class="mat">'+(chips||'<span class="note">'+(md.rest?"No studying today.":"Review and question cards.")+'</span>')+'</div>'+
+      '<div class="pl-progress small"><i style="width:'+pct+'%"></i></div><span class="note">By tonight: '+pct+'% of the course</span></summary>'+
+      md.slots.map(function(sl){ return '<div class="pl-row st">'+slotText(sl)+'</div>'; }).join("")+'</details>';
   });
-  h += '<section class="card"><h2>Coverage</h2><p>'+pl.covered+' of '+pl.total+' ladder steps fit'+(pl.minsLeft>0?', about '+Math.round(pl.minsLeft/6)/10+' hours are missing.':'.')+'</p></section>';
-  return h+'<a class="btn" href="#plan/check">Next: check the plan</a>';
+  return h+'<a class="btn" href="#plan/check">Next: check the week, one thing at a time</a>';
 }
 
 /* ---------- check: flagged trips and trade-off cards ---------- */
 function gmaps(l){ var A = place(l.from), B = place(l.to); return "https://www.google.com/maps/dir/?api=1&origin="+A.lat+","+A.lon+"&destination="+B.lat+","+B.lon+"&travelmode="+({car:"driving",transit:"transit",bike:"bicycling",walk:"walking"}[P().mode]); }
 function cards(pl){
-  var p = P(), out = [], lastDay = addDays(p.exam.date,-1), short = pl.minsLeft > 0;
+  var p = P(), out = [], lastDay = addDays(p.exam.date,-1);
+  /* recommendations are judged against the week before any of these choices, so they don't flip once you choose */
+  var keep = {}; Object.keys(p.decisions).forEach(function(k){ if(/^ev-|^coverage/.test(k)){ keep[k] = p.decisions[k]; delete p.decisions[k]; } });
+  var base = plan(); Object.keys(keep).forEach(function(k){ p.decisions[k] = keep[k]; });
+  var short = base.minsLeft > 0, nowShort = pl.minsLeft > 0; pl = {minsLeft:base.minsLeft};
   p.events.forEach(function(e){
     if(e.flex==="fixed") return;
     var dur = m(e.end)-m(e.start), gain = Math.round((dur + 2*travel("home", e.place).min)/6)/10, before = e.date === lastDay;
@@ -294,48 +343,64 @@ function cards(pl){
       opts:[["keep", e.kind==="work"?"Keep the shift":"Go"],["drop", e.flex==="swap" ? (e.kind==="work"?"Swap or cancel the shift":"Move it") : "Skip it and study"]],
       cost:{keep:"No change.", drop:"Frees about "+gain+" h including travel."}});
   });
-  out.push({id:"sleep", title:"Sleep this week", rec:"protect",
-    why:"Losing a night of sleep before learning cuts how much you remember by a medium amount (Newbury et al. 2021). Steady sleep in the days before matters more than one good last night.",
-    opts:[["protect","Protect sleep: last slot ends an hour before bed"],["late","Allow late study until about 00:30 on days without an early start"]],
-    cost:{protect:"Fewer hours, sharper hours.", late:"More hours now, slower learning the next day. The night before the exam stays protected."}});
   out.push({id:"noise", title:"Where you study", rec:"split",
     why:"For people with ADHD, steady background noise such as pink noise helped a little in lab tasks, while it hurt people without ADHD (Nigg et al. 2024). So new steps go to quiet places and reviews can go anywhere.",
     opts:[["split","Quiet for new steps, noise is fine for reviews"],["quiet","Always somewhere quiet"],["noisy","I focus better with background noise"]],
     cost:{split:"Recommended balance.", quiet:"Short slots at the café become cards only.", noisy:"New steps can also go to noisy places."}});
-  var tr = p.events.filter(function(e){ return e.kind==="training"; });
-  if(tr.length) out.push({id:"training", title:"Training this week ("+tr.length+" sessions)", rec:"keep",
-    why:"Pole vault is a goal of yours as well, and each session is a fixed break you already know how to keep. Dropping one only frees time if you would really study in it.",
-    opts:[["keep","Keep all sessions"],["drop1","Drop one session (I'll mark it in the fixed week)"]],
-    cost:{keep:"Same week.", drop1:"Set that session to 'Could skip' in step 3 and decide it there."}});
-  if(short || p.decisions.coverage) out.push({id:"coverage", title:"Not everything fits", rec:"focus",
+  if(nowShort || p.decisions.coverage) out.push({id:"coverage", title:"Not everything fits", rec:"focus",
     why:"Topics 2 and 3 were 44 of 75 points in the 2023 exam. Learning them properly and keeping the rest as question cards gives the most points per hour. This year's exam can be weighted differently.",
     opts:[["focus","Deep on Topics 2 and 3, question cards for 1, 4 and 5"],["once","Everything once, nothing twice"],["dropT4","Leave out Topic 4 practice (9 points in 2023)"]],
     cost:{focus:"Best points per hour.", once:"Wider but shallower.", dropT4:"Most time for the rest, a known gap."}});
   return out;
 }
+var checkIdx = 0, curLeg = null, copied = "";
+function checkItems(){
+  var p = P(), pl = plan(), items = [{t:"intro"}];
+  pl.models.forEach(function(md){ md.issues.forEach(function(x){ items.push({t:"issue", x:x, id:"i:"+x.date+x.type}); }); });
+  var seen = {};
+  pl.models.forEach(function(md){ md.legs.forEach(function(l){
+    if(!((l.drive >= 40 || (p.mode==="car" && rush(l.leave) && l.drive >= 25)) && l.to!=="home" && (l.date > todayIso() || l.leave > new Date().getHours()*60+new Date().getMinutes()))) return;
+    var g = l.key+"@"+Math.round(l.leave/30);
+    if(seen[g]){ seen[g].days.push(l.date); return; }
+    seen[g] = {t:"drive", l:l, days:[l.date], id:"d:"+g}; items.push(seen[g]);
+  }); });
+  cards(pl).forEach(function(c){ items.push({t:"card", c:c, id:"c:"+c.id}); });
+  items.push({t:"done", pl:pl, id:"done"}); items[0].id = "intro";
+  return items;
+}
 function vCheck(){
-  var p = P(), pl = plan(), risky = [], issues = [];
-  pl.models.forEach(function(md){ issues = issues.concat(md.issues); md.legs.forEach(function(l){ if((l.drive >= 30 || (p.mode==="car" && rush(l.leave) && l.drive >= 15)) && l.to!=="home" && (l.date > todayIso() || l.leave > new Date().getHours()*60+new Date().getMinutes())) risky.push(l); }); });
-  var h = stepper("check")+'<div class="stack"><h1>Check and decide</h1><p class="lead">First the trips worth a second look, then the trade-offs. Each card has a recommendation and why. You decide.</p></div>';
-  if(issues.length) h += '<section class="card"><h2>Problems</h2>'+issues.map(function(x){ return '<p class="exam">'+dayName(x.date)+': '+esc(x.text)+'</p>'; }).join("")+'</section>';
-  if(risky.length){
-    h += '<section class="card"><h2>Long or rush-hour drives</h2><p class="note">Want to double-check these in Google Maps? It opens with the route filled in. Set "Leave at" to the day and time shown, then type the minutes here.</p>'+risky.map(function(l){
-      var t = p.travel[l.key] || {}, state = t.checkedState;
-      return '<div class="pl-row tr">'+dayName(l.date)+' · '+legText(l)+'<div class="row" style="justify-content:flex-start;flex-wrap:wrap">'+
-        (state==="no" ? '<span class="note">Kept the estimate.</span>' : state==="yes" || t.manual ? '<a class="btn small ghost" href="'+gmaps(l)+'" target="_blank" rel="noopener">Open in Google Maps</a><label class="f" style="max-width:150px">Minutes<input type="number" min="1" data-pman="'+l.key+'" value="'+esc(t.manual||"")+'"></label>'
-          : '<button class="btn small ghost" data-pchk="'+l.key+'|yes">Yes, double-check</button><button class="btn small ghost" data-pchk="'+l.key+'|no">No, keep it</button>')+'</div></div>';
-    }).join("")+'</section>';
+  var p = P(), items = checkItems(); checkIdx = Math.max(0, Math.min(checkIdx, items.length-1)); var it = items[checkIdx]; curLeg = null;
+  var h = '<div class="row"><a class="back" href="#plan">← Calendar</a><span class="note">'+(checkIdx+1)+' of '+items.length+'</span></div><div class="pl-progress"><i style="width:'+Math.round((checkIdx+1)/items.length*100)+'%"></i></div>';
+  var nav = function(next, label){ return '<div class="two">'+(checkIdx>0?'<button class="btn ghost" data-pck="-1">Back</button>':'<span></span>')+(next?'<button class="btn" data-pck="1">'+(label||"Next")+'</button>':'<span></span>')+'</div>'; };
+  if(it.t==="intro"){
+    var n = items.length - 2;
+    h += '<section class="card pl-big"><h1>Let\'s check your week</h1><p class="lead">'+n+' small things, one at a time. About '+Math.max(2, Math.round(n/2))+' minutes. Nothing here is a test, and every choice can be changed later.</p></section>'+nav(true, "Start");
   }
-  var cs = cards(pl), open = cs.filter(function(c){ return !p.decisions[c.id]; }).length;
-  h += cs.map(function(c){
-    var cur = p.decisions[c.id];
-    return '<section class="card pl-card"><h2>'+esc(c.title)+'</h2><p class="pl-rec"><b>Recommended:</b> '+esc(c.opts.filter(function(o){ return o[0]===c.rec; })[0][1])+'.<br><span>'+esc(c.why)+'</span></p><div class="opts">'+
-      c.opts.map(function(o){ return '<button type="button" class="opt" data-pdec="'+c.id+'|'+o[0]+'" aria-pressed="'+(cur===o[0])+'">'+esc(o[1])+(o[0]===c.rec?' · recommended':'')+'</button>'; }).join("")+'</div>'+
-      (cur?'<p class="note">Your choice: '+esc(c.cost[cur]||"")+'</p>':'<p class="note">Your call. The recommendation is a default, not a rule.</p>')+'</section>';
-  }).join("");
-  h += '<section class="card"><h2>Result</h2><p>'+pl.covered+' of '+pl.total+' ladder steps fit'+(pl.minsLeft>0?'; about '+Math.round(pl.minsLeft/6)/10+' h still missing.':'.')+'</p></section>';
-  h += open ? '<button class="btn" disabled>Decide the '+open+' open card'+(open===1?"":"s")+' to confirm</button><button class="btn ghost" id="pl-acceptrec">Take all recommendations</button>' : '<button class="btn" id="pl-confirm">Confirm my plan</button>';
-  h += '<p class="note">Sources: Newbury CR et al. Psychol Bull. 2021;147(11):1215–40. Nigg JT et al. J Am Acad Child Adolesc Psychiatry. 2024;63(8):778–88.</p>';
+  if(it.t==="issue"){
+    h += '<section class="card pl-big"><div class="eyebrow">'+dayName(it.x.date, true)+'</div><p class="pl-calm">'+esc(it.x.calm||"Good that this shows up now.")+'</p><p>'+esc(it.x.text)+'</p></section>'+nav(true, "Okay");
+  }
+  if(it.t==="drive"){
+    var l = it.l, t = p.travel[l.key] || {}; curLeg = l;
+    h += '<section class="card pl-big"><div class="eyebrow">'+it.days.map(function(d){ return dayName(d); }).join(" & ")+' · a longer drive</div><div id="pl-map" class="pl-map" aria-label="This drive"></div><p>'+legText(l)+'</p>';
+    if(t.checkedState==="yes" || t.manual){
+      h += '<p class="note">In Google Maps, tap "Leave at" and pick '+dayName(l.date)+' '+hm(l.leave)+'. Then type the minutes it shows.</p><a class="btn ghost" href="'+gmaps(l)+'" target="_blank" rel="noopener">Open in Google Maps</a><label class="f">Minutes Google Maps shows<input type="number" min="1" data-pman="'+l.key+'" value="'+esc(t.manual||"")+'"></label></section>'+nav(true, t.manual?"Saved, next":"Next");
+    } else {
+      h += '<p class="lead">Want to double-check this one in Google Maps?</p><div class="two"><button class="btn ghost" data-pchk="'+l.key+'|no">No, it\'s fine</button><button class="btn" data-pchk="'+l.key+'|yes">Yes, check</button></div></section>'+nav(false);
+    }
+  }
+  if(it.t==="card"){
+    var c = it.c, cur = p.decisions[c.id], recO = c.opts.filter(function(o){ return o[0]===c.rec; })[0];
+    h += '<section class="card pl-big"><div class="eyebrow">Decide</div><h1>'+esc(c.title)+'</h1><div class="pl-rec"><b>I\'d go with: '+esc(recO[1])+'</b><br><span>'+esc(c.why)+'</span></div>'+
+      c.opts.map(function(o){ return '<button type="button" class="btn '+(o[0]===c.rec?"":"ghost")+(cur===o[0]?" picked":"")+'" data-pdec="'+c.id+'|'+o[0]+'">'+esc(o[1])+(cur===o[0]?" ✓":"")+'</button><p class="note pl-cost">'+esc(c.cost[o[0]]||"")+'</p>'; }).join("")+
+      '<p class="note">Your call. Either way the plan adjusts.</p>';
+    if(cur==="drop" && /^ev-/.test(c.id)){ var ev = p.events.filter(function(e){ return "ev-"+e.id===c.id; })[0];
+      if(ev && ev.kind==="work") h += '<button class="btn ghost" data-pcopy="'+ev.id+'">'+(copied===ev.id?"Copied ✓":"Copy a message for your manager")+'</button>'; }
+    h += '</section>'+nav(!!cur);
+  }
+  if(it.t==="done"){
+    var pl = it.pl, pct = Math.round(pl.covered/pl.total*100);
+    h += '<section class="card pl-big"><h1>That\'s everything</h1><p class="lead">With your choices, '+pct+'% of the ladder steps fit before the exam'+(pl.minsLeft>0?'. The rest becomes question cards, so nothing is left completely untouched.':'.')+'</p><p>You only ever need to look at the next thing. The calendar will show it.</p></section><button class="btn" id="pl-confirm">Confirm my plan</button>'+nav(false);
+  }
   return h;
 }
 
@@ -373,7 +438,12 @@ function drawMap(r){
   map = L.map(el, {zoomControl:false, attributionControl:true}).setView([52.49, 13.33], 10);
   L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {maxZoom:18, attribution:'© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'}).addTo(map);
   var pts = [], icon = function(txt, cls){ return L.divIcon({className:"pl-pin "+(cls||""), html:'<span>'+txt+'</span>', iconSize:null}); };
-  if(/^plan\/setup\/2/.test(r)){
+  if(r==="plan/check" && curLeg){
+    var A0 = place(curLeg.from), B0 = place(curLeg.to), ln0 = curLeg.line || [[A0.lat,A0.lon],[B0.lat,B0.lon]];
+    L.polyline(ln0, {color:"#D9482B", weight:5}).addTo(map); pts = ln0.slice();
+    L.marker([A0.lat,A0.lon], {icon:icon(esc(A0.name), A0.kind)}).addTo(map); L.marker([B0.lat,B0.lon], {icon:icon(esc(B0.name), B0.kind)}).addTo(map);
+  } else if(r==="plan/check"){ if(map){ map.remove(); map = null; } return; }
+  else if(/^plan\/setup\/2/.test(r)){
     p.places.forEach(function(x){ L.marker([x.lat,x.lon], {icon:icon(esc(x.name), x.kind)}).addTo(map); pts.push([x.lat,x.lon]); });
   } else {
     var md = dayModel(selDay), used = {};
@@ -415,8 +485,14 @@ app.addEventListener("click", function(e){
   if(d.padd){ var r0 = searchRes[+d.padd]; if(r0){ var id = "p"+Date.now().toString(36); p.places.push({id:id, name:r0.label.split(",")[0], kind:"cafe", addr:r0.label, lat:r0.lat, lon:r0.lon, park:10}); p.geo[id] = "ok"; searchRes = []; searchMsg = ""; save(); FL.render(); } return; }
   if(d.pedel){ p.events = p.events.filter(function(x){ return x.id!==d.pedel; }); save(); FL.render(); return; }
   if(d.peadd){ p.events.push({id:"e"+Date.now().toString(36), title:"New", kind:"other", place:"home", date:d.peadd, start:"10:00", end:"11:00", flex:"fixed"}); save(); FL.render(); return; }
-  if(d.pchk){ var a = d.pchk.split("|"), tt = p.travel[a[0]] = p.travel[a[0]] || {}; tt.checkedState = a[1]; save(); FL.render(); return; }
-  if(d.pdec){ var b = d.pdec.split("|"); p.decisions[b[0]] = b[1]; p.confirmed = false; save(); FL.render(); return; }
+  if(d.pchk){ var a = d.pchk.split("|"), tt = p.travel[a[0]] = p.travel[a[0]] || {}; tt.checkedState = a[1]; save(); if(a[1]==="no") checkIdx++; FL.render(); window.scrollTo(0,0); return; }
+  if(d.pdec){ var b = d.pdec.split("|"), before = checkItems(), stay = /^ev-/.test(b[0]) && b[1]==="drop" && (p.events.filter(function(e){ return "ev-"+e.id===b[0]; })[0]||{}).kind==="work";
+    var target = before[Math.min(checkIdx + (stay?0:1), before.length-1)].id;
+    p.decisions[b[0]] = b[1]; p.confirmed = false; save();
+    var after = checkItems(), ni = after.map(function(x){ return x.id; }).indexOf(target); checkIdx = ni >= 0 ? ni : Math.min(checkIdx+1, after.length-1);
+    FL.render(); window.scrollTo(0,0); return; }
+  if(d.pck){ checkIdx += +d.pck; FL.render(); window.scrollTo(0,0); return; }
+  if(d.pcopy){ var evc = p.events.filter(function(z){ return z.id===d.pcopy; })[0]; if(evc && navigator.clipboard){ navigator.clipboard.writeText("Hi! Could I swap or give away my shift on "+dayName(evc.date,true)+" ("+evc.start+"–"+evc.end+")? My exam is the next morning. Happy to take another shift next week instead. Thank you!").then(function(){ copied = evc.id; FL.render(); }); } return; }
   if(d.pdone){ p.done[d.pdone] = true; save(); FL.render(); if(window.FL.confetti) window.FL.confetti(); return; }
   if(t.id==="pl-acceptrec"){ cards(plan()).forEach(function(c){ if(!p.decisions[c.id]) p.decisions[c.id] = c.rec; }); save(); FL.render(); return; }
   if(t.id==="pl-confirm"){ p.confirmed = true; save(); FL.go("plan/line"); return; }
