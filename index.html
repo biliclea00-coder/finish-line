@@ -1447,8 +1447,8 @@ function vDoc(dr){
   var cx = docCtx(dr), tn = cx ? cx.topic : topicOfDoc(dr.id), back = tn ? '<a class="back" href="#topic-'+tn+'">← Topic '+tn+'</a>' : '<a class="back" href="#map">← Course map</a>';
   var h = back+(cx ? '<div class="stack"><div class="eyebrow">'+esc(cx.eyebrow)+'</div><h1>'+esc(cx.title)+'</h1><p class="note">'+esc(d.t)+' · pages '+cx.from+(cx.to!==cx.from?'–'+cx.to:'')+'</p></div>' : '<div class="stack"><h1>'+esc(d.t)+'</h1></div>');
   if(DV.err){
-    if(DV.err==="booksignin") return h+'<section class="card"><p>The textbooks are stored for your account. <a href="#account">Sign in</a> and this page opens. The first time takes a moment (Elliott is 20 MB); after that it opens straight from this device.</p></section>';
-    if(DV.err==="booknoaccess") return h+'<section class="card"><p>This account cannot open the textbooks. They open only for the course owner\'s account.</p></section>';
+    if(DV.err==="booksignin") return h+'<section class="card"><p>The textbooks open for any signed-in account. <a href="#account">Sign in or sign up</a> and this page opens. The first time takes a moment (Elliott is 20 MB); after that it opens straight from this device.</p></section>';
+    if(DV.err==="booknoaccess") return h+'<section class="card"><p>This account cannot open the textbooks. Sign out and back in, then try again.</p></section>';
     if(DV.err==="nolocal") return h+'<section class="card"><p>Your copy of this book is not on this device yet. Choose the PDF once; it stays on this phone or computer only and is never uploaded.</p>'+bookPicker(d.local)+'</section>';
     var msg = {signin:'Course files open for signed-in accounts with course access. <a href="#account">Sign in</a> first.', noaccess:'Your account does not have access to the course files yet. Ask the course owner to add your email.', viewer:'The PDF viewer could not load. Reload the page.', missing:'This file is not on the site yet.'}[DV.err] || 'The file could not be opened. Check your connection and try again.';
     return h+'<section class="card"><p>'+msg+'</p></section>';
@@ -1464,6 +1464,7 @@ function vDoc(dr){
   var bp = d.local ? pg-BOOKS[d.local].off : pg, sfx = dr.ctx ? '/'+dr.ctx : '';
   var where = cx ? (bp < cx.from ? ' · before your section' : bp > cx.to ? ' · past your section' : ' · '+(bp-cx.from+1)+' of '+(cx.to-cx.from+1)) : '';
   h += '<div class="readbar"><span class="pg">'+(d.local ? 'Book page '+bp+where : 'Page '+pg+' of '+total)+'</span><label class="pg">Go to <input type="number" min="1" max="'+total+'" inputmode="numeric" id="dv-go" value="'+bp+'" style="width:70px"></label></div>';
+  if(d.local) h += '<p class="note">Textbook © its publisher. Shown here for personal study and the hackathon demo only, not for redistribution.</p>';
   h += '<div class="pdfwrap"><canvas id="dvc" aria-label="Page '+pg+'"></canvas></div>';
   h += '<div class="two"><a class="btn ghost" href="#doc/'+dr.id+'/'+Math.max(1,pg-1)+sfx+'"'+(pg<=1?' aria-disabled="true"':'')+'>Previous</a><a class="btn" href="#doc/'+dr.id+'/'+Math.min(total,pg+1)+sfx+'"'+(pg>=total?' aria-disabled="true"':'')+'>Next</a></div>';
   h += '<div class="two"><button class="btn ghost" id="dv-zout"'+(DV.zoom<=1?" disabled":"")+'>Zoom out</button><button class="btn ghost" id="dv-zin"'+(DV.zoom>=4?" disabled":"")+'>Zoom in'+(DV.zoom>1?' ('+DV.zoom+'×)':'')+'</button></div>';
