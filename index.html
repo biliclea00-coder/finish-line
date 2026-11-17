@@ -319,6 +319,8 @@ var DOCS = {
  "t4-slides":{t:"Topic 4 slides",c:1,p:40},"t4-cases":{t:"Topic 4 exercises",c:1,p:3},"t4-solutions":{t:"Topic 4 solutions",c:1,p:6},
  "t5-slides":{t:"Topic 5 slides",c:1,p:40},"t5-cases":{t:"Topic 5 exercises",c:1,p:9},"t5-solutions":{t:"Topic 5 solutions",c:1,p:15},
  "exam-2023":{t:"Exam CM01, November 2023",c:1,p:9},
+ "bk-elliott":{t:"Elliott & Elliott, Financial Accounting and Reporting (19th ed.)",local:"elliott",p:925},
+ "bk-melville":{t:"Melville, International Financial Reporting: A Practical Guide (7th ed.)",local:"melville",p:514},
  "harrison":{t:"Harrison et al., Financial Accounting: IFRS (11th global ed.), preview with chapter 1",c:1,p:82},
  "t1-prereq":{t:"Pre-requisite case",c:1,p:1},"t1-prereq-solutions":{t:"Pre-requisite case: solution",c:1,p:3},
  "ifrs18-standard":{t:"IFRS 18 Presentation and Disclosure (IASB, the standard)",c:1,p:180},
@@ -350,6 +352,40 @@ var EXAM23 = {
 };
 /* the free book: chapter 1 pages (PDF pages) */
 var BOOK = {t1b:[43,48,"Book pp. 8–13"], t1c:[49,58,"Book pp. 14–23"], t1d:[49,58,"Book pp. 14–23"]};
+/* textbooks: Lea's own copies, kept on her device only (IndexedDB), never on the server */
+var BOOKS = {
+ elliott:{t:"Elliott & Elliott, Financial Accounting and Reporting (19th ed., 2019)", s:"Elliott", off:35, pages:925},
+ melville:{t:"Melville, International Financial Reporting: A Practical Guide (7th ed., 2019)", s:"Melville", off:13, pages:514}
+};
+var BOOKMAP = {
+ 1:[["elliott","Ch. 3 Preparing the financial statements",33,71],["elliott","Ch. 5 Statements of cash flows",104,132],["elliott","Ch. 6 Evolution of global standards",135,158],["elliott","Ch. 7 The conceptual framework",159,183],["melville","Ch. 2 The IASB conceptual framework",16,35],["melville","Ch. 3 Presentation of financial statements",36,60]],
+ 2:[["elliott","Ch. 22 Groups at the date of acquisition",569,589],["elliott","Ch. 23 Group balance sheet after acquisition",590,602],["elliott","Ch. 25 Associates and joint arrangements",625,650],["melville","Ch. 18 Groups of companies (1)",291,315],["melville","Ch. 19 Groups of companies (2)",316,330],["melville","Ch. 20 Associates and joint arrangements",331,346]],
+ 3:[["elliott","Ch. 17 PPE, impairment in 17.9",425,459],["elliott","Ch. 18 Leasing (IFRS 16)",460,484],["elliott","Ch. 19 Intangible assets",485,514],["melville","Ch. 5 Property, plant and equipment",75,99],["melville","Ch. 6 Intangible assets and goodwill",100,117],["melville","Ch. 7 Impairment of assets",118,133],["melville","Ch. 9 Leases",148,161]],
+ 4:[["elliott","Ch. 12 Share capital and distributable profits",293,316],["elliott","Ch. 14 Financial instruments, pp. 342–347",342,347],["elliott","Ch. 14, pp. 350–353",350,353],["elliott","Ch. 14, pp. 357–362",357,362],["melville","Ch. 11 Financial instruments",173,187]],
+ 5:[["elliott","Ch. 28 Review of financial ratio analysis",701,735],["elliott","Ch. 29 Analysis of published statements",736,778],["melville","Ch. 22 Ratio analysis",361,387]]
+};
+/* per ladder step: [book, book page, label] */
+var BOOKSTEP = {
+ e1:[["elliott",569,"Elliott ch. 22"],["melville",293,"Melville p. 293"]], e2:[["elliott",569,"Elliott ch. 22"],["melville",293,"Melville p. 293"]],
+ e3:[["melville",300,"Melville p. 300"]], e4:[["elliott",625,"Elliott ch. 25"],["melville",333,"Melville p. 333"]],
+ t3a:[["elliott",485,"Elliott ch. 19"],["melville",100,"Melville ch. 6"]], t3b:[["elliott",425,"Elliott ch. 17"],["melville",82,"Melville p. 82"]],
+ t3c:[["elliott",438,"Elliott 17.9"],["melville",118,"Melville ch. 7"]], t3d:[["elliott",438,"Elliott 17.9"],["melville",124,"Melville p. 124"]],
+ t3e:[["elliott",460,"Elliott ch. 18"],["melville",149,"Melville p. 149"]], t3f:[["elliott",460,"Elliott ch. 18"],["melville",150,"Melville p. 150"]],
+ t4a:[["elliott",342,"Elliott p. 342"],["melville",173,"Melville ch. 11"]], t4c:[["melville",173,"Melville ch. 11"]],
+ t4d:[["elliott",293,"Elliott ch. 12"]], t4e:[["elliott",293,"Elliott ch. 12"]],
+ t5c:[["elliott",701,"Elliott ch. 28"],["melville",361,"Melville ch. 22"]], t5d:[["elliott",701,"Elliott ch. 28"]]
+};
+var haveBooks = {};
+function bookDb(){ return new Promise(function(res, rej){ if(!window.indexedDB) return rej("noidb"); var r = indexedDB.open("fl-books", 1); r.onupgradeneeded = function(){ r.result.createObjectStore("b"); }; r.onsuccess = function(){ res(r.result); }; r.onerror = function(){ rej(r.error); }; }); }
+function bookGet(k){ return bookDb().then(function(db){ return new Promise(function(res){ var q = db.transaction("b").objectStore("b").get(k); q.onsuccess = function(){ res(q.result || null); }; q.onerror = function(){ res(null); }; }); }).catch(function(){ return null; }); }
+function bookPut(k, v){ return bookDb().then(function(db){ return new Promise(function(res, rej){ var tx = db.transaction("b", "readwrite"); tx.objectStore("b").put(v, k); tx.oncomplete = function(){ res(); }; tx.onerror = function(){ rej(tx.error); }; }); }); }
+function bookCheck(){ return bookDb().then(function(db){ return new Promise(function(res){ var q = db.transaction("b").objectStore("b").getAllKeys(); q.onsuccess = function(){ haveBooks = {}; (q.result||[]).forEach(function(k){ haveBooks[k] = true; }); res(); }; q.onerror = function(){ res(); }; }); }).catch(function(){}); }
+var bookMsg = "";
+function bookPicker(only){
+  return Object.keys(BOOKS).filter(function(k){ return !only || k===only; }).map(function(k){ var b = BOOKS[k];
+    return haveBooks[k] ? '<p class="note">✓ '+esc(b.s)+' is on this device.</p>' : '<label class="btn small ghost">Add my '+esc(b.s)+' PDF<input type="file" accept="application/pdf,.pdf" data-bookpick="'+k+'" style="display:none"></label>'; }).join("")+(bookMsg?'<p class="note">'+esc(bookMsg)+'</p>':'');
+}
+function bookPage(k, pg){ return pg + BOOKS[k].off; }
 /* what can be read inside the site with the timer */
 var READABLE = [
  ["bk-cf","Book ch. 1: The Conceptual Framework (pp. 8–13)","harrison",43,48],
@@ -358,6 +394,7 @@ var READABLE = [
  ["rd-pwc","PwC: IFRS 18 is here (5 pages)","pwc-ifrs18",1,5],
  ["rd-i18","IASB: IFRS 18 project summary (17 pages)","ifrs18-summary",1,17]
 ];
+Object.keys(BOOKMAP).forEach(function(n){ BOOKMAP[n].forEach(function(r, i){ READABLE.push(["bm-"+n+"-"+i, BOOKS[r[0]].s+" "+r[1]+" (pp. "+r[2]+"–"+r[3]+")", "bk-"+r[0], bookPage(r[0], r[2]), bookPage(r[0], r[3])]); }); });
 var FURTHER = {
  1:[["loreal-urd-2023","The report Case 1 is built on"],["ifrs18-summary","IASB summary behind slides 35 to 37"],["pwc-ifrs18","A five-page overview of what IFRS 18 changes"],["ifrs18-standard","The IFRS 18 standard itself"],["ifrs18-ie","Worked examples of the new income statement"],["ifrs18-bc","Why the IASB decided what it decided"]],
  2:[],
@@ -844,6 +881,7 @@ function vTopic(n){
       ? '<div class="row" style="justify-content:flex-start"><a class="btn small ghost" href="#practice" data-start="'+s[0]+'">Practise this type</a></div>'
       : '<select aria-label="How well do you know this step?" data-rate="'+s[0]+'">'+RATINGS.map(function(r){return '<option value="'+r[0]+'"'+((S.rating[s[0]]||"")===r[0]?" selected":"")+'>'+r[1]+'</option>';}).join("")+'</select>';
     var sl = s[3] ? '<a class="btn small ghost" href="#doc/t'+t.n+'-slides/'+s[3]+'">Open slides '+s[3]+(s[4]&&s[4]!==s[3]?'–'+s[4]:'')+'</a>' : '<a class="btn small ghost" href="#doc/t'+t.n+'-cases/1">Open the cases</a>';
+    (BOOKSTEP[s[0]]||[]).forEach(function(b){ sl += '<a class="btn small ghost" href="#doc/bk-'+b[0]+'/'+bookPage(b[0], b[1])+'">'+b[2]+'</a>'; });
     if(BOOK[s[0]]) sl += '<a class="btn small ghost" href="#doc/harrison/'+BOOK[s[0]][0]+'">'+BOOK[s[0]][2]+'</a>';
     return '<li><span class="n'+(i===firstOpen?" here":"")+'">'+(i+1)+'</span><div class="body"><div class="row"><h3>'+s[1]+'</h3><span class="pill '+st[0]+'">'+st[1]+'</span></div><span class="note">'+s[2]+(i===firstOpen?" · you are here":"")+'</span><div class="row" style="justify-content:flex-start">'+sl+'</div>'+ctl+'</div></li>';
   }).join("")+'</ol>'+(t.playable
@@ -865,6 +903,13 @@ function vTopic(n){
   if((FURTHER[t.n]||[]).length) h += '<section class="card"><h2>Further reading (optional)</h2><p class="note">The real reports the slides and cases draw on. Open them when you want to see the example in its original setting.</p>'+
     (FURTHER[t.n]||[]).map(function(r){ var id = "fr-"+r[0], d = DOCS[r[0]];
       return '<div class="readrow"><label class="check"><input type="checkbox" data-read="'+id+'"'+(S.read[id]?" checked":"")+'><span>'+esc(d.t)+'<br><span class="note">'+esc(r[1])+' · '+d.p+' pages</span></span></label><div class="attach"><a class="btn small ghost" href="#doc/'+r[0]+'/'+(S.docPos[r[0]]||1)+'">Open</a></div></div>'; }).join("")+'</section>';
+  if(BOOKMAP[t.n]){
+    h += '<section class="card"><h2>Your textbooks</h2><p class="note">Elliott is the course textbook the slides cite (19th edition, so the chapter numbers match). Melville is the practice book: short chapters, current standards, exercises with answers at the back. Page numbers are the books\' own.</p>'+bookPicker()+
+      ["elliott","melville"].map(function(k){ var rows = BOOKMAP[t.n].map(function(r, i){ return [r, i]; }).filter(function(x){ return x[0][0]===k; }); if(!rows.length) return "";
+        return '<h3>'+esc(BOOKS[k].s)+'</h3>'+rows.map(function(x){ var r = x[0], id = "bm-"+t.n+"-"+x[1];
+          return '<div class="readrow"><label class="check"><input type="checkbox" data-read="'+id+'"'+(S.read[id]?" checked":"")+'><span>'+esc(r[1])+'<br><span class="note">pp. '+r[2]+'–'+r[3]+' · '+(r[3]-r[2]+1)+' pages'+(S.speed?' · about '+Math.round((r[3]-r[2]+1)*S.speed)+' min':'')+'</span></span></label><div class="attach"><a class="btn small ghost" href="#doc/bk-'+k+'/'+bookPage(k, r[2])+'">Open</a><button class="btn small ghost" data-readdoc="'+id+'">Read with timer</button></div></div>'; }).join(""); }).join("")+
+      '<div class="readrow"><span>Melville: answers to the exercises</span><div class="attach"><a class="btn small ghost" href="#doc/bk-melville/445">Open the answers</a></div></div></section>';
+  }
   h += '<section class="card"><h2>Textbook reading</h2>'+
     '<h3>Required reading</h3><div>'+t.req.map(function(r){return readRow(r,false);}).join("")+'</div>'+
     '<h3>Optional depth</h3><div>'+t.opt.map(function(r){return readRow(r,true);}).join("")+'</div>'+
@@ -1004,7 +1049,7 @@ function vReading(){
   if(rdMsg){ h += '<p class="exam">'+esc(rdMsg)+'</p>'; }
   h += '<section class="card"><h2>1. Choose what you will read</h2>'+
     '<label class="f" for="rd-here">Read something here<select id="rd-here"><option value="">Choose a reading</option>'+READABLE.map(function(r){return '<option value="'+r[0]+'"'+(rdFor===r[0]?" selected":"")+'>'+esc(r[1])+'</option>';}).join("")+'</select></label>'+
-    '<p class="note">These are the files on the site: chapter 1 of your free Harrison book (it matches Topic 1) and the two short IFRS 18 readings. The other textbook chapters are on VLeBooks with your ESCP login; read them there or on paper and use the timer below.</p>'+
+    '<p class="note">The Harrison chapter and the IFRS 18 readings are always here. The Elliott and Melville chapters open once you have added your copies on a topic page; they stay on this device.</p>'+
     '<details class="pl-more"><summary>Or upload a chapter you have as a PDF</summary><label class="f" for="rd-for">Which reading is it? (optional)<select id="rd-for"><option value="">Not on the list</option>'+reqList().map(function(r){return '<option value="'+r[0]+'"'+(rdFor===r[0]?" selected":"")+'>'+r[1]+'</option>';}).join("")+'</select></label>'+
     '<label class="f" for="rd-file">PDF file<input type="file" id="rd-file" accept="application/pdf,.pdf"></label></details>'+
     ''; 
@@ -1049,7 +1094,9 @@ function loadDoc(id){
   var d = DOCS[id]; if(!d) return Promise.reject("missing");
   if(!window.pdfjsLib) return Promise.reject("viewer");
   window.pdfjsLib.GlobalWorkerOptions.workerSrc = "pdf.worker.min.js";
-  var bytes = d.c
+  var bytes = d.local
+    ? bookGet(d.local).then(function(b){ if(!b) throw "nolocal"; return b; })
+    : d.c
     ? courseKey().then(function(k){ return fetch("course/"+id+".bin").then(function(r){ if(!r.ok) throw "missing"; return r.arrayBuffer(); }).then(function(buf){
         return crypto.subtle.decrypt({name:"AES-GCM", iv:new Uint8Array(buf, 0, 12)}, k, new Uint8Array(buf, 12)); }); })
     : fetch("readings/"+id+".pdf").then(function(r){ if(!r.ok) throw "missing"; return r.arrayBuffer(); });
@@ -1062,6 +1109,7 @@ function vDoc(dr){
   var tn = topicOfDoc(dr.id), back = tn ? '<a class="back" href="#topic-'+tn+'">← Topic '+tn+'</a>' : '<a class="back" href="javascript:history.back()">← Back</a>';
   var h = back+'<div class="stack"><h1>'+esc(d.t)+'</h1></div>';
   if(DV.err){
+    if(DV.err==="nolocal") return h+'<section class="card"><p>Your copy of this book is not on this device yet. Choose the PDF once; it stays on this phone or computer only and is never uploaded.</p>'+bookPicker(d.local)+'</section>';
     var msg = {signin:'Course files open for signed-in accounts with course access. <a href="#account">Sign in</a> first.', noaccess:'Your account does not have access to the course files yet. Ask the course owner to add your email.', viewer:'The PDF viewer could not load. Reload the page.', missing:'This file is not on the site yet.'}[DV.err] || 'The file could not be opened. Check your connection and try again.';
     return h+'<section class="card"><p>'+msg+'</p></section>';
   }
@@ -1073,7 +1121,7 @@ function vDoc(dr){
     h += '<div class="mat" role="navigation" aria-label="Ladder steps">'+t.steps.filter(function(s){return s[3];}).map(function(s,i){ return '<a class="pill '+(cur&&cur[0]===s[0]?"prog":"todo")+'" href="#doc/'+dr.id+'/'+s[3]+'">'+(t.steps.indexOf(s)+1)+'. '+esc(s[1])+'</a>'; }).join("")+'</div>';
     if(cur) h += '<p class="note">You are in step '+(t.steps.indexOf(cur)+1)+': '+esc(cur[1])+' (slides '+cur[3]+' to '+cur[4]+').</p>';
   }
-  h += '<div class="readbar"><span class="pg">Page '+pg+' of '+total+'</span><label class="pg">Go to <input type="number" min="1" max="'+total+'" inputmode="numeric" id="dv-go" value="'+pg+'" style="width:70px"></label></div>';
+  h += '<div class="readbar"><span class="pg">'+(d.local ? 'Book page '+(pg-BOOKS[d.local].off) : 'Page '+pg+' of '+total)+'</span><label class="pg">Go to <input type="number" min="1" max="'+total+'" inputmode="numeric" id="dv-go" value="'+pg+'" style="width:70px"></label></div>';
   h += '<div class="pdfwrap"><canvas id="dvc" aria-label="Page '+pg+'"></canvas></div>';
   h += '<div class="two"><a class="btn ghost" href="#doc/'+dr.id+'/'+Math.max(1,pg-1)+'"'+(pg<=1?' aria-disabled="true"':'')+'>Previous</a><a class="btn" href="#doc/'+dr.id+'/'+Math.min(total,pg+1)+'"'+(pg>=total?' aria-disabled="true"':'')+'>Next</a></div>';
   h += '<button class="btn ghost" id="dv-zoom">'+(DV.zoom>1?"Fit to screen":"Zoom in")+'</button>';
@@ -1239,13 +1287,29 @@ app.addEventListener("submit", function(e){
   if(f.id==="pw-form"){ savePw(); }
 });
 document.addEventListener("change", function(e){
+  var bp = e.target && e.target.dataset && e.target.dataset.bookpick;
+  if(bp && e.target.files && e.target.files[0]){
+    var f = e.target.files[0]; bookMsg = "Saving "+f.name+" on this device …"; render();
+    f.arrayBuffer().then(function(buf){
+      if(!window.pdfjsLib) throw "viewer";
+      window.pdfjsLib.GlobalWorkerOptions.workerSrc = "pdf.worker.min.js";
+      return window.pdfjsLib.getDocument({data:new Uint8Array(buf.slice(0))}).promise.then(function(doc){
+        var n = doc.numPages, k = n===BOOKS.elliott.pages ? "elliott" : n===BOOKS.melville.pages ? "melville" : bp;
+        if(n!==BOOKS[k].pages) bookMsg = "This PDF has "+n+" pages, not "+BOOKS[k].pages+", so it may be another edition and the page links can be off. ";
+        else bookMsg = "";
+        return bookPut(k, buf).then(function(){ haveBooks[k] = true; delete DV.cache["bk-"+k]; if(DV.id==="bk-"+k){ DV.id = ""; DV.err = ""; }
+          bookMsg += BOOKS[k].s+" saved on this device."; render(); });
+      });
+    }).catch(function(){ bookMsg = "That file could not be saved. Is it a PDF? If your phone is low on storage, free some space and try again."; render(); });
+    return;
+  }
   if(e.target && (e.target.id==="ac-show" || e.target.id==="pw-show")){
     showPw = e.target.checked; var a = document.getElementById("ac-pass") || document.getElementById("pw-new"); if(a) a.type = showPw ? "text" : "password";
   }
 });
 window.addEventListener("hashchange", function(){ render(); window.scrollTo(0,0); });
 window.FL = {get S(){ return S; }, get signedOut(){ return !!(sb && !sbUser && cloud.state==="signedout"); }, save:save, render:render, go:go, esc:esc, TOPICS:TOPICS, confetti:confetti};
-render(); setSync(); initCloud();
+render(); setSync(); initCloud(); bookCheck().then(render);
 })();
 </script>
 <script src="plan.js"></script>
