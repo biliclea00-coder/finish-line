@@ -44,12 +44,15 @@ function tkey(a, b, mode){ return a+">"+b+">"+mode; }
 function km(a, b){ var R = 6371, dLa = (b.lat-a.lat)*Math.PI/180, dLo = (b.lon-a.lon)*Math.PI/180, x = Math.sin(dLa/2)*Math.sin(dLa/2)+Math.cos(a.lat*Math.PI/180)*Math.cos(b.lat*Math.PI/180)*Math.sin(dLo/2)*Math.sin(dLo/2); return 2*R*Math.asin(Math.sqrt(x)); }
 function travel(a, b){
   var p = P(), k = tkey(a, b, p.mode), t = p.travel[k], A = place(a), B = place(b);
-  if(t && t.manual) return {min:t.manual, src:"checked", line:t.line};
+  if(t && t.manual && !implausible(t.manual, A, B, t.min)) return {min:t.manual, src:"checked", line:t.line};
   if(t && t.min) return {min:t.min, src:"route", line:t.line};
   if(A && B && !pending[k]) pending[k] = {a:A, b:B, mode:p.mode, key:k};
   var d = A && B ? km(A, B)*1.3 : 10, speed = {car:(d > 12 ? 45 : 26), transit:20, bike:15, walk:4.8}[p.mode] || 25;
   return {min:Math.round(d/speed*60 + (p.mode==="transit" ? 8 : 4)), src:"estimate", line:A && B ? [[A.lat,A.lon],[B.lat,B.lon]] : null};
 }
+function implausible(min, A, B, routed){ var ref = routed || (A && B ? km(A, B)*1.3/45*60 : 0); return ref > 15 && min < ref*0.5; }
+function parseMin(v){ v = String(v||"").toLowerCase().replace(",","."); var h = v.match(/(\d+(?:\.\d+)?)\s*(h|hr|hour|std)/), mm = v.match(/(\d+)\s*(m|min)/), c = v.match(/^\s*(\d+):(\d{1,2})\s*$/);
+  if(c) return (+c[1])*60 + (+c[2]); if(h || mm) return Math.round((h ? +h[1]*60 : 0) + (mm ? +mm[1] : 0)); var n = parseFloat(v); return isNaN(n) ? null : Math.round(n); }
 function fetchTravel(){
   if(fetching) return; var keys = Object.keys(pending); if(!keys.length) return;
   fetching = true; var job = pending[keys[0]]; delete pending[keys[0]];
@@ -155,6 +158,8 @@ function dayModel(date){
       else { if(meal[0]-sl.s >= 20) out.push({s:sl.s, e:meal[0], place:sl.place}); if(sl.e-meal[1] >= 20) out.push({s:meal[1], e:sl.e, place:sl.place}); }
     }); slots = out;
   });
+  /* long gaps become 90-minute blocks with a 15-minute break, so no block runs for hours */
+  var blocks = []; slots.forEach(function(sl){ var a = sl.s; while(sl.e - a > 105){ blocks.push({s:a, e:a+90, place:sl.place}); a += 105; } blocks.push({s:a, e:sl.e, place:sl.place}); }); slots = blocks;
   slots = slots.filter(function(sl){ return sl.e - sl.s >= 20; }).map(function(sl, i){ sl.id = date+"-"+i; sl.date = date; sl.len = sl.e - sl.s; return sl; });
   var restDay = evs.some(function(ev){ return ev.e - ev.s >= 480; });
   if(restDay) slots = [];
@@ -164,7 +169,7 @@ function dayModel(date){
 
 /* ---------- topics into slots: highest exam points first, reviews in short slots ---------- */
 function stepQueue(){
-  var p = P(), order = [2,3,1,4,5], q = [], dec = p.decisions.coverage;
+  var p = P(), order = [2,3,4,5,1], q = [], dec = p.decisions.coverage;
   order.forEach(function(n){
     var t = FL.TOPICS[n-1];
     t.steps.forEach(function(st){
@@ -179,22 +184,25 @@ function stepQueue(){
 }
 function plan(){
   var p = P(), ds = days(), models = ds.map(dayModel), q = stepQueue(), qi = 0, left = q.length ? q[0].mins : 0, learned = [], allSlots = [];
-  var lastDay = addDays(p.exam.date, -1);
+  var lastDay = addDays(p.exam.date, -1), lastN = 0, tot = {}, got = {};
+  q.forEach(function(x){ tot[x.topic] = (tot[x.topic]||0) + x.mins; got[x.topic] = 0; });
   models.forEach(function(md){
     md.slots.forEach(function(sl){
       var eff = Math.round(sl.len * 50/60), parts = [];
       if(sl.cardsOnly){ sl.kind = "cards"; sl.what = "Question cards only: calm review, nothing new"; }
-      else if(md.date === lastDay){ sl.kind = "review"; sl.what = "Mixed review of everything learned, timed like the exam"; }
+      else if(md.date === lastDay){ sl.kind = "review"; lastN++;
+        sl.what = lastN===1 ? "Write your 2 cheat sheets (4 pages): formulas and the steps of each ladder" : lastN===2 && sl.len >= 75 ? "The Nov 2023 exam, timed: 75 minutes, calculator and cheat sheets only" : "Mixed review: question cards from every topic"; }
       else if(sl.len < 45 || sl.s >= 1230 || (!QUIET[(place(sl.place)||{}).kind] && p.decisions.noise !== "noisy")){
         sl.kind = "cards"; sl.what = learned.length ? "Question cards: "+learned.slice(-3).map(function(x){ return "T"+x.topic+" "+x.name; }).join(", ") : "Question cards: Topic 2 basics";
       } else {
         sl.kind = "learn";
         while(eff > 10 && qi < q.length){
-          var use = Math.min(eff, left); parts.push({step:q[qi], mins:use, cont:left < q[qi].mins}); eff -= use; left -= use;
+          var use = Math.min(eff, left); parts.push({step:q[qi], mins:use, cont:left < q[qi].mins}); eff -= use; left -= use; got[q[qi].topic] += use;
           if(left <= 0){ learned.push(q[qi]); qi++; left = qi < q.length ? q[qi].mins : 0; }
         }
         if(!parts.length){ sl.kind = "review"; sl.what = "Everything is scheduled: spaced review"; }
         sl.parts = parts;
+        sl.prog = parts.map(function(pt){ return pt.step.topic; }).filter(function(v,i,a){ return a.indexOf(v)===i; }).map(function(n){ return {topic:n, pct:Math.round(got[n]/tot[n]*100)}; });
       }
       allSlots.push(sl);
     });
@@ -218,7 +226,7 @@ function legText(l){
 }
 function slotText(sl){
   var pl = place(sl.place)||{}, qt = QUIET[pl.kind] ? "quiet" : "noisy";
-  var body = sl.kind==="learn" && sl.parts && sl.parts.length ? 'Topic '+sl.parts[0].step.topic+': '+esc(sl.parts[0].step.name)+(sl.parts.length>1?' <span class="note">· then '+(sl.parts.length-1)+' more</span>':'') : esc(sl.what||"");
+  var body = sl.kind==="learn" && sl.prog && sl.prog.length ? sl.prog.map(function(g){ return '<span class="pl-prog"><b>Topic '+g.topic+'</b> → '+g.pct+'% <i><b style="width:'+g.pct+'%"></b></i></span>'; }).join("") : esc(sl.what||"");
   return '<b>'+hm(sl.s)+'–'+hm(sl.e)+'</b> · '+esc(pl.name||"")+' <span class="pill '+(qt==="quiet"?"solid":"todo")+'">'+qt+'</span><br>'+body;
 }
 function timeline(md){
@@ -272,11 +280,14 @@ var IFTHEN = {
 };
 var KIND_REPLIES = ["Thank you for writing it down. That already takes some weight off your working memory.", "That sounds hard. You are still here and still planning, which is what counts.", "Exams make everyone feel this way. You're not behind as a person, only on a to-do list.", "Written down, it's on the page and not only in your head. Next step: just 'Only this'."];
 var jDay = null, ventSaved = "";
+function jToday(){ var d = new Date(); if(d.getHours() < 5) d.setDate(d.getDate()-1); return iso(d); }
+function jDays(){ var p = P(), out = [], d = addDays(p.exam.date, -8), t = jToday(); if(t < d) d = t; while(d <= p.exam.date && out.length < 30){ out.push(d); d = addDays(d,1); } return out; }
 function vJournal(){
-  var p = P(), ds = days(); if(!jDay || ds.indexOf(jDay)<0) jDay = ds[0];
-  var j = jr(jDay), md = dayModel(jDay), lit = plan().slots.filter(function(sl){ return p.done[sl.id]; }).length;
+  var p = P(), ds = jDays(); if(!jDay || ds.indexOf(jDay)<0) jDay = ds.indexOf(jToday())>=0 ? jToday() : ds[0];
+  var j = jr(jDay), lit = plan().slots.filter(function(sl){ return p.done[sl.id]; }).length;
   var h = '<div class="stack"><h1>Journal</h1><p class="lead">One page per day until the exam. Private to your account.</p></div>';
   h += '<div class="pl-days">'+ds.map(function(d){ return '<button class="pl-day'+(d===jDay?" on":"")+(d===p.exam.date?" exam":"")+'" data-jday="'+d+'"><span>'+dayName(d)+'</span></button>'; }).join("")+'</div>';
+  h += '<p class="note">'+(jDay===jToday()?'Today':dayName(jDay,true))+(new Date().getHours()<5 && jDay===jToday()?' (it\'s after midnight, so this still counts as your '+dayName(jDay).split(" ")[0]+')':'')+'</p>';
   h += '<section class="card"><h2>How is it going?</h2><div class="pl-chips">'+MOODS.map(function(mo){ return '<button type="button" class="opt" data-jmood="'+mo[0]+'" aria-pressed="'+(!!j.mood[mo[0]])+'">'+mo[1]+'</button>'; }).join("")+'</div></section>';
   var picked = Object.keys(j.mood).filter(function(k){ return j.mood[k]; });
   if(picked.length){
@@ -318,7 +329,7 @@ function vHome(){
   var p = P(), ds = days(), pl = plan(); if(!selDay || ds.indexOf(selDay)<0) selDay = ds[0];
   var nx = nextThing(pl), today = ds[0];
   var h = FL.signedOut ? '<section class="card pl-rec"><b>You\'re not signed in.</b><span>This is an empty plan on this device. Sign in to see yours.</span><a class="btn small" href="#account">Sign in</a></section>' : '';
-  h += '<p class="note">'+countdownLine()+'</p>';
+  h += '<p class="note">'+countdownLine()+'<br>75 minutes · 75 points · calculator and 2 cheat sheets (4 pages), per the 2026/27 syllabus.</p>';
   var line = "", sub = "";
   if(nx && nx.rest && nx.day===today && (!nx.n || nx.day!==today)){ line = "Today: no studying. Rest after the hackathon."; sub = "Long day. The plan starts tomorrow."; }
   else if(nx && nx.n && nx.n.kind==="leave"){ var l = nx.n.x.leg; line = (nx.day===today?"":dayName(nx.day)+": ")+"Leave at "+hm(l.leave)+" for "+((place(l.to)||{}).name||""); sub = "Park "+hm(l.park)+" · inside "+hm(l.inside); }
@@ -427,8 +438,8 @@ function cards(pl){
     opts:[["split","Quiet for new steps, noise is fine for reviews"],["quiet","Always somewhere quiet"],["noisy","I focus better with background noise"]],
     cost:{split:"Recommended balance.", quiet:"Short slots at the café become cards only.", noisy:"New steps can also go to noisy places."}});
   if(nowShort || p.decisions.coverage) out.push({id:"coverage", title:"Not everything fits", rec:"focus",
-    why:"Topics 2 and 3 were 44 of 75 points in the 2023 exam. Learning them properly and keeping the rest as question cards gives the most points per hour. This year's exam can be weighted differently.",
-    opts:[["focus","Deep on Topics 2 and 3, question cards for 1, 4 and 5"],["once","Everything once, nothing twice"],["dropT4","Leave out Topic 4 practice (9 points in 2023)"]],
+    why:"Topics 2 and 3 were 47 of 75 points in the 2023 exam. Learning them properly and keeping the rest as question cards gives the most points per hour. This year's exam can be weighted differently.",
+    opts:[["focus","Deep on Topics 2 and 3, question cards for 1, 4 and 5"],["once","Everything once, nothing twice"],["dropT4","Leave out Topic 4 practice (13 points in 2023)"]],
     cost:{focus:"Best points per hour.", once:"Wider but shallower.", dropT4:"Most time for the rest, a known gap."}});
   return out;
 }
@@ -462,7 +473,7 @@ function vCheck(){
     var l = it.l, t = p.travel[l.key] || {}; curLeg = l;
     h += '<section class="card pl-big"><div class="eyebrow">'+it.days.map(function(d){ return dayName(d); }).join(" & ")+' · a longer drive</div><div id="pl-map" class="pl-map" aria-label="This drive"></div><p>'+legText(l)+'</p>';
     if(t.checkedState==="yes" || t.manual){
-      h += '<p class="note">In Google Maps, tap "Leave at" and pick '+dayName(l.date)+' '+hm(l.leave)+'. Then type the minutes it shows.</p><a class="btn ghost" href="'+gmaps(l)+'" target="_blank" rel="noopener">Open in Google Maps</a><label class="f">Minutes Google Maps shows<input type="number" min="1" data-pman="'+l.key+'" value="'+esc(t.manual||"")+'"></label></section>'+nav(true, t.manual?"Saved, next":"Next");
+      h += '<p class="note">In Google Maps, tap "Leave at" and pick '+dayName(l.date)+' '+hm(l.leave)+'. Then type the time it shows, for example 55 min or 1 h 5 min.</p><a class="btn ghost" href="'+gmaps(l)+'" target="_blank" rel="noopener">Open in Google Maps</a><label class="f">Time Google Maps shows<input type="text" inputmode="text" autocomplete="off" placeholder="e.g. 1 h 5 min" data-pman="'+l.key+'" value="'+esc(t.manual?fmtDur(t.manual):"")+'"></label>'+(manWarn?'<p class="pl-calm">'+esc(manWarn)+'</p>':'')+'</section>'+nav(true, t.manual?"Saved, next":"Next");
     } else {
       h += '<p class="lead">Want to double-check this one in Google Maps?</p><div class="two"><button class="btn ghost" data-pchk="'+l.key+'|no">No, it\'s fine</button><button class="btn" data-pchk="'+l.key+'|yes">Yes, check</button></div></section>'+nav(false);
     }
@@ -509,12 +520,12 @@ function vLine(){
 }
 
 /* ---------- maps ---------- */
-var map = null;
+var map = null, manWarn = "";
 function drawMap(r){
   var el = document.getElementById("pl-map"); if(map){ try{ map.remove(); }catch(e){} map = null; }
   if(!el || !window.L) return;
   var p = P(), L = window.L;
-  map = L.map(el, {zoomControl:false, attributionControl:true, fadeAnimation:false, zoomAnimation:false, markerZoomAnimation:false}).setView([52.49, 13.33], 10);
+  map = L.map(el, {zoomControl:false, dragging:!L.Browser.mobile, tap:false, scrollWheelZoom:false, attributionControl:true, fadeAnimation:false, zoomAnimation:false, markerZoomAnimation:false}).setView([52.49, 13.33], 10);
   L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {maxZoom:18, attribution:'© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'}).addTo(map);
   var pts = [], icon = function(txt, cls){ return L.divIcon({className:"pl-pin "+(cls||""), html:'<span>'+txt+'</span>', iconSize:null}); };
   if(r==="plan/check" && curLeg){
@@ -590,7 +601,10 @@ app.addEventListener("change", function(e){
   if(d.pjc){ var c2 = d.pjc.split("|"); jr(c2[0]).checks[c2[1]] = t.checked; save(); return; }
   if(d.jfood){ jr(jDay).food[d.jfood] = t.value; save(); return; }
   if(d.jfoodok){ jr(jDay).food.ok = t.checked; save(); return; }
-  if(d.pman){ var tr = p.travel[d.pman] = p.travel[d.pman] || {}; tr.manual = +t.value || null; save(); FL.render(); }
+  if(d.pman){ var tr = p.travel[d.pman] = p.travel[d.pman] || {}, ks = d.pman.split(">"), v = parseMin(t.value);
+    if(v && implausible(v, place(ks[0]), place(ks[1]), tr.min)){ manWarn = "Google Maps probably said something like \"1 h "+v+" min\". Type it just like that, with the h."; tr.manual = null; }
+    else { manWarn = ""; tr.manual = v || null; }
+    save(); FL.render(); }
 });
 app.addEventListener("submit", function(e){
   if(e.target.id !== "pl-search") return; e.preventDefault();

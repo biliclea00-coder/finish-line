@@ -224,6 +224,7 @@ label.btn.small:focus-within{outline:3px solid var(--accent);outline-offset:2px}
 .pl-mrow .st.on{background:var(--good);border-color:var(--good)}
 .pl-mrow .st.exam{background:var(--accent);width:22px;height:22px;margin-top:-13px}
 .pl-pin span{display:inline-block;white-space:nowrap;background:var(--surface);color:var(--ink);border:2px solid var(--accent);border-radius:999px;padding:2px 8px;font:600 12px var(--body);transform:translate(-50%,-50%)}
+.pl-prog{display:flex;align-items:center;gap:8px;margin-top:4px}.pl-prog i{flex:1;max-width:140px;height:6px;border-radius:3px;background:var(--line);overflow:hidden;display:block}.pl-prog i b{display:block;height:100%;background:var(--accent)}
 .pl-one{font-family:var(--display);font-size:22px;font-weight:700;line-height:1.25}
 .pl-more summary{cursor:pointer;color:var(--deep);font-weight:600;padding:6px 0}
 .pl-more[open]{display:flex;flex-direction:column;gap:12px}
@@ -267,46 +268,46 @@ label.btn.small:focus-within{outline:3px solid var(--accent);outline-offset:2px}
 
 /* ================= course content (from the uploaded slides, cases and the Nov 2023 exam) ================= */
 var TOPICS = [
- {n:1, title:"Introduction to IFRS and the financial statements", exam:"13 of 75 points in the Nov 2023 exam", playable:false,
+ {n:1, title:"Introduction to IFRS and the financial statements", exam:"4 of 75 points in the Nov 2023 exam", playable:false,
   question:"When you open an annual report, what exactly are you looking at, and who decided it has to look this way?",
   kind:"Context topic. No calculations: you read real statements (Air France-KLM, Orange, L'Oréal) and learn the vocabulary every later topic uses.",
   goals:["Explain why the EU made IFRS mandatory, and for whom","Describe what the Conceptual Framework is for","Name the five parts of IFRS financial statements","Tell current from non-current, and by nature from by function","Explain other comprehensive income"],
   steps:[["t1a","IFRS in the EU: who must use it","Slides 8 to 11",8,11],["t1b","Conceptual Framework and the IFRS hierarchy","Slides 12 to 13",12,13],["t1c","Balance sheet: current versus non-current","Slides 14 to 19 · Case 3 (GSK)",14,19],["t1d","Income statement: by nature versus by function","Slides 20 to 25 · Cases 2, 3 (Air France-KLM, Danone)",20,25],["t1e","Other comprehensive income","Slides 22 to 27",22,27],["t1f","Cash flow statement and changes in equity","Slides 28 to 33 · Case 3 (Vodafone)",28,33],["t1h","IFRS 18: the new income statement from 2027","Slides 35 to 37",35,37],["t1g","Reading a real annual report","Case 1 (L'Oréal 2023)",0,0]],
   mat:[["Slides","ok"],["Cases","ok"],["Solutions","ok"]],
-  req:[["r1a","Elliott/Elliott, Financial Accounting and Reporting (19th ed.), ch. 3, 5, 6, 7"],["r1b","Refresher: Weygandt/Kimmel/Kieso ch. 1 and Weetman ch. 2, 3"],["r1c","Videos: Conceptual Framework, IAS 1, IAS 7 (IFRSbox)"]],
+  req:[["r1h","Harrison et al., Financial Accounting: IFRS (11th global ed.), ch. 1 Conceptual Framework and Financial Statements","Your free copy. Read it here, the timer measures your speed on it.","harrison"],["r1a","Elliott/Elliott, Financial Accounting and Reporting (19th ed.), ch. 3, 5, 6, 7","Listed on Topic 1 slide 6. The slides say it is on <a href=\"http://www.vlebooks.com/vleweb/product/openreader?id=ESCP&accId=8767056&isbn=9781119391586\" target=\"_blank\" rel=\"noopener\">VLeBooks</a> (sign in with your ESCP Google account)."],["r1b","Refresher: Weygandt/Kimmel/Kieso ch. 1 and Weetman ch. 2, 3","Listed on Topic 1 slide 4. The slides say it is on <a href=\"http://www.vlebooks.com/vleweb/product/openreader?id=ESCP&accId=8767056&isbn=9781119391586\" target=\"_blank\" rel=\"noopener\">VLeBooks</a> (sign in with your ESCP Google account)."],["r1c","Videos (IFRSbox, free on YouTube)","<a href=\"https://www.youtube.com/watch?v=v56_VJkjAX4\" target=\"_blank\" rel=\"noopener\">Conceptual Framework</a> · <a href=\"https://www.youtube.com/watch?v=DlfQWi9T264\" target=\"_blank\" rel=\"noopener\">IAS 1 summary</a> · <a href=\"https://www.youtube.com/watch?v=NMubNKCQV0A\" target=\"_blank\" rel=\"noopener\">IAS 7 cash flows</a>. Listed on Topic 1 slide 6."]],
   opt:[["o1a","Biondi and Suzuki (2007), Socio-Economic Review 5 (4)"],["o1b","Demerens, Hossfeld, Le Manh and Bonnier (2013), Issues in Accounting Education 28 (2)"],["o1c","Further papers listed on the last slide"]]},
- {n:2, title:"Business combinations", exam:"26 of 75 points in the Nov 2023 exam", playable:true,
+ {n:2, title:"Business combinations", exam:"17 of 75 points in the Nov 2023 exam", playable:true,
   question:"Your company wants to buy 60% of a company that carries far more debt than you do. What happens to the group's debt-to-equity ratio after the deal?",
   kind:"Calculation topic. The slides build one ladder of four example types, and the cases repeat the same ladder.",
   goals:["Explain individual versus consolidated statements","List the steps of a consolidation","Prepare a consolidated balance sheet with full consolidation","Explain and calculate goodwill","Explain and calculate non-controlling interest"],
   steps:[["e1","100% ownership, no goodwill","Slides 18 to 21 (Example 1) · Cases 1, 2",18,21],["e2","100% ownership with goodwill","Slides 22 to 27 (Example 2) · Cases 3, 4, 5",22,27],["e3","Less than 100%: non-controlling interest","Slides 28 to 30 (Example 3) · Cases 6, 7",28,30],["e4","Equity method for an associate","Slides 31 to 37 (Example 4) · Cases 8, 9",31,37]],
   mat:[["Slides","ok"],["Cases","ok"],["Solutions","ok"]],
-  req:[["r2a","Elliott/Elliott ch. 22, 23"],["r2b","Stolowy/Ding/Paugam, Financial Accounting and Reporting (6th ed.), ch. 13"],["r2c","Video: IFRS 10 Consolidated Financial Statements (IFRSbox)"]],
+  req:[["r2a","Elliott/Elliott ch. 22, 23","Listed on Topic 2 slide 3. The slides say it is on <a href=\"http://www.vlebooks.com/vleweb/product/openreader?id=ESCP&accId=8767056&isbn=9781119391586\" target=\"_blank\" rel=\"noopener\">VLeBooks</a> (sign in with your ESCP Google account)."],["r2b","Stolowy/Ding/Paugam, Financial Accounting and Reporting (6th ed.), ch. 13","Listed on Topic 2 slide 3. The slides say it is on <a href=\"http://www.vlebooks.com/vleweb/product/openreader?id=ESCP&accId=8767056&isbn=9781119391586\" target=\"_blank\" rel=\"noopener\">VLeBooks</a> (sign in with your ESCP Google account)."],["r2c","IFRS 10 Consolidated Financial Statements (IFRSbox, free)","<a href=\"https://www.ifrsbox.com/ifrs-10-consolidated-financial-statements/\" target=\"_blank\" rel=\"noopener\">Open on ifrsbox.com</a>. Listed on Topic 2 slide 3."]],
   opt:[["o2a","Alexander/Jorissen et al. ch. 25 to 27"],["o2b","Aerts/Walton ch. 12"],["o2c","Demerens, Delvaille, Le Manh and Pare (2014), Gestion 2000 31 (4)"],["o2d","Beiersdorf and Schmidt (2014), Zeitschrift für internationale Rechnungslegung"]]},
- {n:3, title:"Non-current assets and leases", exam:"18 of 75 points in the Nov 2023 exam", playable:false,
+ {n:3, title:"Non-current assets and leases", exam:"30 of 75 points in the Nov 2023 exam", playable:false,
   question:"Is research spending an asset or an expense? When has a machine lost value? And does leasing really keep debt off the balance sheet?",
   kind:"Mixed topic. Three management questions, each ending in a calculation type.",
   goals:["Tell an intangible asset from an expense","Apply the cost model","Run an impairment test","Tell a lease from a service contract","Show what a lease does to the statements"],
   steps:[["t3a","Intangibles: research versus development","Slides 7 to 15 · Case 2 (Malaga)",7,15],["t3b","Cost model: depreciation and amortisation","Slides 16 to 20 · Cases 1, 2 (Malaga)",16,20],["t3c","Impairment of a single asset","Slides 21 to 30 (Exercise 3.1) · Case 3 (Bilbao)",21,30],["t3d","Impairment of a group of assets with goodwill","Slides 31 to 38 (Exercise 3.2) · Cases 4, 5 (SEAT, Porto)",31,38],["t3e","Lease or service contract?","Slides 39 to 50 (Exercises 3.3, 3.4) · Cases 6, 7",39,50],["t3f","Lease accounting for the lessee","Slides 51 to 59 (Exercise 3.5) · Cases 8, 9",51,59]],
   mat:[["Slides","ok"],["Cases","ok"],["Solutions","ok"]],
-  req:[["r3a","Weygandt/Kimmel/Kieso ch. 9"],["r3b","Weetman ch. 8"],["r3c","Elliott/Elliott ch. 17, 18"]],
+  req:[["r3a","Weygandt/Kimmel/Kieso ch. 9","Listed on Topic 3 slide 3. The slides say it is on <a href=\"http://www.vlebooks.com/vleweb/product/openreader?id=ESCP&accId=8767056&isbn=9781119391586\" target=\"_blank\" rel=\"noopener\">VLeBooks</a> (sign in with your ESCP Google account)."],["r3b","Weetman ch. 8","Listed on Topic 3 slide 3. The slides say it is on <a href=\"http://www.vlebooks.com/vleweb/product/openreader?id=ESCP&accId=8767056&isbn=9781119391586\" target=\"_blank\" rel=\"noopener\">VLeBooks</a> (sign in with your ESCP Google account)."],["r3c","Elliott/Elliott ch. 17, 18","Listed on Topic 3 slide 3. The slides say it is on <a href=\"http://www.vlebooks.com/vleweb/product/openreader?id=ESCP&accId=8767056&isbn=9781119391586\" target=\"_blank\" rel=\"noopener\">VLeBooks</a> (sign in with your ESCP Google account)."]],
   opt:[["o3a","Review the pre-master material on acquisition cost and depreciation"]]},
- {n:4, title:"Financial debt and equity", exam:"9 of 75 points in the Nov 2023 exam", playable:false,
+ {n:4, title:"Financial debt and equity", exam:"13 of 75 points in the Nov 2023 exam", playable:false,
   question:"Your CFO wants to improve the debt-to-equity ratio with preferred shares that pay a guaranteed dividend and can be handed back after two years. Do they count as equity?",
   kind:"Mixed topic. One classification test, then bookkeeping for equity transactions.",
   goals:["Tell debt from equity instruments","Judge how much financial instruments matter in the statements","Account for debt, equity and hybrid instruments","Account for share issues and buy-backs"],
   steps:[["t4a","Debt or equity? The contractual obligation test","Slides 11 to 17 · Exercises 1, 2",11,17],["t4b","Hybrid instruments","Slides 18 to 22 · Exercise 4",18,22],["t4c","Compound instruments: split accounting","Slides 23 to 26",23,26],["t4d","Issuing shares and share premium","Slides 27 to 32 · Exercise 3 (Airbus)",27,32],["t4e","Treasury shares: buy-back, resale, cancellation","Slides 33 to 38 · Exercise 3 (Airbus)",33,38]],
   mat:[["Slides","ok"],["Cases","ok"],["Solutions","ok"]],
-  req:[["r4a","Elliott/Elliott ch. 12 and ch. 14 (pp. 342 to 347, 350 to 353, 357 to 362)"],["r4b","Weetman ch. 11 (pp. 312 to 317) and ch. 12"],["r4c","Weygandt/Kimmel/Kieso ch. 10"]],
+  req:[["r4a","Elliott/Elliott ch. 12 and ch. 14 (pp. 342 to 347, 350 to 353, 357 to 362)","Listed on Topic 4 slide 3. The slides say it is on <a href=\"http://www.vlebooks.com/vleweb/product/openreader?id=ESCP&accId=8767056&isbn=9781119391586\" target=\"_blank\" rel=\"noopener\">VLeBooks</a> (sign in with your ESCP Google account)."],["r4b","Weetman ch. 11 (pp. 312 to 317) and ch. 12","Listed on Topic 4 slide 4. The slides say it is on <a href=\"http://www.vlebooks.com/vleweb/product/openreader?id=ESCP&accId=8767056&isbn=9781119391586\" target=\"_blank\" rel=\"noopener\">VLeBooks</a> (sign in with your ESCP Google account)."],["r4c","Weygandt/Kimmel/Kieso ch. 10 (pp. 10-12 to 10-19)","Listed on Topic 4 slide 4. The slides say it is on <a href=\"http://www.vlebooks.com/vleweb/product/openreader?id=ESCP&accId=8767056&isbn=9781119391586\" target=\"_blank\" rel=\"noopener\">VLeBooks</a> (sign in with your ESCP Google account)."],["r4d","Videos: IAS 32 summary and compound instruments (CPDbox, free)","<a href=\"https://www.youtube.com/results?search_query=CPDbox+IAS+32+Financial+Instruments+Presentation\" target=\"_blank\" rel=\"noopener\">Search on YouTube</a>. Listed on Topic 4 slide 4."]],
   opt:[["o4a","Schmidt (2013), Accounting in Europe 10 (2)"],["o4b","Schmidt (2018), Die Wirtschaftsprüfung (8)"],["o4c","Schmidt and Schreiber (2010), Die Wirtschaftsprüfung (12)"]]},
- {n:5, title:"KPIs and financial communication", exam:"Appears inside other questions in the Nov 2023 exam", playable:false,
+ {n:5, title:"KPIs and financial communication", exam:"11 of 75 points in the Nov 2023 exam", playable:false,
   question:"Which numbers tell you how a company is really doing, and where can those numbers mislead you?",
   kind:"Analysis topic. Formulas applied to real reports (Orange, Veolia, Inditex).",
   goals:["Get a first overview of a set of statements","Pick the KPIs that matter for a given company","Separate business changes from accounting-choice changes","Explain the limits of KPI comparisons"],
   steps:[["t5a","KPIs and management-defined measures (IFRS 18)","Slides 6 to 16",6,16],["t5b","EBITDA and absolute performance numbers","Slides 17 to 23",17,23],["t5c","Return on capital employed (ROCE)","Slides 24 to 26 · Exercise 2 (CleanMotors)",24,26],["t5d","The Du Pont pyramid","Slides 27 to 31 · Exercises 1, 4 (VW, Lufthansa)",27,31],["t5e","Economic value added (EVA)","Slides 32 to 35 · Exercise 1 (VW)",32,35],["t5f","Free cash flow","Slides 36 to 37 · Exercise 3 (VW)",36,37]],
   mat:[["Slides","ok"],["Cases","ok"],["Solutions","ok"]],
   matNote:"One or two Topic 5 documents are still to come (for example the Volkswagen 2021 statements used in Exercises 1 and 3).",
-  req:[["r5a","Elliott/Elliott ch. 28, 29"],["r5b","Weygandt/Kimmel/Kieso ch. 13"],["r5c","Weetman ch. 13, 14"]],
+  req:[["r5a","Elliott/Elliott ch. 28, 29","Listed on Topic 5 slide 3. The slides say it is on <a href=\"http://www.vlebooks.com/vleweb/product/openreader?id=ESCP&accId=8767056&isbn=9781119391586\" target=\"_blank\" rel=\"noopener\">VLeBooks</a> (sign in with your ESCP Google account)."],["r5b","Weygandt/Kimmel/Kieso ch. 13","Listed on Topic 5 slide 3. The slides say it is on <a href=\"http://www.vlebooks.com/vleweb/product/openreader?id=ESCP&accId=8767056&isbn=9781119391586\" target=\"_blank\" rel=\"noopener\">VLeBooks</a> (sign in with your ESCP Google account)."],["r5c","Weetman ch. 13, 14","Listed on Topic 5 slide 3. The slides say it is on <a href=\"http://www.vlebooks.com/vleweb/product/openreader?id=ESCP&accId=8767056&isbn=9781119391586\" target=\"_blank\" rel=\"noopener\">VLeBooks</a> (sign in with your ESCP Google account)."]],
   opt:[["o5a","Marr, Key Performance Indicators, ch. 1 to 18"],["o5b","Walsh and Warner, 25 need-to-know management ratios, ch. 4 to 11"],["o5c","Biddle, Bowen and Wallace (1997), Journal of Accounting and Economics 24 (3)"],["o5d","Bennett (2019) and Milano (2019), Journal of Applied Corporate Finance 31 (3)"]]}
 ];
 
@@ -318,6 +319,7 @@ var DOCS = {
  "t4-slides":{t:"Topic 4 slides",c:1,p:40},"t4-cases":{t:"Topic 4 exercises",c:1,p:3},"t4-solutions":{t:"Topic 4 solutions",c:1,p:6},
  "t5-slides":{t:"Topic 5 slides",c:1,p:40},"t5-cases":{t:"Topic 5 exercises",c:1,p:9},"t5-solutions":{t:"Topic 5 solutions",c:1,p:15},
  "exam-2023":{t:"Exam CM01, November 2023",c:1,p:9},
+ "harrison":{t:"Harrison et al., Financial Accounting: IFRS (11th global ed.), preview with chapter 1",c:1,p:82},
  "t1-prereq":{t:"Pre-requisite case",c:1,p:1},"t1-prereq-solutions":{t:"Pre-requisite case: solution",c:1,p:3},
  "ifrs18-standard":{t:"IFRS 18 Presentation and Disclosure (IASB, the standard)",c:1,p:180},
  "ifrs18-ie":{t:"IFRS 18 Illustrative Examples (IASB)",c:1,p:88},
@@ -338,6 +340,24 @@ var DOCS = {
  "dt-ar-2023":{t:"Deutsche Telekom, Annual Report 2023",p:313},
  "ifrs18-summary":{t:"IFRS 18 project summary (IASB, April 2024)",p:17}
 };
+/* the Nov 2023 exam, question by question (points = minutes) */
+var EXAM23 = {
+ 1:[["1a","Is this income statement IFRS? One element as proof",2,1],["1b","Is it consolidated? One element as proof",2,2]],
+ 2:[["2a","Why there is no goodwill amortisation",1,4],["2d","Consolidated balance sheet at acquisition, with brand, building and goodwill",16,5]],
+ 3:[["1c","Rent charges despite IFRS 16",3,2],["2b","How the recoverable amount of goodwill is calculated (easyJet)",5,4],["2c","Discount rate and fuel price: stricter than last year?",4,5],["3","Machine under the cost model: impairment and reversal over four years",18,7]],
+ 4:[["4","Bond at amortised cost: effective interest over two years",9,8],["5a","Treasury shares sold below cost: effect on equity",4,9]],
+ 5:[["1d","Which KPI, how it is calculated, comment 2021 versus 2022",6,3],["5b","ROCE: which statement is correct",2,9],["5c","Economic value added: calculate it",3,9]]
+};
+/* the free book: chapter 1 pages (PDF pages) */
+var BOOK = {t1b:[43,48,"Book pp. 8–13"], t1c:[49,58,"Book pp. 14–23"], t1d:[49,58,"Book pp. 14–23"]};
+/* what can be read inside the site with the timer */
+var READABLE = [
+ ["bk-cf","Book ch. 1: The Conceptual Framework (pp. 8–13)","harrison",43,48],
+ ["bk-fs","Book ch. 1: The four financial statements (pp. 14–23)","harrison",49,58],
+ ["r1h","Book ch. 1: the whole chapter text (pp. 1–29)","harrison",36,64],
+ ["rd-pwc","PwC: IFRS 18 is here (5 pages)","pwc-ifrs18",1,5],
+ ["rd-i18","IASB: IFRS 18 project summary (17 pages)","ifrs18-summary",1,17]
+];
 var FURTHER = {
  1:[["loreal-urd-2023","The report Case 1 is built on"],["ifrs18-summary","IASB summary behind slides 35 to 37"],["pwc-ifrs18","A five-page overview of what IFRS 18 changes"],["ifrs18-standard","The IFRS 18 standard itself"],["ifrs18-ie","Worked examples of the new income statement"],["ifrs18-bc","Why the IASB decided what it decided"]],
  2:[],
@@ -806,7 +826,9 @@ function readRow(r, opt){
   else if(cloud.assets) att = '<label class="btn small ghost">Attach PDF<input type="file" accept="application/pdf,.pdf" data-attach="'+id+'" aria-label="Attach a PDF for this reading"></label>';
   else att = '<button class="btn small ghost" data-readnow="'+id+'">Read with timer</button><span>'+(cloud.state==="signedout" ? '<a href="#account">Sign in</a> to attach and keep PDFs.' : 'This copy cannot store files.')+'</span>';
   if(attachMsg[id]) att += '<span style="color:var(--warn)">'+esc(attachMsg[id])+'</span>';
-  return '<div class="readrow"><label class="check"><input type="checkbox" data-read="'+id+'"'+(S.read[id]?" checked":"")+'><span>'+r[1]+'</span></label><div class="attach">'+att+'</div>'+
+  var vid = /^(r1c|r2c|r4d)$/.test(id); if(vid){ att = ''; opt = true; }
+  if(r[3]) att = '<button class="btn small ghost" data-readdoc="'+id+'">Read here with timer</button><a class="btn small ghost" href="#doc/'+r[3]+'/'+(S.docPos[r[3]]||36)+'">Just open it</a>';
+  return '<div class="readrow"><label class="check"><input type="checkbox" data-read="'+id+'"'+(S.read[id]?" checked":"")+'><span>'+r[1]+(r[2]?'<br><span class="note">'+r[2]+'</span>':'')+'</span></label><div class="attach">'+att+'</div>'+
     (opt ? "" : '<div class="tools"><label for="pg-'+id+'">Pages</label><input type="number" min="0" inputmode="numeric" id="pg-'+id+'" data-pages="'+id+'" value="'+esc(pages)+'"><span>'+(est!==null? "about "+(est>=90? (Math.round(est/6)/10)+" h" : est+" min") : (S.speed?"enter pages for a time":"measure your speed first"))+'</span></div>')+'</div>';
 }
 
@@ -822,6 +844,7 @@ function vTopic(n){
       ? '<div class="row" style="justify-content:flex-start"><a class="btn small ghost" href="#practice" data-start="'+s[0]+'">Practise this type</a></div>'
       : '<select aria-label="How well do you know this step?" data-rate="'+s[0]+'">'+RATINGS.map(function(r){return '<option value="'+r[0]+'"'+((S.rating[s[0]]||"")===r[0]?" selected":"")+'>'+r[1]+'</option>';}).join("")+'</select>';
     var sl = s[3] ? '<a class="btn small ghost" href="#doc/t'+t.n+'-slides/'+s[3]+'">Open slides '+s[3]+(s[4]&&s[4]!==s[3]?'–'+s[4]:'')+'</a>' : '<a class="btn small ghost" href="#doc/t'+t.n+'-cases/1">Open the cases</a>';
+    if(BOOK[s[0]]) sl += '<a class="btn small ghost" href="#doc/harrison/'+BOOK[s[0]][0]+'">'+BOOK[s[0]][2]+'</a>';
     return '<li><span class="n'+(i===firstOpen?" here":"")+'">'+(i+1)+'</span><div class="body"><div class="row"><h3>'+s[1]+'</h3><span class="pill '+st[0]+'">'+st[1]+'</span></div><span class="note">'+s[2]+(i===firstOpen?" · you are here":"")+'</span><div class="row" style="justify-content:flex-start">'+sl+'</div>'+ctl+'</div></li>';
   }).join("")+'</ol>'+(t.playable
      ? '<p class="note">Exam-ready means two unaided correct answers on different days. Exercises copy the structure of the slide examples with new numbers and your companies.</p>'
@@ -834,8 +857,11 @@ function vTopic(n){
     [["slides","Slides"],["cases","Cases"],["solutions","Solutions"]].map(function(m){ var id = "t"+t.n+"-"+m[0], d = DOCS[id];
       return '<div class="readrow"><label class="check"><input type="checkbox" data-have="'+id+'"'+(S.have[id]?" checked":"")+'><span>'+m[1]+' <span class="note">· '+d.p+' pages</span></span></label><div class="attach"><a class="btn small ghost" href="#doc/'+id+'/'+(S.docPos[id]||1)+'">'+(m[0]==="solutions"?"Open after trying the cases":(S.docPos[id]>1?"Continue at page "+S.docPos[id]:"Open"))+'</a></div></div>'; }).join("")+
     (t.n===1?[["t1-prereq","Pre-requisite case"],["t1-prereq-solutions","Pre-requisite case: solution"]].map(function(m){ return '<div class="readrow"><label class="check"><input type="checkbox" data-have="'+m[0]+'"'+(S.have[m[0]]?" checked":"")+'><span>'+m[1]+'</span></label><div class="attach"><a class="btn small ghost" href="#doc/'+m[0]+'/1">Open</a></div></div>'; }).join(""):'')+
-    (t.n===2?'<div class="readrow"><label class="check"><input type="checkbox" data-have="exam-2023"'+(S.have["exam-2023"]?" checked":"")+'><span>Past exam, November 2023</span></label><div class="attach"><a class="btn small ghost" href="#doc/exam-2023/1">Open</a></div></div>':'')+
+
     (t.matNote?'<p class="note">'+t.matNote+'</p>':'')+'</section>';
+  if(EXAM23[t.n]){ var ept = EXAM23[t.n].reduce(function(a,q){ return a+q[2]; },0);
+    h += '<section class="card"><div class="row"><h2>In the 2023 exam</h2><span class="note">'+ept+' of 75 points</span></div><p class="note">Points equal minutes on the exam. These are the questions from this topic. Try them after the ladder; there is no official solution, so check yourself against the cases.</p>'+
+      EXAM23[t.n].map(function(q){ return '<div class="readrow"><span><b>Question '+q[0]+'</b> · '+q[2]+' point'+(q[2]===1?"":"s")+'<br>'+esc(q[1])+'</span><div class="attach"><a class="btn small ghost" href="#doc/exam-2023/'+q[3]+'">Open page '+q[3]+'</a></div></div>'; }).join("")+'</section>'; }
   if((FURTHER[t.n]||[]).length) h += '<section class="card"><h2>Further reading (optional)</h2><p class="note">The real reports the slides and cases draw on. Open them when you want to see the example in its original setting.</p>'+
     (FURTHER[t.n]||[]).map(function(r){ var id = "fr-"+r[0], d = DOCS[r[0]];
       return '<div class="readrow"><label class="check"><input type="checkbox" data-read="'+id+'"'+(S.read[id]?" checked":"")+'><span>'+esc(d.t)+'<br><span class="note">'+esc(r[1])+' · '+d.p+' pages</span></span></label><div class="attach"><a class="btn small ghost" href="#doc/'+r[0]+'/'+(S.docPos[r[0]]||1)+'">Open</a></div></div>'; }).join("")+'</section>';
@@ -963,7 +989,7 @@ function vReader(){
 function drawPage(){
   var cv = document.getElementById("pdfc"); if(!cv || !R || !R.doc) return;
   var want = R.page;
-  R.doc.getPage(want).then(function(pg){
+  R.doc.getPage(want + (R.off||0)).then(function(pg){
     if(!R || R.page !== want) return;
     var wrap = cv.parentNode.clientWidth, base = pg.getViewport({scale:1}), css = wrap * R.zoom, dpr = Math.min(window.devicePixelRatio||1, 2);
     var vp = pg.getViewport({scale: css/base.width*dpr});
@@ -977,9 +1003,11 @@ function vReading(){
   var h = '<div class="stack"><h1>How long will the reading take you?</h1><p class="lead">Open a chapter here and read it. The timer runs until you press the button on the last page. Your speed then gives a time estimate for every chapter.</p></div>';
   if(rdMsg){ h += '<p class="exam">'+esc(rdMsg)+'</p>'; }
   h += '<section class="card"><h2>1. Choose what you will read</h2>'+
-    '<label class="f" for="rd-for">Which reading is this? (optional)<select id="rd-for"><option value="">Not on the list</option>'+reqList().map(function(r){return '<option value="'+r[0]+'"'+(rdFor===r[0]?" selected":"")+'>'+r[1]+'</option>';}).join("")+'</select></label>'+
-    '<label class="f" for="rd-file">Upload the chapter as a PDF<input type="file" id="rd-file" accept="application/pdf,.pdf"></label>'+
-    '<p class="note">The file is opened on your device only. It is not uploaded anywhere and is gone when you close the page.</p>';
+    '<label class="f" for="rd-here">Read something here<select id="rd-here"><option value="">Choose a reading</option>'+READABLE.map(function(r){return '<option value="'+r[0]+'"'+(rdFor===r[0]?" selected":"")+'>'+esc(r[1])+'</option>';}).join("")+'</select></label>'+
+    '<p class="note">These are the files on the site: chapter 1 of your free Harrison book (it matches Topic 1) and the two short IFRS 18 readings. The other textbook chapters are on VLeBooks with your ESCP login; read them there or on paper and use the timer below.</p>'+
+    '<details class="pl-more"><summary>Or upload a chapter you have as a PDF</summary><label class="f" for="rd-for">Which reading is it? (optional)<select id="rd-for"><option value="">Not on the list</option>'+reqList().map(function(r){return '<option value="'+r[0]+'"'+(rdFor===r[0]?" selected":"")+'>'+r[1]+'</option>';}).join("")+'</select></label>'+
+    '<label class="f" for="rd-file">PDF file<input type="file" id="rd-file" accept="application/pdf,.pdf"></label></details>'+
+    ''; 
   if(R && R.kind==="pdf") h += '<p class="exam"><b>Ready:</b> '+esc(R.name)+' · '+R.total+' page'+(R.total===1?"":"s")+'</p><button class="btn" id="rd-start">Start reading</button>';
   h += '</section>';
   h += '<section class="card"><h2>No PDF at hand?</h2><button class="btn ghost" id="rd-sample">Read the sample chapter (3 short pages)</button>'+
@@ -989,6 +1017,13 @@ function vReading(){
       '<p class="note">Enter the page count of a chapter on any topic page to see how long it will take.</p>' : '<p class="lead">Not measured yet.</p>')+'</section>'+
     '<section class="card"><h2>Where reading fits</h2><ul class="plain"><li>First the context check, so you know the words.</li><li>Then the required chapter, with the ladder open next to you.</li><li>Then practice. Practice is what makes a step exam-ready.</li></ul></section>';
   return h;
+}
+function openReadable(id){
+  var r = READABLE.filter(function(x){ return x[0]===id; })[0]; if(!r) return;
+  rdFor = id; R = null; rdMsg = "Opening "+r[1]+" …"; if(route()!=="reading") go("reading"); else render();
+  loadDoc(r[2]).then(function(doc){
+    R = {kind:"pdf", doc:doc, off:r[3]-1, total:r[4]-r[3]+1, page:1, zoom:1, name:r[1], rid:id}; rdMsg = ""; if(route()==="reading") render();
+  }).catch(function(){ rdMsg = "That file could not be opened. Check your connection and try again."; if(route()==="reading") render(); });
 }
 function finishReading(pagesRead, full){
   var sec = Math.max(1, Math.floor((Date.now()-S.timer.start)/1000));
@@ -1121,6 +1156,7 @@ app.addEventListener("click", function(e){
   if(t.id==="dv-zoom"){ DV.zoom = DV.zoom>1 ? 1 : 2; render(); return; }
   if(t.id==="ac-out" && sb){ sb.auth.signOut().then(function(){ sbUser = null; cloud.ref = null; cloud.assets = null; cloud.fetchFile = null; cloud.state = "signedout"; S = fresh(); saveLocal(); DV.key = null; DV.cache = {}; DV.doc = null; DV.id = ""; acctMsg = ""; setSync(); go("map"); }); return; }
   if(t.dataset.readnow){ rdFor = t.dataset.readnow; go("reading"); return; }
+  if(t.dataset.readdoc){ openReadable(t.dataset.readdoc); return; }
   if(t.dataset.openfile){ var oid = t.dataset.openfile, of = S.files[oid]; if(!of) return;
     if(!window.pdfjsLib){ attachMsg[oid] = "The PDF viewer could not load."; render(); return; }
     rdFor = oid; R = null; rdMsg = "Opening "+of.name+" …"; go("reading");
@@ -1134,7 +1170,7 @@ app.addEventListener("click", function(e){
     pendingRemove = ""; if(!rf || !cloud.assets) return;
     cloud.assets.delete(rf.id).then(function(){ delete S.files[rid]; save(); render(); }, function(){ attachMsg[rid] = "Could not remove the file. Try again."; render(); });
     return; }
-  if(t.id==="rd-start" && R){ R.page = 1; R.rid = rdFor; S.timer = {start:Date.now()}; save(); render(); window.scrollTo(0,0); return; }
+  if(t.id==="rd-start" && R){ R.page = 1; R.rid = R.rid || rdFor; S.timer = {start:Date.now()}; save(); render(); window.scrollTo(0,0); return; }
   if(t.id==="rd-sample"){ R = {kind:"sample", total:SAMPLE.length, page:1, zoom:1, name:"Sample chapter", rid:""}; S.timer = {start:Date.now()}; save(); render(); window.scrollTo(0,0); return; }
   if(t.id==="rd-paper"){ var pp = +document.getElementById("rd-paper-pages").value; if(!(pp > 0)){ rdMsg = "Enter how many pages you will read on paper, then start the timer."; render(); return; }
     R = {kind:"paper", total:pp, page:pp, zoom:1, name:"paper reading", rid:rdFor}; S.timer = {start:Date.now()}; save(); render(); window.scrollTo(0,0); return; }
@@ -1156,6 +1192,7 @@ app.addEventListener("change", function(e){
   var t = e.target;
   if(t.id==="exam"){ S.examDate = t.value; save(); render(); }
   if(t.id==="rd-for"){ rdFor = t.value; }
+  if(t.id==="rd-here" && t.value){ openReadable(t.value); }
   if(t.dataset.attach && t.files && t.files[0] && cloud.assets){
     var aid = t.dataset.attach, af = t.files[0]; attachMsg[aid] = "";
     if(af.size > (cloud.maxBytes||20*1024*1024)){ attachMsg[aid] = "This file is over "+Math.round((cloud.maxBytes||20*1024*1024)/1048576)+" MB. Split the chapter or export a smaller PDF."; render(); return; }
