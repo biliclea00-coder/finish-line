@@ -225,6 +225,18 @@ label.btn.small:focus-within{outline:3px solid var(--accent);outline-offset:2px}
 .pl-mrow .st.exam{background:var(--accent);width:22px;height:22px;margin-top:-13px}
 .pl-pin span{display:inline-block;white-space:nowrap;background:var(--surface);color:var(--ink);border:2px solid var(--accent);border-radius:999px;padding:2px 8px;font:600 12px var(--body);transform:translate(-50%,-50%)}
 .pl-prog{display:flex;align-items:center;gap:8px;margin-top:4px}.pl-prog i{flex:1;max-width:140px;height:6px;border-radius:3px;background:var(--line);overflow:hidden;display:block}.pl-prog i b{display:block;height:100%;background:var(--accent)}
+.term{background:none;border:0;padding:0;font:inherit;color:inherit;text-decoration:underline dotted;text-underline-offset:4px;cursor:pointer}
+.tg-img{margin:0 0 6px}.tg-img img{width:100%;aspect-ratio:16/9;object-fit:cover;border-radius:14px;display:block}.tg-img figcaption{font-size:14px;color:var(--muted);margin-top:6px}
+.tg-lad{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:4px}
+.tg-lad li>*{display:flex;align-items:center;gap:10px;width:100%;padding:8px 10px;border-radius:10px;border:1px solid transparent;background:none;font:inherit;color:inherit;text-align:left}
+.tg-lad li.on>*{border-color:var(--accent);background:var(--idle-bg)}
+.tg-lad .n{width:24px;height:24px;border-radius:50%;border:2px solid var(--deep);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;flex:none}
+.tg-lad .nm{flex:1;font-size:15px}
+.tg-list{display:flex;flex-direction:column;gap:10px}
+.tg-item{display:flex;flex-direction:column;gap:6px;padding:10px 0;border-top:1px solid var(--line)}
+.tg-item.on span{color:var(--muted)}
+.tg-more summary{cursor:pointer;color:var(--deep);font-weight:600;padding:6px 0}
+.tg-more .attach{flex-wrap:wrap}
 .pl-one{font-family:var(--display);font-size:22px;font-weight:700;line-height:1.25}
 .pl-more summary{cursor:pointer;color:var(--deep);font-weight:600;padding:6px 0}
 .pl-more[open]{display:flex;flex-direction:column;gap:12px}
@@ -358,23 +370,40 @@ var BOOKS = {
  melville:{t:"Melville, International Financial Reporting: A Practical Guide (7th ed., 2019)", s:"Melville", off:13, pages:514}
 };
 var BOOKMAP = {
- 1:[["elliott","Ch. 3 Preparing the financial statements",33,71],["elliott","Ch. 5 Statements of cash flows",104,132],["elliott","Ch. 6 Evolution of global standards",135,158],["elliott","Ch. 7 The conceptual framework",159,183],["melville","Ch. 2 The IASB conceptual framework",16,35],["melville","Ch. 3 Presentation of financial statements",36,60]],
+ 1:[["elliott","Ch. 3 Preparing the financial statements",33,71],["elliott","Ch. 5 Statements of cash flows",104,132],["elliott","Ch. 6 Evolution of global standards",135,158],["elliott","Ch. 7 The conceptual framework",159,183],["melville","Ch. 2 The IASB conceptual framework",16,35],["melville","Ch. 3 Presentation of financial statements",36,60],["melville","Ch. 16 Statement of cash flows",251,272]],
  2:[["elliott","Ch. 22 Groups at the date of acquisition",569,589],["elliott","Ch. 23 Group balance sheet after acquisition",590,602],["elliott","Ch. 25 Associates and joint arrangements",625,650],["melville","Ch. 18 Groups of companies (1)",291,315],["melville","Ch. 19 Groups of companies (2)",316,330],["melville","Ch. 20 Associates and joint arrangements",331,346]],
  3:[["elliott","Ch. 17 PPE, impairment in 17.9",425,459],["elliott","Ch. 18 Leasing (IFRS 16)",460,484],["elliott","Ch. 19 Intangible assets",485,514],["melville","Ch. 5 Property, plant and equipment",75,99],["melville","Ch. 6 Intangible assets and goodwill",100,117],["melville","Ch. 7 Impairment of assets",118,133],["melville","Ch. 9 Leases",148,161]],
  4:[["elliott","Ch. 12 Share capital and distributable profits",293,316],["elliott","Ch. 14 Financial instruments, pp. 342–347",342,347],["elliott","Ch. 14, pp. 350–353",350,353],["elliott","Ch. 14, pp. 357–362",357,362],["melville","Ch. 11 Financial instruments",173,187]],
  5:[["elliott","Ch. 28 Review of financial ratio analysis",701,735],["elliott","Ch. 29 Analysis of published statements",736,778],["melville","Ch. 22 Ratio analysis",361,387]]
 };
-/* per ladder step: [book, book page, label] */
+/* per ladder step: [book, from page, to page, section] in the books' own page numbers; checked against the text */
 var BOOKSTEP = {
- e1:[["elliott",569,"Elliott ch. 22"],["melville",293,"Melville p. 293"]], e2:[["elliott",569,"Elliott ch. 22"],["melville",293,"Melville p. 293"]],
- e3:[["melville",300,"Melville p. 300"]], e4:[["elliott",625,"Elliott ch. 25"],["melville",333,"Melville p. 333"]],
- t3a:[["elliott",485,"Elliott ch. 19"],["melville",100,"Melville ch. 6"]], t3b:[["elliott",425,"Elliott ch. 17"],["melville",82,"Melville p. 82"]],
- t3c:[["elliott",438,"Elliott 17.9"],["melville",118,"Melville ch. 7"]], t3d:[["elliott",438,"Elliott 17.9"],["melville",124,"Melville p. 124"]],
- t3e:[["elliott",460,"Elliott ch. 18"],["melville",149,"Melville p. 149"]], t3f:[["elliott",460,"Elliott ch. 18"],["melville",150,"Melville p. 150"]],
- t4a:[["elliott",342,"Elliott p. 342"],["melville",173,"Melville ch. 11"]], t4c:[["melville",173,"Melville ch. 11"]],
- t4d:[["elliott",293,"Elliott ch. 12"]], t4e:[["elliott",293,"Elliott ch. 12"]],
- t5c:[["elliott",701,"Elliott ch. 28"],["melville",361,"Melville ch. 22"]], t5d:[["elliott",701,"Elliott ch. 28"]]
+ t1a:[["elliott",143,146,"Elliott 6.8: IFRS in the EU"]],
+ t1b:[["elliott",163,178,"Elliott 7.5: The Conceptual Framework 2018"],["melville",16,35,"Melville ch. 2: The conceptual framework"]],
+ t1c:[["elliott",45,46,"Elliott 3.10: The statement of financial position"],["melville",41,44,"Melville 3: The statement of financial position"]],
+ t1d:[["elliott",36,39,"Elliott 3.3: Formats, by nature or by function"],["melville",45,48,"Melville 3: The statement of comprehensive income"]],
+ t1e:[["elliott",40,41,"Elliott 3.6: Other comprehensive income"],["melville",45,47,"Melville 3: Comprehensive income"]],
+ t1f:[["elliott",44,44,"Elliott 3.9: Statement of changes in equity"],["elliott",104,132,"Elliott ch. 5: Statements of cash flows"],["melville",251,262,"Melville ch. 16: Statement of cash flows"]],
+ e1:[["elliott",572,572,"Elliott 22.5: A wholly owned subsidiary"],["melville",293,296,"Melville 18: At the date of acquisition"]],
+ e2:[["elliott",571,572,"Elliott 22.4–22.5: Fair values and goodwill"],["melville",293,296,"Melville 18: At the date of acquisition"]],
+ e3:[["elliott",573,576,"Elliott 22.6: A partly owned subsidiary"],["melville",300,302,"Melville 18: Partly-owned subsidiaries"]],
+ e4:[["elliott",626,628,"Elliott 25.3–25.4: The equity method"],["melville",333,339,"Melville 20: The equity method"]],
+ t3a:[["elliott",489,491,"Elliott 19.3–19.5: Research and development"],["melville",102,105,"Melville 6: Recognising intangible assets"]],
+ t3b:[["elliott",429,435,"Elliott 17.5–17.7: Depreciation"],["melville",82,86,"Melville 5: Depreciation"]],
+ t3c:[["elliott",438,443,"Elliott 17.9: IAS 36 Impairment"],["melville",120,123,"Melville 7: Recoverable amount and impairment loss"]],
+ t3d:[["elliott",439,441,"Elliott 17.9.2–17.9.5: CGUs and impairment losses"],["melville",124,128,"Melville 7: Cash-generating units and goodwill"]],
+ t3e:[["elliott",467,468,"Elliott 18.3.1: Is the contract a lease?"],["melville",149,150,"Melville 9: Definition of a lease"]],
+ t3f:[["elliott",468,472,"Elliott 18.4: The lessee under IFRS 16"],["melville",150,153,"Melville 9: Lease accounting by lessees"]],
+ t4a:[["elliott",343,345,"Elliott 14.3.3: Debt or equity in the statements"],["melville",175,177,"Melville 11: Classification of financial instruments"]],
+ t4b:[["elliott",343,345,"Elliott 14.3.3: Preference shares and perpetual instruments"]],
+ t4c:[["elliott",343,344,"Elliott 14.3.3: Compound instruments"],["melville",176,177,"Melville 11: Compound instruments"]],
+ t4d:[["elliott",297,297,"Elliott 12.5: Accounting entries on issuing shares"]],
+ t4e:[["elliott",308,311,"Elliott 12.15: Purchase of own shares"]],
+ t5c:[["elliott",707,708,"Elliott 28.5: Financial performance and ROCE"],["melville",363,364,"Melville 22: Profitability ratios"]],
+ t5d:[["elliott",708,711,"Elliott 28.5.1: The Du Pont pyramid"]]
 };
+/* the effective interest method for bonds (2023 exam question 4): not a ladder step, so linked from the exam card */
+var BONDREAD = [["elliott",345,347,"Elliott 14.3.4: Finance costs on liabilities"],["melville",180,182,"Melville 11: The effective interest method"]];
 var haveBooks = {};
 function bookDb(){ return new Promise(function(res, rej){ if(!window.indexedDB) return rej("noidb"); var r = indexedDB.open("fl-books", 1); r.onupgradeneeded = function(){ r.result.createObjectStore("b"); }; r.onsuccess = function(){ res(r.result); }; r.onerror = function(){ rej(r.error); }; }); }
 function bookGet(k){ return bookDb().then(function(db){ return new Promise(function(res){ var q = db.transaction("b").objectStore("b").get(k); q.onsuccess = function(){ res(q.result || null); }; q.onerror = function(){ res(null); }; }); }).catch(function(){ return null; }); }
@@ -884,11 +913,109 @@ function readRow(r, opt){
     (opt ? "" : '<div class="tools"><label for="pg-'+id+'">Pages</label><input type="number" min="0" inputmode="numeric" id="pg-'+id+'" data-pages="'+id+'" value="'+esc(pages)+'"><span>'+(est!==null? "about "+(est>=90? (Math.round(est/6)/10)+" h" : est+" min") : (S.speed?"enter pages for a time":"measure your speed first"))+'</span></div>')+'</div>';
 }
 
+/* ---------- guided topic: one thing per screen (question → goals → rate the ladder → your step) ---------- */
+var GUESS = {
+ 1:{img:"hero.jpg", cap:"You're an analyst at Verdant Capital, opening your first annual report.", ask:"Who decides what an annual report of a listed EU group has to look like?", opts:["The company itself","IFRS, set by the IASB and adopted by the EU","Its auditors","Not sure"], ans:1, step:"t1a", why:"Listed EU groups must prepare their consolidated statements under IFRS. The IASB writes the standards and the EU adopts them into law."},
+ 2:{img:"synapse.jpg", cap:"Synapse AI wants to buy 60% of FlowDesk, which carries far more debt.", ask:"What happens to the group's debt-to-equity ratio after the deal?", opts:["It goes up","It goes down","It stays the same","Not sure"], ans:0, step:"e3", why:"With control, the group adds 100% of FlowDesk's debt, even though it owns only 60%. Equity grows only by the outside owners' share (non-controlling interest), so debt to equity goes up."},
+ 3:{img:"apex.jpg", cap:"Apex Vault spends on research and its machines are losing value.", ask:"Is research spending an asset or an expense?", opts:["An asset","An expense","It depends","Not sure"], ans:1, step:"t3a", why:"Research is always an expense. Development can become an asset, but only once strict conditions are met."},
+ 4:{img:"synapse.jpg", cap:"Synapse AI is raising money for its next stage.", ask:"Preferred shares with a guaranteed dividend that holders can hand back after two years: equity or debt?", opts:["Equity","Debt","Partly both","Not sure"], ans:1, step:"t4a", why:"Debt. The company cannot avoid paying cash: the dividend is guaranteed and the holders can demand their money back. Under IAS 32 substance beats the name \"shares\"."},
+ 5:{img:"verdant.jpg", cap:"Verdant Capital is deciding which company to back.", ask:"Is EBITDA a good measure of how a company is doing?", opts:["Yes, the best one","Useful, but it can mislead","No, ignore it","Not sure"], ans:1, step:"t5b", why:"Useful but easy to flatter: it ignores investment needs, and since IFRS 16 lease costs moved below EBITDA, so it rose for many companies without any change in the business."}
+};
+var TERMS = {
+ 1:{"IFRS":"International Financial Reporting Standards: the accounting rules listed EU groups must use for their consolidated statements.","Conceptual Framework":"The IASB's basic principles behind every standard: who the statements are for, and what an asset, a liability, income and an expense are.","non-current":"Current means used up, sold or due within 12 months (or one operating cycle). Everything else is non-current.","by nature":"Expenses grouped by what they are: staff costs, materials, depreciation.","by function":"Expenses grouped by what they are for: cost of sales, selling, administration.","other comprehensive income":"Gains and losses that skip profit and go straight to equity, for example some revaluations and currency differences."},
+ 2:{"consolidated":"One set of statements for the parent and its subsidiaries, shown as if they were one company.","full consolidation":"Adding 100% of a subsidiary's assets and liabilities, even if you own less, then showing the outside owners' share separately.","goodwill":"The price paid minus the fair value of the net assets bought: what you pay extra for customers, team and synergies.","non-controlling interest":"The part of a subsidiary's equity that belongs to the other owners."},
+ 3:{"intangible asset":"A non-physical asset you control that will bring future benefits, such as a patent or software. Research is always an expense; development can be an asset.","cost model":"Keeping an asset at cost minus depreciation and impairment, instead of revaluing it.","impairment test":"Comparing the carrying amount with the recoverable amount (the higher of fair value less costs to sell and value in use). If it is lower, you write the asset down.","lease":"A contract that gives you control of an identified asset for a period in exchange for payments. Under IFRS 16 the lessee shows a right-of-use asset and a lease liability."},
+ 4:{"equity instruments":"Instruments with no obligation to pay cash: the holders get what is left after all debts.","debt":"An obligation to pay cash, such as interest and repayment. Shown as a liability.","financial instruments":"Any contract that is a financial asset for one side and a liability or equity for the other: shares, bonds, loans.","hybrid instruments":"Instruments with features of both debt and equity, for example perpetual subordinated bonds.","buy-backs":"The company buys its own shares. They are held as treasury shares and deducted from equity; any gain or loss on resale stays in equity, never in profit."},
+ 5:{"KPIs":"Key performance indicators: the few numbers used to show how a company is doing, such as EBITDA, ROCE and free cash flow.","accounting-choice":"Choices IFRS allows, such as a depreciation method, that change the numbers without changing the business."}
+};
+var FSTEP = {"loreal-urd-2023":"t1g","ifrs18-summary":"t1h","pwc-ifrs18":"t1h","ifrs18-standard":"t1h","ifrs18-ie":"t1h","ifrs18-bc":"t1h","orange-ar-2023":"t3f","vw-ar-2023":"t3d",
+ "4:orange-urd-2023":"t4b","4:airfrance-urd-2023":"t4a","lufthansa-ar-2025":"t4e","airbus-fs-2023":"t4d",
+ "orange-fy2023-presentation":"t5a","5:orange-urd-2023":"t5b","inditex-aa-2023":"t5b","dt-ar-2023":"t5b","veolia-urd-2023":"t5c","iag-ar-2023":"t5a","5:airfrance-urd-2023":"t5a","bayer-ar-2023":"t5b"};
+var openTerm = "";
+function TG(n){ S.tg = S.tg || {}; return S.tg[n] = S.tg[n] || {stage:"q", ri:0, cur:"", guess:-1, done:{}}; }
+function termify(text, n){
+  var keys = Object.keys(TERMS[n]||{}).sort(function(a,b){ return b.length-a.length; }); if(!keys.length) return esc(text);
+  var re = new RegExp("("+keys.map(function(k){ return k.replace(/[.*+?^${}()|[\]\\]/g,"\\$&"); }).join("|")+")", "i"), out = "", rest = text, used = {};
+  while(rest){ var m = rest.match(re); if(!m){ out += esc(rest); break; }
+    var key = keys.filter(function(k){ return k.toLowerCase()===m[1].toLowerCase(); })[0];
+    out += esc(rest.slice(0, m.index)) + (used[key] ? esc(m[1]) : '<button type="button" class="term" data-term="'+n+'|'+esc(key)+'">'+esc(m[1])+'</button>');
+    used[key] = 1; rest = rest.slice(m.index + m[1].length); }
+  return out;
+}
+function termBox(n){ var p = openTerm.split("|"); return (+p[0]===n && TERMS[n][p[1]]) ? '<p class="pl-calm"><b>'+esc(p[1])+':</b> '+esc(TERMS[n][p[1]])+'</p>' : ''; }
+function stepParts(t, s){ var a = s[2].split(" · "); return {slides:s[3] ? "Slides "+s[3]+" to "+s[4] : "", cases:a.filter(function(x){ return /^(Case|Cases|Exercise|Exercises)\b/.test(x); }).join(" · ")}; }
+function startStep(t){ var first = t.steps.filter(function(s){ return (S.rating[s[0]]||"")!=="cold"; })[0]; return (first || t.steps[0])[0]; }
+function ladderStrip(t, g, clickable){
+  return '<ol class="tg-lad">'+t.steps.map(function(s,i){ var r = S.rating[s[0]]||"", on = (g.stage==="rate" ? i===g.ri : s[0]===g.cur);
+    var tag = r ? '<span class="pill '+({never:"gap",seen:"gap",notes:"prog",cold:"solid"})[r]+'">'+({never:"new",seen:"seen it",notes:"with notes",cold:"ready"})[r]+'</span>' : '';
+    var inner = '<span class="n">'+(i+1)+'</span><span class="nm">'+esc(s[1])+'</span>'+tag;
+    return '<li class="'+(on?"on":"")+'">'+(clickable ? '<button type="button" data-tstep="'+t.n+'|'+s[0]+'">'+inner+'</button>' : '<div>'+inner+'</div>')+'</li>'; }).join("")+'</ol>';
+}
+function vGuided(n){
+  var t = TOPICS[n-1], g = TG(n), G = GUESS[n], stages = ["q","goals","rate","step"], si = stages.indexOf(g.stage);
+  var h = '<div class="row"><a class="back" href="#map">← Course map</a><button type="button" class="linkbtn" data-tview="'+n+'|all">Show the whole topic page</button></div>'+
+    '<div class="stack"><div class="eyebrow">Topic '+t.n+' of 5 · '+esc(t.exam)+'</div><h1>'+esc(t.title)+'</h1></div>'+
+    '<div class="pl-progress"><i style="width:'+Math.round((si+1)/stages.length*100)+'%"></i></div>';
+  if(g.stage==="q"){
+    h += '<section class="card"><figure class="tg-img"><img src="'+G.img+'" alt=""><figcaption>'+esc(G.cap)+'</figcaption></figure>'+
+      '<div class="eyebrow">The question this topic answers</div><p class="pl-one" style="font-size:20px">'+esc(t.question)+'</p></section>';
+    h += '<section class="card"><h2>Your guess first</h2><p class="note">'+esc(G.ask)+' A guess before learning helps you remember the answer, even when the guess is wrong.</p><div class="opts">'+
+      G.opts.map(function(o,i){ return '<button type="button" class="opt" data-guess="'+n+'|'+i+'" aria-pressed="'+(g.guess===i)+'">'+esc(o)+'</button>'; }).join("")+'</div>';
+    if(g.guess >= 0){ var si2 = t.steps.map(function(s){ return s[0]; }).indexOf(G.step);
+      h += '<p class="pl-calm">Noted. You\'ll find out in step '+(si2+1)+': '+esc(t.steps[si2][1])+'.</p><button class="btn" data-tf="'+n+'|goals">Next: what you\'ll be able to do</button>'; }
+    h += '</section>';
+  }
+  if(g.stage==="goals"){
+    h += '<section class="card"><h2>By the end you can</h2><ul class="plain">'+t.goals.map(function(x){ return '<li>'+termify(x, n)+'</li>'; }).join("")+'</ul>'+
+      (Object.keys(TERMS[n]||{}).length ? '<p class="note">Tap an underlined word for a one-line explanation. No need to learn them now: you\'ll meet each one in the steps.</p>' : '')+termBox(n)+'</section>'+
+      '<div class="two"><button class="btn ghost" data-tf="'+n+'|q">Back</button><button class="btn" data-tf="'+n+'|rate">Next: the steps</button></div>';
+  }
+  if(g.stage==="rate"){
+    var s = t.steps[Math.min(g.ri, t.steps.length-1)], sp = stepParts(t, s);
+    h += '<section class="card"><div class="row"><h2>The ladder</h2><span class="note">'+t.steps.length+' steps</span></div>'+ladderStrip(t, g, false)+'</section>';
+    if(g.ri < t.steps.length){
+      h += '<section class="card pl-big"><div class="eyebrow">Step '+(g.ri+1)+' of '+t.steps.length+'</div><h2>'+esc(s[1])+'</h2><p class="note">'+esc([sp.slides, sp.cases].filter(Boolean).join(" · "))+'</p>'+
+        '<p class="lead">How well do you know this?</p><div class="opts">'+RATINGS.slice(1).map(function(r){ return '<button type="button" class="opt" data-rate1="'+n+'|'+s[0]+'|'+r[0]+'|rate" aria-pressed="'+((S.rating[s[0]]||"")===r[0])+'">'+r[1]+'</button>'; }).join("")+'</div></section>'+
+        (g.ri>0 ? '<button class="btn ghost" data-tri="'+n+'|-1">Back</button>' : '<button class="btn ghost" data-tf="'+n+'|goals">Back</button>');
+    } else {
+      var st = startStep(t), k = t.steps.map(function(x){ return x[0]; }).indexOf(st);
+      h += '<section class="card pl-big"><h2>Start with step '+(k+1)+'</h2><p class="lead">'+esc(t.steps[k][1])+'</p><p class="note">It is the first step you don\'t know cold yet. You can jump to any other step from the ladder.</p>'+
+        '<button class="btn" data-tstep="'+n+'|'+st+'">Start step '+(k+1)+'</button></section><button class="btn ghost" data-tri="'+n+'|-1">Back</button>';
+    }
+  }
+  if(g.stage==="step"){
+    var cur = t.steps.filter(function(x){ return x[0]===g.cur; })[0] || t.steps[0], ci = t.steps.indexOf(cur), p2 = stepParts(t, cur), dn = g.done[cur[0]] || {};
+    function tick(key, label, link){ return '<div class="tg-item'+(dn[key]?" on":"")+'"><label class="check"><input type="checkbox" data-sdone="'+n+'|'+cur[0]+'|'+key+'"'+(dn[key]?" checked":"")+'><span>'+label+'</span></label>'+(link||"")+'</div>'; }
+    h += '<section class="card"><div class="row"><h2>The ladder</h2><span class="note">tap a step to switch</span></div>'+ladderStrip(t, g, true)+'</section>';
+    h += '<section class="card pl-big"><div class="eyebrow">Step '+(ci+1)+' of '+t.steps.length+'</div><h2>'+esc(cur[1])+'</h2><div class="tg-list">';
+    var num = 0;
+    if(cur[3]) h += tick("slides", (++num)+'. Read '+esc(p2.slides.toLowerCase()), '<a class="btn small ghost" href="#doc/t'+n+'-slides/'+cur[3]+'">Open slides '+cur[3]+'–'+cur[4]+'</a>');
+    if(p2.cases){
+      h += tick("case", (++num)+'. Try '+esc(p2.cases)+' on paper, without the solution', '<a class="btn small ghost" href="#doc/t'+n+'-cases/'+(S.docPos["t"+n+"-cases"]||1)+'">Open the '+(n>=4?"exercises":"cases")+'</a>');
+      h += tick("sol", (++num)+'. Check yourself with the solution', dn.case ? '<a class="btn small ghost" href="#doc/t'+n+'-solutions/'+(S.docPos["t"+n+"-solutions"]||1)+'">Open the solutions</a>' : '<span class="note">Opens once you tick that you tried it.</span>');
+    }
+    if(t.playable) h += tick("prac", (++num)+'. Practise this type with new numbers', '<a class="btn small ghost" href="#practice" data-start="'+cur[0]+'">Practise this type</a>');
+    h += '</div>';
+    var books = (BOOKSTEP[cur[0]]||[]).map(function(b, bi){ return '<a class="btn small ghost" href="#doc/bk-'+b[0]+'/'+bookPage(b[0], b[1])+'/'+cur[0]+'-'+bi+'">'+esc(b[3])+' · pp. '+b[1]+(b[2]!==b[1]?'–'+b[2]:'')+'</a>'; });
+    if(BOOK[cur[0]]) books.push('<a class="btn small ghost" href="#doc/harrison/'+BOOK[cur[0]][0]+'">Harrison '+BOOK[cur[0]][2].replace("Book ","")+'</a>');
+    if(books.length) h += '<details class="tg-more"><summary>Stuck? Read this</summary><p class="note">Only the pages for this step. Not required.</p><div class="attach">'+books.join("")+'</div></details>';
+    var ex = (FURTHER[n]||[]).filter(function(r){ return (FSTEP[n+":"+r[0]] || FSTEP[r[0]])===cur[0]; });
+    if(ex.length) h += '<details class="tg-more"><summary>See it in a real report</summary>'+ex.map(function(r){ return '<p class="note">'+esc(DOCS[r[0]].t)+': '+esc(r[1])+'</p><a class="btn small ghost" href="#doc/'+r[0]+'/'+(S.docPos[r[0]]||1)+'">Open</a>'; }).join("")+'</details>';
+    var G2 = GUESS[n];
+    if(G2.step===cur[0] && g.guess>=0 && (dn.slides || dn.case)) h += '<p class="pl-calm"><b>Your guess was: '+esc(G2.opts[g.guess])+'.</b> '+(g.guess===G2.ans?'Right. ':'')+esc(G2.why)+'</p>';
+    h += '<p class="lead" style="margin-top:8px">How well do you know it now?</p><div class="opts">'+RATINGS.slice(1).map(function(r){ return '<button type="button" class="opt" data-rate1="'+n+'|'+cur[0]+'|'+r[0]+'|step" aria-pressed="'+((S.rating[cur[0]]||"")===r[0])+'">'+r[1]+'</button>'; }).join("")+'</div></section>';
+    var nx = t.steps[ci+1];
+    h += nx ? '<div class="two">'+(ci>0?'<button class="btn ghost" data-tstep="'+n+'|'+t.steps[ci-1][0]+'">Previous step</button>':'<span></span>')+'<button class="btn" data-tstep="'+n+'|'+nx[0]+'">Next step</button></div>'
+      : '<section class="card"><h2>That\'s the last step</h2><p class="note">The 2023 exam questions for this topic are on the whole topic page for now. We\'ll decide together how the exam check should work.</p><button class="btn ghost" data-tview="'+n+'|all">Open the whole topic page</button></section>';
+  }
+  return h;
+}
 function vTopic(n){
   var t = TOPICS[n-1]; if(!t) return vMap();
+  if(!(S.tview||{})[n]) return vGuided(n);
   var firstOpen = -1; t.steps.forEach(function(s,i){ if(firstOpen<0 && stepStatus(t,s[0])[0]!=="solid") firstOpen = i; });
-  var h = '<a class="back" href="#map">← Course map</a><div class="stack"><div class="eyebrow">Topic '+t.n+' of 5 · '+t.exam+'</div><h1>'+t.title+'</h1></div>'+
-    '<section class="card"><div class="eyebrow">The question this topic answers</div><p style="font-size:17px">'+t.question+'</p><p class="note">'+t.kind+'</p></section>'+
+  var h = '<div class="row"><a class="back" href="#map">← Course map</a><button type="button" class="linkbtn" data-tview="'+n+'|">Back to the guided view</button></div><div class="stack"><div class="eyebrow">Topic '+t.n+' of 5 · '+t.exam+'</div><h1>'+t.title+'</h1></div>'+
+    '<section class="card"><div class="eyebrow">The question this topic answers</div><p style="font-size:17px">'+t.question+'</p></section>'+
     '<section class="card"><h2>By the end you can</h2><ul class="plain">'+t.goals.map(function(g){return "<li>"+g+"</li>";}).join("")+'</ul></section>';
   h += '<section class="card"><div class="row"><h2>The ladder</h2><span class="note">'+t.steps.length+' steps</span></div><ol class="ladder">'+t.steps.map(function(s,i){
     var st = stepStatus(t, s[0]);
@@ -896,7 +1023,7 @@ function vTopic(n){
       ? '<div class="row" style="justify-content:flex-start"><a class="btn small ghost" href="#practice" data-start="'+s[0]+'">Practise this type</a></div>'
       : '<select aria-label="How well do you know this step?" data-rate="'+s[0]+'">'+RATINGS.map(function(r){return '<option value="'+r[0]+'"'+((S.rating[s[0]]||"")===r[0]?" selected":"")+'>'+r[1]+'</option>';}).join("")+'</select>';
     var sl = s[3] ? '<a class="btn small ghost" href="#doc/t'+t.n+'-slides/'+s[3]+'">Open slides '+s[3]+(s[4]&&s[4]!==s[3]?'–'+s[4]:'')+'</a>' : '<a class="btn small ghost" href="#doc/t'+t.n+'-cases/1">Open the cases</a>';
-    (BOOKSTEP[s[0]]||[]).forEach(function(b){ sl += '<a class="btn small ghost" href="#doc/bk-'+b[0]+'/'+bookPage(b[0], b[1])+'">'+b[2]+'</a>'; });
+    (BOOKSTEP[s[0]]||[]).forEach(function(b, bi){ sl += '<a class="btn small ghost" href="#doc/bk-'+b[0]+'/'+bookPage(b[0], b[1])+'/'+s[0]+'-'+bi+'">'+esc(b[3].split(":")[0])+'</a>'; });
     if(BOOK[s[0]]) sl += '<a class="btn small ghost" href="#doc/harrison/'+BOOK[s[0]][0]+'">'+BOOK[s[0]][2]+'</a>';
     return '<li><span class="n'+(i===firstOpen?" here":"")+'">'+(i+1)+'</span><div class="body"><div class="row"><h3>'+s[1]+'</h3><span class="pill '+st[0]+'">'+st[1]+'</span></div><span class="note">'+s[2]+(i===firstOpen?" · you are here":"")+'</span><div class="row" style="justify-content:flex-start">'+sl+'</div>'+ctl+'</div></li>';
   }).join("")+'</ol>'+(t.playable
@@ -914,7 +1041,7 @@ function vTopic(n){
     (t.matNote?'<p class="note">'+t.matNote+'</p>':'')+'</section>';
   if(EXAM23[t.n]){ var ept = EXAM23[t.n].reduce(function(a,q){ return a+q[2]; },0);
     h += '<section class="card"><div class="row"><h2>In the 2023 exam</h2><span class="note">'+ept+' of 75 points</span></div><p class="note">Points equal minutes on the exam. These are the questions from this topic. Try them after the ladder; there is no official solution, so check yourself against the cases.</p>'+
-      EXAM23[t.n].map(function(q){ return '<div class="readrow"><span><b>Question '+q[0]+'</b> · '+q[2]+' point'+(q[2]===1?"":"s")+'<br>'+esc(q[1])+'</span><div class="attach"><a class="btn small ghost" href="#doc/exam-2023/'+q[3]+'">Open page '+q[3]+'</a></div></div>'; }).join("")+'</section>'; }
+      EXAM23[t.n].map(function(q){ return '<div class="readrow"><span><b>Question '+q[0]+'</b> · '+q[2]+' point'+(q[2]===1?"":"s")+'<br>'+esc(q[1])+'</span><div class="attach"><a class="btn small ghost" href="#doc/exam-2023/'+q[3]+'">Open page '+q[3]+'</a>'+(q[0]==="4" ? BONDREAD.map(function(b, bi){ return '<a class="btn small ghost" href="#doc/bk-'+b[0]+'/'+bookPage(b[0], b[1])+'/bond-'+bi+'">'+esc(b[3].split(":")[0])+'</a>'; }).join("") : '')+'</div></div>'; }).join("")+'</section>'; }
   if((FURTHER[t.n]||[]).length) h += '<section class="card"><h2>Further reading (optional)</h2><p class="note">The real reports the slides and cases draw on. Open them when you want to see the example in its original setting.</p>'+
     (FURTHER[t.n]||[]).map(function(r){ var id = "fr-"+r[0], d = DOCS[r[0]];
       return '<div class="readrow"><label class="check"><input type="checkbox" data-read="'+id+'"'+(S.read[id]?" checked":"")+'><span>'+esc(d.t)+'<br><span class="note">'+esc(r[1])+' · '+d.p+' pages</span></span></label><div class="attach"><a class="btn small ghost" href="#doc/'+r[0]+'/'+(S.docPos[r[0]]||1)+'">Open</a></div></div>'; }).join("")+'</section>';
@@ -922,7 +1049,7 @@ function vTopic(n){
     h += '<section class="card"><h2>Your textbooks</h2><p class="note">Elliott is the course textbook the slides cite (19th edition, so the chapter numbers match). Melville is the practice book: short chapters, current standards, exercises with answers at the back. Page numbers are the books\' own. Both are stored for your account: sign in and they open here; after the first time they open straight from this device.</p>'+
       ["elliott","melville"].map(function(k){ var rows = BOOKMAP[t.n].map(function(r, i){ return [r, i]; }).filter(function(x){ return x[0][0]===k; }); if(!rows.length) return "";
         return '<h3>'+esc(BOOKS[k].s)+'</h3>'+rows.map(function(x){ var r = x[0], id = "bm-"+t.n+"-"+x[1];
-          return '<div class="readrow"><label class="check"><input type="checkbox" data-read="'+id+'"'+(S.read[id]?" checked":"")+'><span>'+esc(r[1])+'<br><span class="note">pp. '+r[2]+'–'+r[3]+' · '+(r[3]-r[2]+1)+' pages'+(S.speed?' · about '+Math.round((r[3]-r[2]+1)*S.speed)+' min':'')+'</span></span></label><div class="attach"><a class="btn small ghost" href="#doc/bk-'+k+'/'+bookPage(k, r[2])+'">Open</a><button class="btn small ghost" data-readdoc="'+id+'">Read with timer</button></div></div>'; }).join(""); }).join("")+
+          return '<div class="readrow"><label class="check"><input type="checkbox" data-read="'+id+'"'+(S.read[id]?" checked":"")+'><span>'+esc(r[1])+'<br><span class="note">pp. '+r[2]+'–'+r[3]+' · '+(r[3]-r[2]+1)+' pages'+(S.speed?' · about '+Math.round((r[3]-r[2]+1)*S.speed)+' min':'')+'</span></span></label><div class="attach"><a class="btn small ghost" href="#doc/bk-'+k+'/'+bookPage(k, r[2])+'/'+id+'">Open</a><button class="btn small ghost" data-readdoc="'+id+'">Read with timer</button></div></div>'; }).join(""); }).join("")+
       '<div class="readrow"><span>Melville: answers to the exercises</span><div class="attach"><a class="btn small ghost" href="#doc/bk-melville/445">Open the answers</a></div></div></section>';
   }
   h += '<section class="card"><h2>Textbook reading</h2>'+
@@ -1118,12 +1245,22 @@ function loadDoc(id){
     : fetch("readings/"+id+".pdf").then(function(r){ if(!r.ok) throw "missing"; return r.arrayBuffer(); });
   return bytes.then(function(b){ return window.pdfjsLib.getDocument({data:new Uint8Array(b)}).promise; }).then(function(doc){ DV.cache[id] = doc; return doc; });
 }
-function docRoute(r){ var m = r.match(/^doc\/([a-z0-9-]+)(?:\/(\d+))?$/); return m ? {id:m[1], page:+(m[2]||1)} : null; }
+function docRoute(r){ var m = r.match(/^doc\/([a-z0-9-]+)(?:\/(\d+))?(?:\/([a-z0-9-]+))?$/); return m ? {id:m[1], page:+(m[2]||1), ctx:m[3]||""} : null; }
+/* what the reader opened this for: a ladder step's section, a chapter, or the bond reading */
+function docCtx(dr){
+  var c = dr.ctx; if(!c) return null;
+  var m = c.match(/^(.+)-(\d+)$/), b, step = null, tn = 0;
+  if(/^bm-\d-\d+$/.test(c)){ var p = c.split("-"), r = BOOKMAP[+p[1]][+p[2]]; return {topic:+p[1], eyebrow:"Topic "+p[1]+" · textbook chapter", title:BOOKS[r[0]].s+" "+r[1], from:r[2], to:r[3], book:r[0]}; }
+  if(m && m[1]==="bond"){ b = BONDREAD[+m[2]]; return b ? {topic:4, eyebrow:"Topic 4 · 2023 exam question 4", title:b[3], from:b[1], to:b[2], book:b[0]} : null; }
+  if(m && BOOKSTEP[m[1]]){ b = BOOKSTEP[m[1]][+m[2]]; TOPICS.forEach(function(t){ t.steps.forEach(function(s){ if(s[0]===m[1]){ step = s; tn = t.n; } }); });
+    return b ? {topic:tn, eyebrow:"Topic "+tn+" · "+(step?step[1]:""), title:b[3], from:b[1], to:b[2], book:b[0]} : null; }
+  return null;
+}
 function topicOfDoc(id){ var m = id.match(/^t(\d)-/); return m ? +m[1] : (id==="exam-2023" ? 2 : 0); }
 function vDoc(dr){
   var d = DOCS[dr.id]; if(!d) return '<a class="back" href="#map">← Course map</a><p class="lead">This document does not exist.</p>';
-  var tn = topicOfDoc(dr.id), back = tn ? '<a class="back" href="#topic-'+tn+'">← Topic '+tn+'</a>' : '<a class="back" href="javascript:history.back()">← Back</a>';
-  var h = back+'<div class="stack"><h1>'+esc(d.t)+'</h1></div>';
+  var cx = docCtx(dr), tn = cx ? cx.topic : topicOfDoc(dr.id), back = tn ? '<a class="back" href="#topic-'+tn+'">← Topic '+tn+'</a>' : '<a class="back" href="#map">← Course map</a>';
+  var h = back+(cx ? '<div class="stack"><div class="eyebrow">'+esc(cx.eyebrow)+'</div><h1>'+esc(cx.title)+'</h1><p class="note">'+esc(d.t)+' · pages '+cx.from+(cx.to!==cx.from?'–'+cx.to:'')+'</p></div>' : '<div class="stack"><h1>'+esc(d.t)+'</h1></div>');
   if(DV.err){
     if(DV.err==="booksignin") return h+'<section class="card"><p>The textbooks are stored for your account. <a href="#account">Sign in</a> and this page opens. The first time takes a moment (Elliott is 20 MB); after that it opens straight from this device.</p></section>';
     if(DV.err==="booknoaccess") return h+'<section class="card"><p>This account cannot open the textbooks. They open only for the course owner\'s account.</p></section>';
@@ -1139,9 +1276,11 @@ function vDoc(dr){
     h += '<div class="mat" role="navigation" aria-label="Ladder steps">'+t.steps.filter(function(s){return s[3];}).map(function(s,i){ return '<a class="pill '+(cur&&cur[0]===s[0]?"prog":"todo")+'" href="#doc/'+dr.id+'/'+s[3]+'">'+(t.steps.indexOf(s)+1)+'. '+esc(s[1])+'</a>'; }).join("")+'</div>';
     if(cur) h += '<p class="note">You are in step '+(t.steps.indexOf(cur)+1)+': '+esc(cur[1])+' (slides '+cur[3]+' to '+cur[4]+').</p>';
   }
-  h += '<div class="readbar"><span class="pg">'+(d.local ? 'Book page '+(pg-BOOKS[d.local].off) : 'Page '+pg+' of '+total)+'</span><label class="pg">Go to <input type="number" min="1" max="'+total+'" inputmode="numeric" id="dv-go" value="'+pg+'" style="width:70px"></label></div>';
+  var bp = d.local ? pg-BOOKS[d.local].off : pg, sfx = dr.ctx ? '/'+dr.ctx : '';
+  var where = cx ? (bp < cx.from ? ' · before your section' : bp > cx.to ? ' · past your section' : ' · '+(bp-cx.from+1)+' of '+(cx.to-cx.from+1)) : '';
+  h += '<div class="readbar"><span class="pg">'+(d.local ? 'Book page '+bp+where : 'Page '+pg+' of '+total)+'</span><label class="pg">Go to <input type="number" min="1" max="'+total+'" inputmode="numeric" id="dv-go" value="'+bp+'" style="width:70px"></label></div>';
   h += '<div class="pdfwrap"><canvas id="dvc" aria-label="Page '+pg+'"></canvas></div>';
-  h += '<div class="two"><a class="btn ghost" href="#doc/'+dr.id+'/'+Math.max(1,pg-1)+'"'+(pg<=1?' aria-disabled="true"':'')+'>Previous</a><a class="btn" href="#doc/'+dr.id+'/'+Math.min(total,pg+1)+'"'+(pg>=total?' aria-disabled="true"':'')+'>Next</a></div>';
+  h += '<div class="two"><a class="btn ghost" href="#doc/'+dr.id+'/'+Math.max(1,pg-1)+sfx+'"'+(pg<=1?' aria-disabled="true"':'')+'>Previous</a><a class="btn" href="#doc/'+dr.id+'/'+Math.min(total,pg+1)+sfx+'"'+(pg>=total?' aria-disabled="true"':'')+'>Next</a></div>';
   h += '<button class="btn ghost" id="dv-zoom">'+(DV.zoom>1?"Fit to screen":"Zoom in")+'</button>';
   return h;
 }
@@ -1206,6 +1345,14 @@ app.addEventListener("click", function(e){
   var a = e.target.closest("a[data-start]");
   if(a){ S.ex = gen(a.dataset.start); save(); return; }
   var t = e.target.closest("button"); if(!t) return;
+  var dsg = t.dataset;
+  if(dsg.tview !== undefined){ var tv = dsg.tview.split("|"); S.tview = S.tview || {}; S.tview[tv[0]] = tv[1]; save(); render(); window.scrollTo(0,0); return; }
+  if(dsg.tf){ var tf = dsg.tf.split("|"); TG(+tf[0]).stage = tf[1]; if(tf[1]==="rate") TG(+tf[0]).ri = 0; save(); render(); window.scrollTo(0,0); return; }
+  if(dsg.guess){ var gu = dsg.guess.split("|"); TG(+gu[0]).guess = +gu[1]; save(); render(); return; }
+  if(dsg.term){ openTerm = openTerm===dsg.term ? "" : dsg.term; render(); return; }
+  if(dsg.tri){ var tr = dsg.tri.split("|"), gt = TG(+tr[0]); gt.ri = Math.max(0, gt.ri + (+tr[1])); save(); render(); return; }
+  if(dsg.tstep){ var ts = dsg.tstep.split("|"), gs = TG(+ts[0]); gs.stage = "step"; gs.cur = ts[1]; save(); render(); window.scrollTo(0,0); return; }
+  if(dsg.rate1){ var r1 = dsg.rate1.split("|"), gr = TG(+r1[0]); S.rating[r1[1]] = r1[2]; if(r1[3]==="rate") gr.ri++; save(); render(); if(r1[3]==="rate") window.scrollTo(0,0); return; }
   var x = curEx();
   if(t.id==="hint" && x){ x.hint = true; save(); render(); return; }
   if(t.id==="check" && x){ gradeEx(x); save(); render(); if(x.ok && !x.hint) confetti(); var fb = app.querySelector(".fb"); if(fb) fb.scrollIntoView({block:"center"}); return; }
@@ -1294,9 +1441,10 @@ app.addEventListener("change", function(e){
     fr.readAsArrayBuffer(f);
   }
   if(t.dataset.rate){ S.rating[t.dataset.rate] = t.value; save(); render(); }
+  if(t.dataset.sdone){ var sd = t.dataset.sdone.split("|"), gd = TG(+sd[0]); gd.done[sd[1]] = gd.done[sd[1]] || {}; gd.done[sd[1]][sd[2]] = t.checked; save(); render(); }
   if(t.dataset.read){ S.read[t.dataset.read] = t.checked; save(); }
   if(t.dataset.have){ S.have[t.dataset.have] = t.checked; save(); }
-  if(t.id==="dv-go"){ var dr0 = docRoute(route()); if(dr0){ var n0 = parseInt(t.value,10); if(n0>0) go("doc/"+dr0.id+"/"+n0); } }
+  if(t.id==="dv-go"){ var dr0 = docRoute(route()); if(dr0){ var n0 = parseInt(t.value,10), dl = DOCS[dr0.id] && DOCS[dr0.id].local; if(n0>0) go("doc/"+dr0.id+"/"+(dl ? n0 + BOOKS[dl].off : n0)+(dr0.ctx?"/"+dr0.ctx:"")); } }
   if(t.dataset.pages){ S.pages[t.dataset.pages] = t.value; save(); render(); }
 });
 app.addEventListener("submit", function(e){
