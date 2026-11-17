@@ -237,6 +237,8 @@ label.btn.small:focus-within{outline:3px solid var(--accent);outline-offset:2px}
 .tg-item.on span{color:var(--muted)}
 .tg-more summary{cursor:pointer;color:var(--deep);font-weight:600;padding:6px 0}
 .tg-more .attach{flex-wrap:wrap}
+.opt.right{border-color:var(--deep);background:var(--idle-bg);font-weight:600}.opt.wrong{border-color:var(--warn);opacity:.8}
+table.sol{width:100%;border-collapse:collapse;font-size:15px;margin:6px 0}table.sol td{padding:5px 4px;border-top:1px solid var(--line)}table.sol td:last-child{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
 .pl-one{font-family:var(--display);font-size:22px;font-weight:700;line-height:1.25}
 .pl-more summary{cursor:pointer;color:var(--deep);font-weight:600;padding:6px 0}
 .pl-more[open]{display:flex;flex-direction:column;gap:12px}
@@ -284,7 +286,7 @@ var TOPICS = [
   question:"When you open an annual report, what exactly are you looking at, and who decided it has to look this way?",
   kind:"Context topic. No calculations: you read real statements (Air France-KLM, Orange, L'Oréal) and learn the vocabulary every later topic uses.",
   goals:["Explain why the EU made IFRS mandatory, and for whom","Describe what the Conceptual Framework is for","Name the five parts of IFRS financial statements","Tell current from non-current, and by nature from by function","Explain other comprehensive income"],
-  steps:[["t1a","IFRS in the EU: who must use it","Slides 8 to 11",8,11],["t1b","Conceptual Framework and the IFRS hierarchy","Slides 12 to 13",12,13],["t1c","Balance sheet: current versus non-current","Slides 14 to 19 · Case 3 (GSK)",14,19],["t1d","Income statement: by nature versus by function","Slides 20 to 25 · Cases 2, 3 (Air France-KLM, Danone)",20,25],["t1e","Other comprehensive income","Slides 22 to 27",22,27],["t1f","Cash flow statement and changes in equity","Slides 28 to 33 · Case 3 (Vodafone)",28,33],["t1h","IFRS 18: the new income statement from 2027","Slides 35 to 37",35,37],["t1g","Reading a real annual report","Case 1 (L'Oréal 2023)",0,0]],
+  steps:[["t1a","IFRS in the EU: who must use it","Slides 8 to 11",8,11],["t1b","Conceptual Framework and the IFRS hierarchy","Slides 12 to 13",12,13],["t1c","Balance sheet: current versus non-current","Slides 14 to 19 · Case 3 (GSK)",14,19],["t1d","Income statement: by nature versus by function","Slides 20 to 25 · Cases 2, 3 (Air France-KLM, Danone)",20,25],["t1e","Other comprehensive income","Slides 22 to 27",22,27],["t1f","Cash flows, changes in equity and the notes","Slides 28 to 34 · Case 3 (Vodafone)",28,34],["t1h","IFRS 18: the new income statement from 2027","Slides 35 to 37",35,37],["t1g","Reading a real annual report","Case 1 (L'Oréal 2023)",0,0]],
   mat:[["Slides","ok"],["Cases","ok"],["Solutions","ok"]],
   req:[["r1h","Harrison et al., Financial Accounting: IFRS (11th global ed.), ch. 1 Conceptual Framework and Financial Statements","Your free copy. Read it here, the timer measures your speed on it.","harrison"],["r1a","Elliott/Elliott, Financial Accounting and Reporting (19th ed.), ch. 3, 5, 6, 7","Listed on Topic 1 slide 6. The slides say it is on <a href=\"http://www.vlebooks.com/vleweb/product/openreader?id=ESCP&accId=8767056&isbn=9781119391586\" target=\"_blank\" rel=\"noopener\">VLeBooks</a> (sign in with your ESCP Google account)."],["r1b","Refresher: Weygandt/Kimmel/Kieso ch. 1 and Weetman ch. 2, 3","Listed on Topic 1 slide 4. The slides say it is on <a href=\"http://www.vlebooks.com/vleweb/product/openreader?id=ESCP&accId=8767056&isbn=9781119391586\" target=\"_blank\" rel=\"noopener\">VLeBooks</a> (sign in with your ESCP Google account)."],["r1c","Videos (IFRSbox, free on YouTube)","<a href=\"https://www.youtube.com/watch?v=v56_VJkjAX4\" target=\"_blank\" rel=\"noopener\">Conceptual Framework</a> · <a href=\"https://www.youtube.com/watch?v=DlfQWi9T264\" target=\"_blank\" rel=\"noopener\">IAS 1 summary</a> · <a href=\"https://www.youtube.com/watch?v=NMubNKCQV0A\" target=\"_blank\" rel=\"noopener\">IAS 7 cash flows</a>. Listed on Topic 1 slide 6."]],
   opt:[["o1a","Biondi and Suzuki (2007), Socio-Economic Review 5 (4)"],["o1b","Demerens, Hossfeld, Le Manh and Bonnier (2013), Issues in Accounting Education 28 (2)"],["o1c","Further papers listed on the last slide"]]},
@@ -292,7 +294,7 @@ var TOPICS = [
   question:"Your company wants to buy 60% of a company that carries far more debt than you do. What happens to the group's debt-to-equity ratio after the deal?",
   kind:"Calculation topic. The slides build one ladder of four example types, and the cases repeat the same ladder.",
   goals:["Explain individual versus consolidated statements","List the steps of a consolidation","Prepare a consolidated balance sheet with full consolidation","Explain and calculate goodwill","Explain and calculate non-controlling interest"],
-  steps:[["e1","100% ownership, no goodwill","Slides 18 to 21 (Example 1) · Cases 1, 2",18,21],["e2","100% ownership with goodwill","Slides 22 to 27 (Example 2) · Cases 3, 4, 5",22,27],["e3","Less than 100%: non-controlling interest","Slides 28 to 30 (Example 3) · Cases 6, 7",28,30],["e4","Equity method for an associate","Slides 31 to 37 (Example 4) · Cases 8, 9",31,37]],
+  steps:[["e0","Individual versus consolidated statements, and the steps of a consolidation","Slides 5 to 17 · Context check",5,17],["e1","100% ownership, no goodwill","Slides 18 to 21 (Example 1) · Cases 1, 2",18,21],["e2","100% ownership with goodwill","Slides 22 to 27 (Example 2) · Cases 3, 4, 5",22,27],["e3","Less than 100%: non-controlling interest","Slides 28 to 30 (Example 3) · Cases 6, 7",28,30],["e4","Equity method for an associate","Slides 31 to 38 (Example 4) · Cases 8, 9",31,38]],
   mat:[["Slides","ok"],["Cases","ok"],["Solutions","ok"]],
   req:[["r2a","Elliott/Elliott ch. 22, 23","Listed on Topic 2 slide 3. The slides say it is on <a href=\"http://www.vlebooks.com/vleweb/product/openreader?id=ESCP&accId=8767056&isbn=9781119391586\" target=\"_blank\" rel=\"noopener\">VLeBooks</a> (sign in with your ESCP Google account)."],["r2b","Stolowy/Ding/Paugam, Financial Accounting and Reporting (6th ed.), ch. 13","Listed on Topic 2 slide 3. The slides say it is on <a href=\"http://www.vlebooks.com/vleweb/product/openreader?id=ESCP&accId=8767056&isbn=9781119391586\" target=\"_blank\" rel=\"noopener\">VLeBooks</a> (sign in with your ESCP Google account)."],["r2c","IFRS 10 Consolidated Financial Statements (IFRSbox, free)","<a href=\"https://www.ifrsbox.com/ifrs-10-consolidated-financial-statements/\" target=\"_blank\" rel=\"noopener\">Open on ifrsbox.com</a>. Listed on Topic 2 slide 3."]],
   opt:[["o2a","Alexander/Jorissen et al. ch. 25 to 27"],["o2b","Aerts/Walton ch. 12"],["o2c","Demerens, Delvaille, Le Manh and Pare (2014), Gestion 2000 31 (4)"],["o2d","Beiersdorf and Schmidt (2014), Zeitschrift für internationale Rechnungslegung"]]},
@@ -308,7 +310,7 @@ var TOPICS = [
   question:"Your CFO wants to improve the debt-to-equity ratio with preferred shares that pay a guaranteed dividend and can be handed back after two years. Do they count as equity?",
   kind:"Mixed topic. One classification test, then bookkeeping for equity transactions.",
   goals:["Tell debt from equity instruments","Judge how much financial instruments matter in the statements","Account for debt, equity and hybrid instruments","Account for share issues and buy-backs"],
-  steps:[["t4a","Debt or equity? The contractual obligation test","Slides 11 to 17 · Exercises 1, 2",11,17],["t4b","Hybrid instruments","Slides 18 to 22 · Exercise 4",18,22],["t4c","Compound instruments: split accounting","Slides 23 to 26",23,26],["t4d","Issuing shares and share premium","Slides 27 to 32 · Exercise 3 (Airbus)",27,32],["t4e","Treasury shares: buy-back, resale, cancellation","Slides 33 to 38 · Exercise 3 (Airbus)",33,38]],
+  steps:[["t4o","Why debt and equity matter: IAS 32 and IFRS 9","Slides 7 to 10 (Lufthansa)",7,10],["t4a","Debt or equity? The contractual obligation test","Slides 11 to 17 · Exercises 1, 2",11,17],["t4b","Hybrid instruments","Slides 18 to 22 · Exercise 4",18,22],["t4c","Compound instruments: split accounting","Slides 23 to 26",23,26],["t4f","Bonds at amortised cost: the effective interest method","Not on the slides · tested in your quiz (Q5, Q7) and the 2023 exam (Q4)"],["t4d","Issuing shares and share premium","Slides 27 to 32 · Exercise 3 (Airbus)",27,32],["t4e","Treasury shares: buy-back, resale, cancellation","Slides 33 to 38 · Exercise 3 (Airbus)",33,38]],
   mat:[["Slides","ok"],["Cases","ok"],["Solutions","ok"]],
   req:[["r4a","Elliott/Elliott ch. 12 and ch. 14 (pp. 342 to 347, 350 to 353, 357 to 362)","Listed on Topic 4 slide 3. The slides say it is on <a href=\"http://www.vlebooks.com/vleweb/product/openreader?id=ESCP&accId=8767056&isbn=9781119391586\" target=\"_blank\" rel=\"noopener\">VLeBooks</a> (sign in with your ESCP Google account)."],["r4b","Weetman ch. 11 (pp. 312 to 317) and ch. 12","Listed on Topic 4 slide 4. The slides say it is on <a href=\"http://www.vlebooks.com/vleweb/product/openreader?id=ESCP&accId=8767056&isbn=9781119391586\" target=\"_blank\" rel=\"noopener\">VLeBooks</a> (sign in with your ESCP Google account)."],["r4c","Weygandt/Kimmel/Kieso ch. 10 (pp. 10-12 to 10-19)","Listed on Topic 4 slide 4. The slides say it is on <a href=\"http://www.vlebooks.com/vleweb/product/openreader?id=ESCP&accId=8767056&isbn=9781119391586\" target=\"_blank\" rel=\"noopener\">VLeBooks</a> (sign in with your ESCP Google account)."],["r4d","Videos: IAS 32 summary and compound instruments (CPDbox, free)","<a href=\"https://www.youtube.com/results?search_query=CPDbox+IAS+32+Financial+Instruments+Presentation\" target=\"_blank\" rel=\"noopener\">Search on YouTube</a>. Listed on Topic 4 slide 4."]],
   opt:[["o4a","Schmidt (2013), Accounting in Europe 10 (2)"],["o4b","Schmidt (2018), Die Wirtschaftsprüfung (8)"],["o4c","Schmidt and Schreiber (2010), Die Wirtschaftsprüfung (12)"]]},
@@ -384,6 +386,9 @@ var BOOKSTEP = {
  t1d:[["elliott",36,39,"Elliott 3.3: Formats, by nature or by function"],["melville",45,48,"Melville 3: The statement of comprehensive income"]],
  t1e:[["elliott",40,41,"Elliott 3.6: Other comprehensive income"],["melville",45,47,"Melville 3: Comprehensive income"]],
  t1f:[["elliott",44,44,"Elliott 3.9: Statement of changes in equity"],["elliott",104,132,"Elliott ch. 5: Statements of cash flows"],["melville",251,262,"Melville ch. 16: Statement of cash flows"]],
+ e0:[["elliott",569,571,"Elliott 22.1–22.3: Consolidated accounts and control (IFRS 10)"],["melville",292,293,"Melville 18: Requirement to prepare consolidated statements"]],
+ t4o:[["elliott",340,342,"Elliott 14.1–14.3.2: Financial instruments, scope and terms"],["melville",174,175,"Melville 11: Definitions"]],
+ t4f:[["melville",180,182,"Melville 11: The effective interest method"],["elliott",345,347,"Elliott 14.3.4: Finance costs on liabilities"]],
  e1:[["elliott",572,572,"Elliott 22.5: A wholly owned subsidiary"],["melville",293,296,"Melville 18: At the date of acquisition"]],
  e2:[["elliott",571,572,"Elliott 22.4–22.5: Fair values and goodwill"],["melville",293,296,"Melville 18: At the date of acquisition"]],
  e3:[["elliott",573,576,"Elliott 22.6: A partly owned subsidiary"],["melville",300,302,"Melville 18: Partly-owned subsidiaries"]],
@@ -681,7 +686,7 @@ function pick(a){ return a[Math.floor(Math.random()*a.length)]; }
 /* ================= status ================= */
 function creditDays(id){ var c = S.credits[id]||[], u = {}; c.forEach(function(d){u[d]=1;}); return Object.keys(u).length; }
 function stepStatus(t, id){
-  if(t.playable){
+  if(t.playable && id!=="e0"){
     var d = creditDays(id);
     if(d >= 2) return ["solid","Exam-ready"];
     if(d === 1) return ["prog","1 of 2 unaided"];
@@ -932,6 +937,12 @@ var FSTEP = {"loreal-urd-2023":"t1g","ifrs18-summary":"t1h","pwc-ifrs18":"t1h","
  "4:orange-urd-2023":"t4b","4:airfrance-urd-2023":"t4a","lufthansa-ar-2025":"t4e","airbus-fs-2023":"t4d",
  "orange-fy2023-presentation":"t5a","5:orange-urd-2023":"t5b","inditex-aa-2023":"t5b","dt-ar-2023":"t5b","veolia-urd-2023":"t5c","iag-ar-2023":"t5a","5:airfrance-urd-2023":"t5a","bayer-ar-2023":"t5b"};
 var openTerm = "";
+var STEPEXTRA = {
+ e0:[["ctx","Do the context check: 7 true-or-false statements, about 4 minutes",'<a class="btn small ghost" href="#context-check">Start the context check</a>']],
+ t4f:[["read","Read Melville pp. 180–182, the effective interest method. The slides skip this, so the book is the source here",'<a class="btn small ghost" href="#doc/bk-melville/193/t4f-0">Open Melville p. 180</a>'],
+      ["try","Try 2023 exam question 4 on paper, about 9 minutes",'<a class="btn small ghost" href="#doc/exam-2023/8">Open the question</a>'],
+      ["sol","Check yourself with the worked solution",'<a class="btn small ghost" href="#solution/4">Open the worked solution</a>']]
+};
 function TG(n){ S.tg = S.tg || {}; return S.tg[n] = S.tg[n] || {stage:"q", ri:0, cur:"", guess:-1, done:{}}; }
 function termify(text, n){
   var keys = Object.keys(TERMS[n]||{}).sort(function(a,b){ return b.length-a.length; }); if(!keys.length) return esc(text);
@@ -952,7 +963,7 @@ function ladderStrip(t, g, clickable){
     return '<li class="'+(on?"on":"")+'">'+(clickable ? '<button type="button" data-tstep="'+t.n+'|'+s[0]+'">'+inner+'</button>' : '<div>'+inner+'</div>')+'</li>'; }).join("")+'</ol>';
 }
 function vGuided(n){
-  var t = TOPICS[n-1], g = TG(n), G = GUESS[n], stages = ["q","goals","rate","step"], si = stages.indexOf(g.stage);
+  var t = TOPICS[n-1], g = TG(n), G = GUESS[n], stages = ["q","goals","rate","step","exam"], si = stages.indexOf(g.stage);
   var h = '<div class="row"><a class="back" href="#map">← Course map</a><button type="button" class="linkbtn" data-tview="'+n+'|all">Show the whole topic page</button></div>'+
     '<div class="stack"><div class="eyebrow">Topic '+t.n+' of 5 · '+esc(t.exam)+'</div><h1>'+esc(t.title)+'</h1></div>'+
     '<div class="pl-progress"><i style="width:'+Math.round((si+1)/stages.length*100)+'%"></i></div>';
@@ -994,7 +1005,8 @@ function vGuided(n){
       h += tick("case", (++num)+'. Try '+esc(p2.cases)+' on paper, without the solution', '<a class="btn small ghost" href="#doc/t'+n+'-cases/'+(S.docPos["t"+n+"-cases"]||1)+'">Open the '+(n>=4?"exercises":"cases")+'</a>');
       h += tick("sol", (++num)+'. Check yourself with the solution', dn.case ? '<a class="btn small ghost" href="#doc/t'+n+'-solutions/'+(S.docPos["t"+n+"-solutions"]||1)+'">Open the solutions</a>' : '<span class="note">Opens once you tick that you tried it.</span>');
     }
-    if(t.playable) h += tick("prac", (++num)+'. Practise this type with new numbers', '<a class="btn small ghost" href="#practice" data-start="'+cur[0]+'">Practise this type</a>');
+    (STEPEXTRA[cur[0]]||[]).forEach(function(x){ h += tick(x[0], (++num)+'. '+x[1], x[2]); });
+    if(t.playable && cur[0]!=="e0") h += tick("prac", (++num)+'. Practise this type with new numbers', '<a class="btn small ghost" href="#practice" data-start="'+cur[0]+'">Practise this type</a>');
     h += '</div>';
     var books = (BOOKSTEP[cur[0]]||[]).map(function(b, bi){ return '<a class="btn small ghost" href="#doc/bk-'+b[0]+'/'+bookPage(b[0], b[1])+'/'+cur[0]+'-'+bi+'">'+esc(b[3])+' · pp. '+b[1]+(b[2]!==b[1]?'–'+b[2]:'')+'</a>'; });
     if(BOOK[cur[0]]) books.push('<a class="btn small ghost" href="#doc/harrison/'+BOOK[cur[0]][0]+'">Harrison '+BOOK[cur[0]][2].replace("Book ","")+'</a>');
@@ -1006,10 +1018,173 @@ function vGuided(n){
     h += '<p class="lead" style="margin-top:8px">How well do you know it now?</p><div class="opts">'+RATINGS.slice(1).map(function(r){ return '<button type="button" class="opt" data-rate1="'+n+'|'+cur[0]+'|'+r[0]+'|step" aria-pressed="'+((S.rating[cur[0]]||"")===r[0])+'">'+r[1]+'</button>'; }).join("")+'</div></section>';
     var nx = t.steps[ci+1];
     h += nx ? '<div class="two">'+(ci>0?'<button class="btn ghost" data-tstep="'+n+'|'+t.steps[ci-1][0]+'">Previous step</button>':'<span></span>')+'<button class="btn" data-tstep="'+n+'|'+nx[0]+'">Next step</button></div>'
-      : '<section class="card"><h2>That\'s the last step</h2><p class="note">The 2023 exam questions for this topic are on the whole topic page for now. We\'ll decide together how the exam check should work.</p><button class="btn ghost" data-tview="'+n+'|all">Open the whole topic page</button></section>';
+      : '<div class="two">'+(ci>0?'<button class="btn ghost" data-tstep="'+n+'|'+t.steps[ci-1][0]+'">Previous step</button>':'<span></span>')+'<button class="btn" data-tf="'+n+'|exam">Next: check yourself</button></div>';
+  }
+  if(g.stage==="exam"){
+    S.selfMark = S.selfMark || {};
+    h += '<section class="card"><h2>1. Quick check</h2><p class="note">'+(DECKQ[n]||[]).length+' true-or-false statements from the end of the slides. About 4 minutes, answers right away.</p><a class="btn" href="#cards/deck-'+n+'">Start the quick check</a></section>';
+    h += '<section class="card"><h2>2. The 2023 exam questions</h2><p class="note">Try each one timed: points = minutes. Then compare with the worked solution, and ask Claude if something is unclear.</p>'+
+      (EXAMQ[n]||[]).map(function(q){ var sq = SOL[q], mk = S.selfMark[q]; return '<div class="readrow"><span><b>Question '+q+'</b> · '+sq.pts+' min'+(mk?' · <span class="pill '+({got:"solid",part:"prog",miss:"gap"})[mk]+'">'+({got:"got it",part:"partly",miss:"missed"})[mk]+'</span>':'')+'<br>'+esc(sq.title)+'</span><div class="attach"><a class="btn small ghost" href="#solution/'+q+'">Try it</a></div></div>'; }).join("")+'</section>';
+    if(TQUIZ[n]) h += '<section class="card"><h2>3. Your Topic '+n+' quiz</h2><p class="note">'+TQUIZ[n].length+' questions, 24 minutes, like the real one. Your plan also brings these back in short slots over the next days.</p><a class="btn ghost" href="#cards/quiz-'+n+'">Start the timed quiz</a></section>';
+    h += '<button class="btn ghost" data-tstep="'+n+'|'+t.steps[t.steps.length-1][0]+'">Back to the last step</button>';
   }
   return h;
 }
+/* ---------- the Nov 2023 exam: worked solutions written by Claude (not official), every number checked in code ---------- */
+var SOL = {
+ "1a":{t:1, pts:2, page:1, title:"Is this income statement IFRS?", ask:"The exam shows a 2022 income statement (in € millions) with lines such as net operating expense (68), investment income 558, foreign exchange result 3, other financial income and expenses (277), pre-tax income on ordinary activities 216, a line 'Extraordinary items', income tax +148 and net income 364. Question: is this income statement based on IFRS? Give one element as proof.",
+  a:"<p><b>No, it is not IFRS.</b> One element is enough:</p><ul class='plain'><li>It has a line <b>“Extraordinary items”</b>. IAS 1.87 forbids presenting any item as extraordinary, in the statement or in the notes.</li></ul><p class='note'>Other clues: the layout (operating, financial, exceptional, then tax) is the French individual-accounts format, and there is no other comprehensive income.</p>"},
+ "1b":{t:1, pts:2, page:2, title:"Is it a consolidated income statement?", ask:"Same 2022 income statement: net operating expense (68), investment income 558 (dividends), financial result, net income 364, no split of profit between owners and non-controlling interests. Question: is it consolidated? Give one element as proof.",
+  a:"<p><b>No, it is an individual (parent company) statement.</b> One element is enough:</p><ul class='plain'><li>The biggest income is <b>“Investment income” of 558</b>, which which is most likely dividends received from subsidiaries. In consolidated statements dividends inside the group are eliminated.</li><li>Or: there is <b>no split of net income between owners of the parent and non-controlling interests</b>, which a consolidated statement must show (IAS 1.81B).</li></ul><p class='note'>Revenue is almost nil and costs are small, which fits a holding company, not a group.</p>"},
+ "1c":{t:3, pts:3, page:2, title:"Rent charges despite IFRS 16", ask:"An IFRS company shows 'Rent and associated charges' of €48.3m (2022) inside external expenses, and also 'depreciation and impairment on right of use on leased assets' in the income statement. How can it still have rent charges if it applies IFRS 16?",
+  a:"<p>IFRS 16 puts most leases on the balance sheet (right-of-use asset, lease liability), but some payments still go straight to expenses:</p><ul class='plain'><li><b>Short-term leases</b> (12 months or less) and <b>leases of low-value assets</b>: the lessee may choose to expense them (IFRS 16.5–6).</li><li><b>Variable payments</b> that do not depend on an index or rate, for example rent based on sales.</li><li><b>“Associated charges”</b>: service and non-lease parts such as maintenance, cleaning or building charges, which are not part of the lease liability.</li></ul><p class='note'>For 3 points: name the IFRS 16 idea in one line, then two of these exceptions.</p>"},
+ "1d":{t:5, pts:6, page:3, title:"Which KPI is this?", ask:"The exam shows a cash flow excerpt (in €m): operating cash flow 5,168 in 2022 and 399 in 2021; net cash used in investing activities −2,286 in 2022 and −1,119 in 2021; KPI = 2,882 in 2022 and −720 in 2021. Profit before tax was 1,050 in 2022 and −2,606 in 2021; change in trade working capital +1,694 in 2022. Which KPI is it, how is it calculated, what does it mean, and comment on 2021 and 2022.",
+  a:"<p><b>Free cash flow.</b></p><ul class='plain'><li><b>Calculation:</b> operating cash flow plus net cash from investing activities. 2022: 5,168 − 2,286 = 2,882. 2021: 399 − 1,119 = −720.</li><li><b>Meaning:</b> the cash the business generates after paying for its investments, so the cash available to repay debt or pay shareholders.</li><li><b>2021:</b> negative. The company made a large loss (−2,606 before tax) and barely generated operating cash, so investments were financed with debt or equity.</li><li><b>2022:</b> strongly positive, thanks to the return to profit, but also to a large working-capital inflow (+1,694). That part may not repeat, so the quality of this free cash flow is lower than the number suggests.</li></ul>"},
+ "2a":{t:2, pts:1, page:4, title:"Why no goodwill amortisation?", ask:"easyJet's 2022 goodwill note shows cost £365m and no amortisation charge. Explain why there is no goodwill amortisation.",
+  a:"<p>Under IFRS 3 and IAS 36, goodwill is <b>not amortised</b>. Its useful life is treated as indefinite, so instead it must be <b>tested for impairment at least once a year</b>.</p>"},
+ "2b":{t:3, pts:5, page:4, title:"How the recoverable amount of goodwill is calculated", ask:"easyJet's note: the recoverable amount of goodwill and other indefinite-life assets is based on value in use for the airline route network cash-generating unit. Pre-tax cash flows come from the strategic plan up to 2027; pre-tax discount rate 12.2% (2022) vs 11.3% (2021); fuel price US$1,010 vs 696 per tonne. Explain how the recoverable amount of goodwill is calculated in general and for easyJet.",
+  a:"<ul class='plain'><li><b>In general:</b> goodwill has no cash flows of its own, so it is tested with the <b>cash-generating unit (CGU)</b> it belongs to. The recoverable amount is the <b>higher of fair value less costs of disposal and value in use</b> (IAS 36). If it is lower than the carrying amount of the CGU (including goodwill), the difference is an impairment loss, charged first to goodwill.</li><li><b>Value in use</b> is the present value of the future cash flows the CGU is expected to generate.</li><li><b>easyJet:</b> one CGU, the airline route network. Recoverable amount = value in use: cash flow projections from the strategic plan up to 2027, discounted at a pre-tax rate derived from WACC (12.2% in 2022).</li></ul>"},
+ "2c":{t:3, pts:4, page:5, title:"Discount rate and fuel price: stricter than last year?", ask:"easyJet raised its pre-tax discount rate from 11.3% (2021) to 12.2% (2022) and its fuel price assumption from US$696 to US$1,010 per tonne. How do these changes affect the recoverable amount of goodwill? Are the 2022 assumptions stricter (more prudent) than 2021?",
+  a:"<ul class='plain'><li><b>Higher discount rate</b> (11.3% → 12.2%): future cash flows are worth less today, so value in use falls.</li><li><b>Higher fuel price</b> ($696 → $1,010 per tonne): higher costs, lower cash flows, so value in use falls again.</li><li><b>So yes, stricter:</b> both changes lower the recoverable amount, which makes an impairment more likely. You can add that they also reflect the 2022 market (higher interest rates, expensive fuel), so they are realistic rather than only cautious.</li></ul>"},
+ "2d":{t:2, pts:16, page:5, title:"Consolidated balance sheet at acquisition", ask:"PC buys 100% of SA for 3,000 cash. PC values SA's brand at 600 and a building at 400 above book value, and expects synergies of 800. PC: cash 500, receivables 740, inventory 820, PP&E 4,600, investment in SA 3,000; share capital 900, share premium 700, retained earnings 1,210, current liabilities 2,850, long-term debt 4,000 (total 9,660). SA: cash 380, receivables 420, inventory 530, PP&E 870; share capital 200, share premium 825, retained earnings 175, current liabilities 350, long-term debt 650 (total 2,200). Prepare the purchase price allocation and the consolidated balance sheet at the date of acquisition.",
+  a:"<p><b>Purchase price allocation</b></p><table class='sol'><tr><td>Price paid</td><td>3,000</td></tr><tr><td>SA equity at book value (200 + 825 + 175)</td><td>1,200</td></tr><tr><td>+ Brand (not on SA's books)</td><td>600</td></tr><tr><td>+ Building, fair value above book</td><td>400</td></tr><tr><td>= Fair value of net assets bought</td><td>2,200</td></tr><tr><td><b>Goodwill</b> (3,000 − 2,200)</td><td><b>800</b></td></tr></table><p class='note'>The expected synergies are not recognised separately: they are part of what goodwill pays for. Deferred taxes on the revaluations are ignored, as in the slides.</p>"+
+   "<p><b>Consolidated balance sheet</b> (PC + SA, investment eliminated)</p><table class='sol'><tr><td>Goodwill</td><td>800</td></tr><tr><td>Brand</td><td>600</td></tr><tr><td>PP&amp;E (4,600 + 870 + 400)</td><td>5,870</td></tr><tr><td>Inventory (820 + 530)</td><td>1,350</td></tr><tr><td>Receivables (740 + 420)</td><td>1,160</td></tr><tr><td>Cash (500 + 380)</td><td>880</td></tr><tr><td><b>Total assets</b></td><td><b>10,660</b></td></tr><tr><td>Share capital (PC only)</td><td>900</td></tr><tr><td>Share premium (PC only)</td><td>700</td></tr><tr><td>Retained earnings (PC only)</td><td>1,210</td></tr><tr><td>Current liabilities (2,850 + 350)</td><td>3,200</td></tr><tr><td>Long-term debt (4,000 + 650)</td><td>4,650</td></tr><tr><td><b>Total equity and liabilities</b></td><td><b>10,660</b></td></tr></table><p class='note'>SA's equity disappears: it is replaced by the assets and liabilities behind it. At the date of acquisition only the parent's equity remains.</p>"},
+ "3":{t:3, pts:18, page:7, title:"Machine: impairment and reversal, N1 to N4", ask:"BUILD buys a machine on 1.1.N1 for €300,000, cost model, straight-line over 10 years. Fair value / cost to sell / value in use: N1 265,000 / 20,000 / 260,000; N2 245,000 / 20,000 / 230,000; N3 170,000 / 18,000 / 175,000; N4 200,000 / 15,000 / 190,000. N1 and N2 normal. In N3 a law prohibits concrete manufacturing from N8. In N4 a transition rule allows existing plants to continue until N11. Outline the reasoning and the accounting impacts for N1 to N4.",
+  a:"<p><b>N1 and N2: depreciation only.</b> 300,000 / 10 = 30,000 a year. Carrying amount 270,000 (N1), 240,000 (N2). Production runs as planned, so there is <b>no indication of impairment</b> and no test is required (IAS 36.9).</p>"+
+   "<p><b>N3: the new law is an indication.</b> First review the useful life (IAS 16.51): use ends before N8, so 5 years remain from N3 (N3 to N7). Depreciation N3 = 240,000 / 5 = <b>48,000</b> → 192,000.<br>Recoverable amount = higher of fair value less cost to sell (170,000 − 18,000 = 152,000) and value in use (175,000) = <b>175,000</b>.<br>Impairment loss = 192,000 − 175,000 = <b>17,000</b>, an expense in profit or loss. Carrying amount 175,000.</p>"+
+   "<p><b>N4: the transition rule is an indication of reversal.</b> Use is possible again until the original end of N10, so 7 years remain from N4. Depreciation N4 = 175,000 / 7 = <b>25,000</b> → 150,000.<br>Recoverable amount = higher of 185,000 (200,000 − 15,000) and 190,000 = 190,000.<br>But a reversal is capped at the carrying amount there would have been without the impairment: 192,000 − 192,000 / 7 = <b>164,571</b>.<br>Reversal = 164,571 − 150,000 = <b>14,571</b>, a gain in profit or loss. Carrying amount 164,571.</p>"+
+   "<p class='note'>A simpler reading keeps the 10-year life throughout: N3 carrying 210,000, impairment 35,000; N4 carrying 150,000 after 25,000 depreciation, cap 180,000 (300,000 − 4 × 30,000), reversal 30,000. In the exam, state which reading you use; the reasoning carries most of the points.</p>"},
+ "4":{t:4, pts:9, page:8, title:"Bond at amortised cost", ask:"Company B issues 5,000 bonds with nominal €100 on 1 January N1 at €90 each. Coupon 6% paid at year end, effective interest rate 7%, redeemed at nominal at the end of N10. What are the financial statement impacts in N1 and N2 at amortised cost?",
+  a:"<p><b>Issue (1.1.N1):</b> cash +450,000 (5,000 × 90); financial liability +450,000.</p><table class='sol'><tr><td></td><td>N1</td><td>N2</td></tr><tr><td>Liability at start</td><td>450,000</td><td>451,500</td></tr><tr><td>Interest expense (7% × start)</td><td>31,500</td><td>31,605</td></tr><tr><td>Coupon paid, cash out (6% × 500,000)</td><td>30,000</td><td>30,000</td></tr><tr><td>Liability at end</td><td>451,500</td><td>453,105</td></tr></table><p>The expense follows the <b>effective</b> rate on the carrying amount; the cash follows the <b>coupon</b>. The difference (1,500, then 1,605) is added to the liability, which climbs towards 500,000 by N10.</p>"},
+ "5a":{t:4, pts:4, page:9, title:"Treasury shares sold below cost", ask:"In N-1 a corporation bought back 40,000 own shares (€30 par) at €45. In N it sells 1,000 of them at €40. What is the effect on equity in N? (Multiple choice.)",
+  a:"<p><b>Answer: treasury shares become €45,000 less negative, share premium decreases by €5,000, cash increases by €40,000.</b></p><ul class='plain'><li>Cash in: 1,000 × 40 = 40,000.</li><li>The shares leave treasury at their cost: 1,000 × 45 = 45,000.</li><li>The 5,000 difference is not a loss in profit or loss: dealing in own shares never goes through the income statement. It reduces share premium (equity).</li></ul>"},
+ "5b":{t:5, pts:2, page:9, title:"ROCE", ask:"Which statement about Return on Capital Employed is correct? Options include: operating profit / capital employed; operating profit / total assets; EBITDA / capital employed; mandatory under IFRS; returns for shareholders.",
+  a:"<p><b>Answer: it is calculated as operating profit divided by capital employed.</b> It measures the return on all capital invested in operations (equity and debt), not only shareholders' return, and it is not required by IFRS.</p>"},
+ "5c":{t:5, pts:3, page:9, title:"Economic value added", ask:"Sales 49,155; EBITDA 5,565; EBIT 1,848; profit before tax 1,575; tax rate 25%; profit after tax 1,181; WACC 6.5%; capital employed 32,780 (€m). What is EVA? Options: 2,043; −282.7; −744.7; −949.7.",
+  a:"<p><b>Answer: −744.7 m€.</b></p><ul class='plain'><li>EVA = NOPAT − WACC × capital employed.</li><li>NOPAT = EBIT × (1 − tax) = 1,848 × 0.75 = 1,386.</li><li>Capital charge = 6.5% × 32,780 = 2,130.7.</li><li>EVA = 1,386 − 2,130.7 = <b>−744.7</b>.</li></ul><p class='note'>The traps: −949.7 uses profit after tax (after interest, so financing is counted twice); 2,043 starts from EBITDA.</p>"}
+};
+var EXAMQ = {1:["1a","1b"], 2:["2a","2d"], 3:["1c","2b","2c","3"], 4:["4","5a"], 5:["1d","5b","5c"]};
+/* ---------- quick checks: the true-or-false quiz at the end of each slide deck (answers worked out by Claude from the slides, not official) ---------- */
+var DECKQ = {
+ 1:[["In 2026, the EU is the only jurisdiction in the world that requires IFRS for the consolidated statements of listed companies.",false,"Over 140 jurisdictions require IFRS for listed companies, for example the UK, Australia and Brazil."],
+    ["In case of conflict between an IFRS and the Conceptual Framework, the IFRS overrides the Conceptual Framework.",true,"The Framework is not a standard. Where they conflict, the standard wins."],
+    ["Accounts receivable maturing in more than one year have to be presented as non-current assets.",false,"Receivables realised within the normal operating cycle are current, even if that is longer than 12 months (IAS 1.66)."],
+    ["Operating expenses can be presented either by nature or by function in the statement of comprehensive income.",true,"IAS 1 allows both. By function then needs extra disclosure by nature in the notes."],
+    ["Operating profit is currently precisely defined under IFRS.",false,"Not yet: IAS 1 has no definition. IFRS 18 introduces a defined operating profit from 2027."],
+    ["Comprehensive income is equal to net income plus other comprehensive income.",true,"Total comprehensive income = profit or loss + OCI."],
+    ["Operating cash flows must be presented according to the direct method.",false,"IAS 7 allows the direct or the indirect method. Most companies use the indirect one."],
+    ["The statement of changes in equity shows purchases and sales of treasury shares.",true,"They are transactions with owners, so they appear in the statement of changes in equity."],
+    ["IFRS 18 will replace IAS 7 'Statement of cash flows' from January 2027.",false,"IFRS 18 replaces IAS 1. IAS 7 stays, with small amendments."]],
+ 2:[["Individual financial statements are generally prepared under IFRS in Europe.",false,"Individual statements usually follow local rules (German, French GAAP). IFRS is required for the consolidated statements of listed groups."],
+    ["A group is an economic entity composed of different legal entities.",true,"That is why it publishes consolidated statements on top of each entity's own."],
+    ["Company A owns 10% of E1. Based on that percentage, E1 is included in A's scope of consolidation.",false,"10% gives neither control nor significant influence, so E1 is not consolidated or equity-accounted."],
+    ["Company A has a controlling influence on E2. E2 is included in A's scope of consolidation.",true,"Control is the test (IFRS 10), so E2 is fully consolidated."],
+    ["Company A owns 0% of E3. It is absolutely impossible to include E3 in A's scope of consolidation.",false,"Control can exist without shares, for example through contracts or a structured entity."],
+    ["The only way to control another company is to own more than 50% of its voting rights.",false,"Control can also come from agreements with other shareholders, rights to appoint the board, or de facto control."],
+    ["Goodwill is always the purchase price minus the book value of the shares bought.",false,"It is the price minus the fair value of the identifiable net assets, after the purchase price allocation."],
+    ["Consolidated net income = parent's net income + 100% of the subsidiary's adjusted post-acquisition net income, even when the parent owns less than 100%.",true,"Full consolidation adds 100%. The share of the outside owners is then shown as profit attributable to non-controlling interests."],
+    ["Non-controlling interests provide equity to a subsidiary, so they are included in consolidated equity.",true,"IFRS 10 presents them within equity, separately from the parent owners' equity."],
+    ["The equity method measures the investment in an associate at fair value, for example market value.",false,"It starts at cost and adds the investor's share of the associate's profits and losses, minus dividends."]],
+ 3:[["IAS 38 requires that acquired brand names have to be amortised.",false,"Only if their useful life is finite. Brands with an indefinite life are not amortised, they are tested for impairment."],
+    ["Tangible assets have to be measured at fair value under IFRS.",false,"The cost model is allowed (and most common). The revaluation model is an option."],
+    ["Internally generated brands, publishing titles and customer lists can be recognised as intangible assets if legally protected.",false,"IAS 38.63 forbids recognising them, protected or not."],
+    ["When an asset does not generate cash on its own, it is tested for impairment within a group of assets that does.",true,"That group is the cash-generating unit (CGU)."],
+    ["When the recoverable amount rises after an impairment, the carrying amount goes back up to historical acquisition cost.",false,"The reversal is capped at what the carrying amount would have been without the impairment, after depreciation."],
+    ["Research costs are always expensed, while development costs are capitalised when they meet IAS 38's conditions.",true,"That is the IAS 38 split between research and development."],
+    ["If a building rental meets IFRS 16's definition of a lease, the lessee expenses the payments on a straight-line basis.",false,"The lessee recognises a right-of-use asset and a lease liability; the expense is depreciation plus interest."],
+    ["At the start of a lease, the right-of-use asset is always equal to the lease liability.",false,"The asset also includes prepayments, initial direct costs and restoration costs, minus incentives received."]],
+ 4:[["The debt-or-equity distinction only matters for the equity and liabilities side, not the asset side.",false,"The holder also needs it: how an investment is measured under IFRS 9 depends on whether it is a debt or an equity instrument."],
+    ["An instrument that must be repaid at the holder's request is equity if it is called a share.",false,"The name is irrelevant. An obligation to pay cash makes it a liability."],
+    ["An instrument with no obligation to repay and no obligation to pay ongoing compensation is equity.",true,"No contractual obligation to deliver cash, so it is equity under IAS 32."],
+    ["Transaction costs of issuing equity or debt instruments are expensed immediately.",false,"Equity issue costs are deducted from equity; debt issue costs reduce the liability and are spread through the effective interest rate."],
+    ["The difference between issued and authorised shares can be explained by share buy-backs.",false,"Authorised minus issued is shares not issued yet. Buy-backs explain the gap between issued and outstanding shares."],
+    ["A difference between the buy-back price and the resale price of treasury shares goes to share premium, not the income statement.",true,"Dealing in own shares never creates profit or loss."],
+    ["Shares with mandatory annual dividends that holders can ask to be repaid are classified as debt.",true,"Both features are obligations to pay cash."],
+    ["Some instruments have an equity and a debt component, which are accounted for separately.",true,"Compound instruments such as convertible bonds use split accounting."]],
+ 5:[["EBITDA is one of the most popular GAAP KPIs and is regulated by IAS 1.",false,"EBITDA is not defined by IFRS. It is a non-GAAP measure (under IFRS 18, a management-defined performance measure)."],
+    ["EBITDA differs from operating cash flow because it is before working capital changes.",true,"Operating cash flow also adjusts for working capital (and taxes paid), which EBITDA ignores."],
+    ["EBITDA helps compare companies with different financing, depreciation policies and tax rates.",true,"It removes interest, taxes, depreciation and amortisation, which is why analysts like it for comparisons."],
+    ["ROCE measures how a company uses shareholders' capital to generate earnings.",false,"ROCE uses all capital employed, equity and debt. Return on equity looks at shareholders only."],
+    ["With ROCE = EBIT × (1 − t) / capital employed, ROCE is not affected by depreciation policies.",false,"Depreciation changes both EBIT and the capital employed."],
+    ["A company can improve ROCE by postponing profitable investments, which may reduce firm value.",true,"Less capital employed raises ROCE in the short run, but the lost investments cost value."],
+    ["With the asset approach, working capital needs are current assets minus current liabilities.",true,"Capital employed = fixed assets + working capital needs."],
+    ["The only way to increase ROCE is to increase the NOPAT margin.",false,"ROCE = margin × capital turnover (Du Pont), so better turnover also works."],
+    ["Dividends paid to shareholders reduce free cash flow to the firm.",false,"Free cash flow to the firm is before any payments to capital providers."],
+    ["Debt repayments do not reduce free cash flow to the firm, but they reduce free cash flow to equity.",true,"FCFE is what is left for shareholders after debt flows."]]
+};
+/* ---------- your real topic quizzes (24 minutes each). Topic 4 from your file; the others come when you have them ---------- */
+var TQUIZ = {
+ 4:[{q:"An example of a hybrid bond is a bond that lets the issuer absorb losses in financial distress because it is subordinated to senior debt.", o:["True","False"], a:0, e:"Hybrid bonds are deeply subordinated, often perpetual, and coupons can be deferred. Ranking below senior debt, they absorb losses first: their equity-like feature."},
+    {q:"Equity: share capital 885 (2020) vs 777 (2019); share premium 3,555 vs 2,941; retained earnings 6,241 vs 5,923; treasury shares (82) vs (50), in M€. Par value €2. Which is correct for 2020?", o:["The company issued 54 million new shares","The company issued 108 million new shares","The company issued 722 million new shares","The company issued 361 million new shares"], a:0, e:"Share capital is at par: 885 − 777 = 108 M€, / €2 = 54 million shares. 108 is the euro amount, not the number of shares."},
+    {q:"A bond: nominal 1,000 M€ issued 1 Jan year 1 at 900 M€; coupon 4% paid annually; effective rate 8%; 5 years. Impact in year 2?", o:["Cash −40, liabilities rise to 966.56, interest expense 74.56","Cash −80, liabilities stay at 1,000, interest expense 80","Cash −40, liabilities rise to 1,066.56, interest expense 74.56","Cash −40, liabilities rise to 980 (straight-line)"], a:0, e:"Year 1: 900 × 8% = 72 expense, 40 paid, liability 932. Year 2: 932 × 8% = 74.56 expense, 40 paid, liability 966.56."},
+    {q:"A company bought 20,000 own shares at €15. It now sells 2,000 of them at €20. The impact:", o:["Cash +40,000, treasury shares +30,000 (less negative), share premium +10,000","Cash +40,000, treasury shares −30,000, share premium +10,000","Cash +40,000, treasury shares +30,000, share capital +10,000","Cash +40,000, treasury shares +40,000"], a:0, e:"Shares leave treasury at cost (2,000 × 15 = 30,000). The €5 gain per share goes to share premium, never to profit."},
+    {q:"The interest expense of a bond at amortised cost equals the nominal interest rate times the issue amount.", o:["True","False"], a:1, e:"Interest expense = effective rate × carrying amount at the start of the period. The nominal rate only sets the cash paid."},
+    {q:"Preferred shares issued by a company are always classified as equity.", o:["True","False"], a:1, e:"Substance over form (IAS 32): mandatory redemption, a holder's put or mandatory dividends make them a liability. 'Always' is the giveaway."},
+    {q:"Same equity data as before (share capital 885 vs 777, share premium 3,555 vs 2,941, par €2). The issue price of the new shares in 2020 was:", o:["54 M€","108 M€","722 M€","361 M€"], a:2, e:"Issue price = increase in share capital + increase in share premium = 108 + 614 = 722 M€."},
+    {q:"Classifying an instrument as debt or equity changes how its ongoing compensation (interest, dividend) is accounted for.", o:["True","False"], a:0, e:"Debt: interest expense in profit or loss. Equity: dividends taken directly from retained earnings."}]
+};
+var QZ = null;
+function qzItems(topics){
+  var out = [];
+  topics.forEach(function(n){ (DECKQ[n]||[]).forEach(function(x, i){ out.push({id:"d"+n+"-"+i, n:n, q:x[0], o:["True","False"], a:x[1]?0:1, e:x[2]}); });
+    (TQUIZ[n]||[]).forEach(function(x, i){ out.push({id:"q"+n+"-"+i, n:n, q:x.q, o:x.o, a:x.a, e:x.e}); }); });
+  return out;
+}
+/* spaced, mixed card set: questions you missed come back first, then ones not seen for longest */
+function cardSet(topics, k){
+  S.qlog = S.qlog || {}; var items = qzItems(topics);
+  items.sort(function(a,b){ var A = S.qlog[a.id]||{}, B = S.qlog[b.id]||{}; return ((A.miss?0:1)-(B.miss?0:1)) || ((A.t||0)-(B.t||0)); });
+  var pick = items.slice(0, k), mixed = [], by = {};
+  pick.forEach(function(x){ (by[x.n] = by[x.n] || []).push(x); });
+  while(mixed.length < pick.length){ Object.keys(by).forEach(function(n){ if(by[n].length) mixed.push(by[n].shift()); }); }
+  return mixed;
+}
+function vCards(arg){
+  var deck = /^deck-/.test(arg), timed = /^quiz-/.test(arg), topics = (timed || deck ? arg.slice(5) : arg).split(",").map(Number).filter(function(n){ return n>=1 && n<=5; });
+  if(!topics.length) topics = [2];
+  if(!QZ || QZ.key !== arg){ QZ = {key:arg, items: timed ? qzItems(topics).filter(function(x){ return x.id[0]==="q"; }) : deck ? qzItems(topics).filter(function(x){ return x.id[0]==="d"; }) : cardSet(topics, 8), i:0, picked:-1, right:0, start:Date.now(), timed:timed, mins: timed ? 24 : 0}; }
+  var it = QZ.items[QZ.i], h = '<a class="back" href="#plan">← Plan</a>';
+  h += '<div class="stack"><div class="eyebrow">'+(timed ? 'Topic '+topics[0]+' quiz · 24 minutes, like the real one' : deck ? 'Topic '+topics[0]+' · quick check from the end of the slides' : 'Question cards · Topic'+(topics.length>1?'s ':' ')+topics.join(", "))+'</div></div>';
+  if(!QZ.items.length) return h+'<section class="card"><p>No questions for this topic yet. Your real quiz questions for it will appear here once you add them.</p></section>';
+  if(timed){ var left = Math.max(0, QZ.mins*60 - Math.floor((Date.now()-QZ.start)/1000)); h += '<div class="readbar"><span class="timer" id="qz-clock">'+Math.floor(left/60)+':'+("0"+left%60).slice(-2)+'</span><span class="pg">'+(QZ.i+1)+' of '+QZ.items.length+'</span></div>'; }
+  else h += '<div class="pl-progress"><i style="width:'+Math.round(QZ.i/QZ.items.length*100)+'%"></i></div>';
+  if(!it){
+    S.qdone = S.qdone || {}; S.qdone[arg] = new Date().toISOString().slice(0,10); save();
+    return h+'<section class="card pl-big"><h2>'+QZ.right+' of '+QZ.items.length+' right</h2><p class="lead">'+(QZ.right===QZ.items.length?'All of them. ':'')+'Missed ones come back first next time, so a miss now is useful.</p>'+(deck||timed ? '<a class="btn" href="#topic-'+topics[0]+'">Back to Topic '+topics[0]+'</a>' : '<a class="btn" href="#plan">Back to the plan</a>')+'</section>';
+  }
+  h += '<section class="card pl-big"><div class="eyebrow">Topic '+it.n+' · '+(it.id[0]==="d"?"true or false, from the slides":"from your quiz")+'</div><p class="pl-one" style="font-size:19px">'+esc(it.q)+'</p><div class="opts">'+
+    it.o.map(function(o, oi){ var cls = QZ.picked<0 ? "" : oi===it.a ? " right" : oi===QZ.picked ? " wrong" : ""; return '<button type="button" class="opt'+cls+'" data-qzpick="'+oi+'"'+(QZ.picked>=0?" disabled":"")+'>'+esc(o)+'</button>'; }).join("")+'</div>';
+  if(QZ.picked >= 0) h += '<p class="pl-calm"><b>'+(QZ.picked===it.a?"Right.":"Not this time.")+'</b> '+esc(it.e)+'</p><button class="btn" data-qznext="1">'+(QZ.i+1<QZ.items.length?"Next question":"See your result")+'</button>';
+  h += '</section><p class="note">'+(it.id[0]==="d"?"Answers worked out by Claude from the slides, not official.":"Answers from your quiz solutions file.")+'</p>';
+  return h;
+}
+
+/* ---------- worked solution page, with a timer, your answer and an "Ask Claude" prompt ---------- */
+var solTimer = null;
+function claudePrompt(q){
+  var s = SOL[q], t = TOPICS[s.t-1], mine = ((S.ans||{})[q]||"").trim();
+  return "I'm preparing for my ESCP IFRS exam (CM01, Fundamentals of International Financial Reporting) on Tuesday 24 November 2026: 75 minutes, 75 points, calculator and two cheat sheets (4 pages) allowed. Points equal minutes.\n\n"+
+    "I'm practising question "+q+" of the November 2023 final exam ("+s.pts+" points), which belongs to Topic "+s.t+": "+t.title+".\n\n"+
+    "The question: "+s.ask+"\n\n"+
+    "My answer: "+(mine || "(I haven't written one yet. Please ask me to try first before explaining.)")+"\n\n"+
+    "A worked solution I was given (written by an AI, not the official one; please check it too):\n"+s.a.replace(/<[^>]+>/g," ").replace(/&amp;/g,"&").replace(/\s+/g," ").trim()+"\n\n"+
+    "Please: 1) check my answer step by step and say what would earn and lose points, in plain language; 2) point out anything in the worked solution you disagree with; 3) if you need the exam page, my Topic "+s.t+" slides or the case solutions, ask me and I'll upload them; 4) finish with one similar practice question for me to try.";
+}
+function vSolution(q){
+  var s = SOL[q]; if(!s) return '<a class="back" href="#map">← Course map</a><p class="lead">This question does not exist.</p>';
+  S.ans = S.ans || {}; S.solShown = S.solShown || {}; S.selfMark = S.selfMark || {};
+  var h = '<a class="back" href="#topic-'+s.t+'">← Topic '+s.t+'</a><div class="stack"><div class="eyebrow">2023 exam · question '+q+' · '+s.pts+' point'+(s.pts===1?"":"s")+' = '+s.pts+' minute'+(s.pts===1?"":"s")+'</div><h1>'+esc(s.title)+'</h1></div>';
+  h += '<section class="card"><div class="attach"><a class="btn small ghost" href="#doc/exam-2023/'+s.page+'">Open the question (page '+s.page+')</a><button class="btn small'+(solTimer&&solTimer.q===q?" ghost":"")+'" data-soltimer="'+q+'">'+(solTimer&&solTimer.q===q?'<span id="sol-clock">'+s.pts+':00</span>':'Start a '+s.pts+'-minute timer')+'</button></div>'+
+    '<label class="f">Your answer<textarea id="sol-ans" data-solans="'+q+'" placeholder="Write it like in the exam. It goes into the prompt for Claude.">'+esc(S.ans[q]||"")+'</textarea></label></section>';
+  if(!S.solShown[q]) h += '<button class="btn" data-solshow="'+q+'">Show the worked solution</button><p class="note">Try first. Looking at a solution before trying doesn\'t train the step.</p>';
+  else {
+    h += '<section class="card sol"><div class="eyebrow">Worked by Claude, not official</div>'+s.a+'</section>';
+    h += '<section class="card"><h2>How did it go?</h2><div class="opts">'+[["got","Got it"],["part","Partly"],["miss","Missed it"]].map(function(m){ return '<button type="button" class="opt" data-selfmark="'+q+'|'+m[0]+'" aria-pressed="'+(S.selfMark[q]===m[0])+'">'+m[1]+'</button>'; }).join("")+'</div></section>';
+  }
+  h += '<section class="card"><h2>Ask Claude about this</h2><p class="note">Copies a message with the course, the exam rules, the question, your answer and the worked solution, then opens Claude. Paste it there. Claude will ask for any file it needs.</p><button class="btn ghost" data-askclaude="'+q+'">'+(askCopied===q?"Copied. Paste it in Claude ✓":"Copy and open Claude")+'</button></section>';
+  return h;
+}
+var askCopied = "";
 function vTopic(n){
   var t = TOPICS[n-1]; if(!t) return vMap();
   if(!(S.tview||{})[n]) return vGuided(n);
@@ -1019,7 +1194,7 @@ function vTopic(n){
     '<section class="card"><h2>By the end you can</h2><ul class="plain">'+t.goals.map(function(g){return "<li>"+g+"</li>";}).join("")+'</ul></section>';
   h += '<section class="card"><div class="row"><h2>The ladder</h2><span class="note">'+t.steps.length+' steps</span></div><ol class="ladder">'+t.steps.map(function(s,i){
     var st = stepStatus(t, s[0]);
-    var ctl = t.playable
+    var ctl = (t.playable && s[0]!=="e0")
       ? '<div class="row" style="justify-content:flex-start"><a class="btn small ghost" href="#practice" data-start="'+s[0]+'">Practise this type</a></div>'
       : '<select aria-label="How well do you know this step?" data-rate="'+s[0]+'">'+RATINGS.map(function(r){return '<option value="'+r[0]+'"'+((S.rating[s[0]]||"")===r[0]?" selected":"")+'>'+r[1]+'</option>';}).join("")+'</select>';
     var sl = s[3] ? '<a class="btn small ghost" href="#doc/t'+t.n+'-slides/'+s[3]+'">Open slides '+s[3]+(s[4]&&s[4]!==s[3]?'–'+s[4]:'')+'</a>' : '<a class="btn small ghost" href="#doc/t'+t.n+'-cases/1">Open the cases</a>';
@@ -1310,17 +1485,21 @@ function vDev(){
 function render(){
   if(tick){ clearInterval(tick); tick = null; }
   killCity();
-  var r = route(), m = r.match(/^topic-(\d)$/);
-  nav.innerHTML = TABS.map(function(x){ var cur = x[0]===r || (x[0]==="plan" && /^plan\//.test(r)) || (x[0]==="map" && (m || /^doc\//.test(r) || r==="practice" || r==="level-check" || r==="context-check")); return '<a href="#'+x[0]+'"'+(cur?' aria-current="page"':'')+'>'+x[1]+'</a>'; }).join("");
+  var r = route(), m = r.match(/^topic-(\d)$/), msol = r.match(/^solution\/([0-9a-z]+)$/), mcard = r.match(/^cards\/([a-z0-9,-]+)$/);
+  nav.innerHTML = TABS.map(function(x){ var cur = x[0]===r || (x[0]==="plan" && /^plan\//.test(r)) || (x[0]==="map" && (m || /^doc\//.test(r) || /^solution\//.test(r) || r==="practice" || r==="level-check" || r==="context-check")); return '<a href="#'+x[0]+'"'+(cur?' aria-current="page"':'')+'>'+x[1]+'</a>'; }).join("");
   var dr = docRoute(r);
   if(!dr && DV.err){ DV.err = ""; DV.id = ""; }
   if(dr){ openDoc(dr); if(DV.doc && DV.id===dr.id){ S.docPos[dr.id] = dr.page; saveLocal(); } }
   var isPlan = /^plan(\/|$)/.test(r) || r==="journal";
-  var v = isPlan ? (window.FLPlan ? window.FLPlan.view(r) : '<p class="lead">Loading the planner…</p>') : dr ? vDoc(dr) : m ? vTopic(+m[1]) : ({map:vMap, universe:vUniverse, practice:vPractice, "level-check":vCheck, "context-check":vContext, reading:vReading, "dev-notes":vDev, account:vAccount}[r] || vMap)();
+  var v = isPlan ? (window.FLPlan ? window.FLPlan.view(r) : '<p class="lead">Loading the planner…</p>') : dr ? vDoc(dr) : m ? vTopic(+m[1]) : msol ? vSolution(msol[1]) : mcard ? vCards(mcard[1]) : ({map:vMap, universe:vUniverse, practice:vPractice, "level-check":vCheck, "context-check":vContext, reading:vReading, "dev-notes":vDev, account:vAccount}[r] || vMap)();
   app.innerHTML = v;
   if(document.getElementById("city")) mountCity();
   if(isPlan && window.FLPlan) window.FLPlan.after(r);
   if(dr && DV.doc) drawDoc(Math.min(Math.max(1, dr.page), DV.doc.numPages));
+  if(msol || mcard) tick = setInterval(function(){
+    var c = document.getElementById("sol-clock"); if(c && solTimer){ var l = Math.max(0, solTimer.secs - Math.floor((Date.now()-solTimer.start)/1000)); c.textContent = Math.floor(l/60)+":"+("0"+l%60).slice(-2)+(l===0?" · time's up":""); }
+    var q = document.getElementById("qz-clock"); if(q && QZ && QZ.timed){ var l2 = Math.max(0, QZ.mins*60 - Math.floor((Date.now()-QZ.start)/1000)); q.textContent = Math.floor(l2/60)+":"+("0"+l2%60).slice(-2); }
+  }, 1000);
   if(r==="reading" && S.timer && S.timer.start && R){
     if(R.kind==="pdf") drawPage();
     tick = setInterval(function(){ var c = document.getElementById("clock"); if(!c || !S.timer) return; c.textContent = clock(Math.floor((Date.now()-S.timer.start)/1000)); }, 1000);
@@ -1346,6 +1525,14 @@ app.addEventListener("click", function(e){
   if(a){ S.ex = gen(a.dataset.start); save(); return; }
   var t = e.target.closest("button"); if(!t) return;
   var dsg = t.dataset;
+  if(dsg.qzpick !== undefined && QZ){ var it0 = QZ.items[QZ.i]; QZ.picked = +dsg.qzpick; var ok = QZ.picked===it0.a; if(ok) QZ.right++; S.qlog = S.qlog || {}; S.qlog[it0.id] = {t:Date.now(), miss:!ok}; save(); render(); return; }
+  if(dsg.qznext && QZ){ QZ.i++; QZ.picked = -1; render(); window.scrollTo(0,0); return; }
+  if(dsg.soltimer){ var sq = SOL[dsg.soltimer]; solTimer = {q:dsg.soltimer, start:Date.now(), secs:sq.pts*60}; render(); return; }
+  if(dsg.solshow){ S.solShown = S.solShown || {}; S.solShown[dsg.solshow] = true; save(); render(); return; }
+  if(dsg.selfmark){ var smk = dsg.selfmark.split("|"); S.selfMark = S.selfMark || {}; S.selfMark[smk[0]] = smk[1]; save(); render(); return; }
+  if(dsg.askclaude){ var pq = dsg.askclaude, txt = claudePrompt(pq), done = function(){ askCopied = pq; render(); window.open("https://claude.ai/new", "_blank"); };
+    if(navigator.clipboard) navigator.clipboard.writeText(txt).then(done, function(){ window.prompt("Copy this and paste it in Claude:", txt); });
+    else window.prompt("Copy this and paste it in Claude:", txt); return; }
   if(dsg.tview !== undefined){ var tv = dsg.tview.split("|"); S.tview = S.tview || {}; S.tview[tv[0]] = tv[1]; save(); render(); window.scrollTo(0,0); return; }
   if(dsg.tf){ var tf = dsg.tf.split("|"); TG(+tf[0]).stage = tf[1]; if(tf[1]==="rate") TG(+tf[0]).ri = 0; save(); render(); window.scrollTo(0,0); return; }
   if(dsg.guess){ var gu = dsg.guess.split("|"); TG(+gu[0]).guess = +gu[1]; save(); render(); return; }
@@ -1397,6 +1584,7 @@ app.addEventListener("click", function(e){
   if(t.id==="reset"){ S = fresh(); save(); go("map"); return; }
 });
 app.addEventListener("input", function(e){
+  if(e.target.dataset && e.target.dataset.solans){ S.ans = S.ans || {}; S.ans[e.target.dataset.solans] = e.target.value; saveLocal(); }
   var t = e.target, x = curEx();
   if(t.dataset.field && x){ x.values[t.dataset.field] = t.value; save(); }
   if(t.id==="feel" && S.check){ S.check.text = t.value; save(); }
@@ -1474,7 +1662,7 @@ document.addEventListener("change", function(e){
   }
 });
 window.addEventListener("hashchange", function(){ render(); window.scrollTo(0,0); });
-window.FL = {get S(){ return S; }, get signedOut(){ return !!(sb && !sbUser && cloud.state==="signedout"); }, save:save, render:render, go:go, esc:esc, TOPICS:TOPICS, BOOKMAP:BOOKMAP, confetti:confetti};
+window.FL = {get S(){ return S; }, get signedOut(){ return !!(sb && !sbUser && cloud.state==="signedout"); }, save:save, render:render, go:go, esc:esc, TOPICS:TOPICS, BOOKMAP:BOOKMAP, TQUIZ:TQUIZ, confetti:confetti};
 render(); setSync(); initCloud(); bookCheck().then(render);
 })();
 </script>

@@ -190,6 +190,8 @@ function plan(){
   var p = P(), ds = days(), models = ds.map(dayModel), q = stepQueue(), qi = 0, left = q.length ? q[0].mins : 0, learned = [], allSlots = [];
   var lastDay = addDays(p.exam.date, -1), lastN = 0, tot = {}, got = {};
   q.forEach(function(x){ tot[x.topic] = (tot[x.topic]||0) + x.mins; got[x.topic] = 0; });
+  var doneT = {}, quizzed = {}, hasQuiz = FL.TQUIZ || {};
+  function touched(){ var o = []; learned.forEach(function(x){ if(o.indexOf(x.topic)<0) o.push(x.topic); }); return o.length ? o : [q.length ? q[0].topic : 2]; }
   models.forEach(function(md){
     md.slots.forEach(function(sl){
       var eff = Math.round(sl.len * 50/60), parts = [];
@@ -197,12 +199,14 @@ function plan(){
       else if(md.date === lastDay){ sl.kind = "review"; lastN++;
         sl.what = lastN===1 ? "Write your 2 cheat sheets (4 pages): formulas and the steps of each ladder" : lastN===2 && sl.len >= 75 ? "The Nov 2023 exam, timed: 75 minutes, calculator and cheat sheets only" : "Mixed review: question cards from every topic"; }
       else if(sl.len < 45 || sl.s >= 1230 || (!QUIET[(place(sl.place)||{}).kind] && p.decisions.noise !== "noisy")){
-        sl.kind = "cards"; sl.what = learned.length ? "Question cards: "+learned.slice(-3).map(function(x){ return "T"+x.topic+" "+x.name; }).join(", ") : "Question cards: Topic 2 basics";
+        var qn = Object.keys(doneT).filter(function(n){ return hasQuiz[n] && !quizzed[n]; })[0];
+        if(qn && sl.len >= 24){ quizzed[qn] = 1; sl.kind = "quiz"; sl.quiz = +qn; sl.what = "Your Topic "+qn+" quiz, timed: 24 minutes"; }
+        else { sl.kind = "cards"; sl.cards = touched(); sl.what = "Question cards: Topic"+(sl.cards.length>1?"s ":" ")+sl.cards.join(", ")+" (8 mixed questions, missed ones first)"; }
       } else {
         sl.kind = "learn";
         while(eff > 10 && qi < q.length){
           var use = Math.min(eff, left); parts.push({step:q[qi], mins:use, cont:left < q[qi].mins}); eff -= use; left -= use; got[q[qi].topic] += use;
-          if(left <= 0){ learned.push(q[qi]); qi++; left = qi < q.length ? q[qi].mins : 0; }
+          if(left <= 0){ learned.push(q[qi]); if(!q[qi+1] || q[qi+1].topic !== q[qi].topic) doneT[q[qi].topic] = 1; qi++; left = qi < q.length ? q[qi].mins : 0; }
         }
         if(!parts.length){ sl.kind = "review"; sl.what = "Everything is scheduled: spaced review"; }
         sl.parts = parts;
@@ -227,6 +231,13 @@ function countdown(){
 function legText(l){
   var A = place(l.from)||{}, B = place(l.to)||{};
   return '<b>Leave '+hm(l.leave)+'</b> → park '+hm(l.park)+' → inside '+hm(l.inside)+'<br><span class="note">'+esc(A.name||"")+' → '+esc(B.name||"")+' · '+l.drive+' min '+(l.src==="estimate"?"(estimate)":l.src==="checked"?"(checked by you)":"")+(l.buffer?' + '+l.buffer+' min rush hour':'')+'</span>';
+}
+function slotLink(sl){
+  if(sl.kind==="learn" && sl.parts && sl.parts[0]) return '<button class="btn small" data-pgo="'+sl.parts[0].step.topic+'|'+sl.parts[0].step.id+'">Start: Topic '+sl.parts[0].step.topic+', '+esc(sl.parts[0].step.name)+'</button>';
+  if(sl.kind==="cards") return '<a class="btn small" href="#cards/'+(sl.cards||[2]).join(",")+'">Start the question cards</a>';
+  if(sl.kind==="quiz") return '<a class="btn small" href="#cards/quiz-'+sl.quiz+'">Start the timed quiz</a>';
+  if(/2023 exam/.test(sl.what||"")) return '<a class="btn small" href="#doc/exam-2023/1">Open the 2023 exam</a>';
+  return "";
 }
 function slotText(sl){
   var pl = place(sl.place)||{}, qt = QUIET[pl.kind] ? "quiet" : "noisy";
@@ -337,10 +348,10 @@ function vHome(){
   var line = "", sub = "";
   if(nx && nx.rest && nx.day===today && (!nx.n || nx.day!==today)){ line = "Today: no studying. Rest after the hackathon."; sub = "Long day. The plan starts tomorrow."; }
   else if(nx && nx.n && nx.n.kind==="leave"){ var l = nx.n.x.leg; line = (nx.day===today?"":dayName(nx.day)+": ")+"Leave at "+hm(l.leave)+" for "+((place(l.to)||{}).name||""); sub = "Park "+hm(l.park)+" · inside "+hm(l.inside); }
-  else if(nx && nx.n){ var sl = nx.n.x; line = (nx.day===today?"Next":dayName(nx.day))+": "+hm(sl.s)+" · "+(sl.kind==="learn" && sl.parts && sl.parts[0] ? "Topic "+sl.parts[0].step.topic+", "+sl.parts[0].step.name : sl.kind==="cards" ? "question cards" : "review"); sub = ((place(sl.place)||{}).name||"")+" · "+Math.round(sl.len)+" min"; }
+  else if(nx && nx.n){ var sl = nx.n.x; line = (nx.day===today?"Next":dayName(nx.day))+": "+hm(sl.s)+" · "+(sl.kind==="learn" && sl.parts && sl.parts[0] ? "Topic "+sl.parts[0].step.topic+", "+sl.parts[0].step.name : sl.kind==="cards" ? "question cards" : sl.kind==="quiz" ? "Topic "+sl.quiz+" quiz, timed" : (sl.what||"review")); sub = ((place(sl.place)||{}).name||"")+" · "+Math.round(sl.len)+" min"; }
   else { line = "Nothing planned right now."; }
   var tl = tonightLine(today);
-  h += '<section class="card pl-next"><div class="eyebrow">Only this</div><p class="pl-one">'+esc(line)+'</p>'+(sub?'<p class="note">'+esc(sub)+'</p>':'')+'</section>';
+  h += '<section class="card pl-next"><div class="eyebrow">Only this</div><p class="pl-one">'+esc(line)+'</p>'+(sub?'<p class="note">'+esc(sub)+'</p>':'')+(nx && nx.n && nx.n.kind==="slot" ? slotLink(nx.n.x) : '')+'</section>';
   if(tl) h += '<section class="card pl-sleep"><span aria-hidden="true">🌙</span><p>'+esc(tl)+'</p></section>';
   h += checklist();
   h += '<details class="pl-more"><summary>Show my whole day</summary>';
@@ -522,7 +533,7 @@ function vLine(){
     h += '<div id="pl-map" class="pl-map tall" aria-label="Route of this day"></div>';
     var stops = [];
     md.items.forEach(function(x){ if(x.type==="travel") stops.push([x.s, '<li class="go"><span class="dot"></span><div>'+legText(x.leg)+'</div></li>']); else stops.push([x.s, '<li class="fx"><span class="dot"></span><div><b>'+hm(x.s)+'</b> '+esc(x.ev.title)+'</div></li>']); });
-    md.slots.forEach(function(s){ stops.push([s.s, '<li class="sl'+(p.done[s.id]?" on":"")+'"><span class="dot"></span><div>'+slotText(s)+'<br>'+(p.done[s.id]?'<span class="pill solid">Lit</span>':'<button class="btn small" data-pdone="'+s.id+'">Done: light this station</button>')+'</div></li>']); });
+    md.slots.forEach(function(s){ stops.push([s.s, '<li class="sl'+(p.done[s.id]?" on":"")+'"><span class="dot"></span><div>'+slotText(s)+'<br>'+(p.done[s.id]?'<span class="pill solid">Lit</span>':slotLink(s)+'<button class="btn small ghost" data-pdone="'+s.id+'">Done: light this station</button>')+'</div></li>']); });
     stops.sort(function(a,b){ return a[0]-b[0]; });
     h += '<ol class="pl-line">'+stops.map(function(x){ return x[1]; }).join("")+(selDay===p.exam.date?'<li class="ex"><span class="dot"></span><div><b>'+esc(p.exam.time)+'</b> IFRS exam. You made it here.</div></li>':'')+'</ol>';
   }
@@ -580,6 +591,9 @@ var app = document.getElementById("app");
 app.addEventListener("click", function(e){
   var t = e.target.closest("button"); if(!t) return; var p = P(), d = t.dataset;
   if(d.pday){ selDay = d.pday; FL.render(); return; }
+  if(d.pgo){ var pg2 = d.pgo.split("|"), st = FL.S; st.tg = st.tg || {}; var g0 = st.tg[pg2[0]] = st.tg[pg2[0]] || {stage:"q", ri:0, cur:"", guess:-1, done:{}};
+    if(g0.stage==="step" || g0.stage==="exam" || g0.guess>=0) { g0.stage = "step"; g0.cur = pg2[1]; } else g0.cur = pg2[1];
+    st.tview = st.tview || {}; st.tview[pg2[0]] = ""; save(); FL.go("topic-"+pg2[0]); return; }
   if(d.jday){ jDay = d.jday; ventSaved = ""; FL.render(); return; }
   if(d.jmood){ var jm = jr(jDay).mood; jm[d.jmood] = !jm[d.jmood]; save(); FL.render(); return; }
   if(d.jif){ var ji = jr(jDay).ifthen; ji[d.jif] = !ji[d.jif]; save(); FL.render(); return; }
