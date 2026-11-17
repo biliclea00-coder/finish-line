@@ -133,8 +133,10 @@ function dayModel(date){
     }); slots = out;
   });
   slots = slots.filter(function(sl){ return sl.e - sl.s >= 20; }).map(function(sl, i){ sl.id = date+"-"+i; sl.date = date; sl.len = sl.e - sl.s; return sl; });
+  var restDay = evs.some(function(ev){ return ev.e - ev.s >= 480; });
+  if(restDay) slots = [];
   if(date === p.exam.date) slots = slots.filter(function(sl){ return sl.e <= m(p.exam.time) - 30; }).map(function(sl){ sl.cardsOnly = true; return sl; });
-  return {date:date, items:items, legs:legs, slots:slots, issues:issues, wake:wake, bed:bed};
+  return {date:date, items:items, legs:legs, slots:slots, issues:issues, wake:wake, bed:bed, rest:restDay};
 }
 
 /* ---------- topics into slots: highest exam points first, reviews in short slots ---------- */
@@ -193,7 +195,7 @@ function legText(l){
 }
 function slotText(sl){
   var pl = place(sl.place)||{}, qt = QUIET[pl.kind] ? "quiet" : "noisy";
-  var body = sl.kind==="learn" && sl.parts && sl.parts.length ? sl.parts.map(function(x){ return 'Topic '+x.step.topic+': '+esc(x.step.name)+(x.cont?' (start)':'')+' <span class="note">· '+x.step.slides+'</span>'; }).join("<br>") : esc(sl.what||"");
+  var body = sl.kind==="learn" && sl.parts && sl.parts.length ? 'Topic '+sl.parts[0].step.topic+': '+esc(sl.parts[0].step.name)+(sl.parts.length>1?' <span class="note">· then '+(sl.parts.length-1)+' more</span>':'') : esc(sl.what||"");
   return '<b>'+hm(sl.s)+'–'+hm(sl.e)+'</b> · '+esc(pl.name||"")+' <span class="pill '+(qt==="quiet"?"solid":"todo")+'">'+qt+'</span><br>'+body;
 }
 function timeline(md){
@@ -206,22 +208,40 @@ function timeline(md){
   rows.sort(function(a,b){ return a[0]-b[0]; });
   return '<div class="pl-tl"><div class="pl-row wake">'+hm(md.wake)+' · wake up · lunch 12:30 and dinner 19:00 are kept free · 15 min to get ready before each departure</div>'+rows.map(function(r){ return r[1]; }).join("")+'<div class="pl-row wake">'+hm(md.bed)+' · sleep</div></div>';
 }
-var selDay = null;
+var selDay = null, moreOpen = false;
 
 /* ---------- views ---------- */
+function nextThing(pl){
+  var p = P(), now = new Date(), t = now.getHours()*60+now.getMinutes(), ds = days();
+  for(var i=0;i<pl.models.length;i++){
+    var md = pl.models[i], list = [];
+    md.items.forEach(function(x){ if(x.type==="travel" && x.leg.to!=="home") list.push({s:x.leg.leave, kind:"leave", x:x}); });
+    md.slots.forEach(function(sl){ if(!p.done[sl.id]) list.push({s:sl.s, kind:"slot", x:sl}); });
+    list.sort(function(a,b){ return a.s-b.s; });
+    var up = list.filter(function(n){ return i>0 || n.s >= t - 5; })[0];
+    if(up) return {day:md.date, n:up, rest:md.rest && i===0};
+    if(i===0 && md.rest) return {day:md.date, rest:true};
+  }
+  return null;
+}
 function vHome(){
   var p = P(), ds = days(), pl = plan(); if(!selDay || ds.indexOf(selDay)<0) selDay = ds[0];
-  var md = pl.models[ds.indexOf(selDay)], studyMin = md.slots.reduce(function(a,b){ return a+b.len; },0);
-  var h = countdown();
-  h += '<div class="pl-days" role="tablist">'+ds.map(function(d){ var mdd = pl.models[ds.indexOf(d)], mins = mdd.slots.reduce(function(a,b){ return a+b.len; },0);
-    return '<button role="tab" class="pl-day'+(d===selDay?" on":"")+(d===p.exam.date?" exam":"")+'" data-pday="'+d+'"><span>'+dayName(d)+'</span><b>'+(d===p.exam.date?"Exam":(Math.round(mins/6)/10)+" h")+'</b></button>'; }).join("")+'</div>';
-  h += '<section class="card"><div class="row"><h2>'+dayName(selDay,true)+'</h2><span class="note">'+(Math.round(studyMin/6)/10)+' h free to study</span></div><div id="pl-map" class="pl-map" aria-label="Map of this day"></div>'+timeline(md)+'</section>';
-  h += p.confirmed
-    ? '<a class="btn" href="#plan/line">Open my line to the exam</a><a class="btn ghost" href="#plan/setup/1">Change the plan</a>'
-    : '<section class="card"><h2>Plan your week once</h2><p class="lead">Four short steps: exam and travel, your places, your fixed week, then the study slots. After that the plan checks itself and asks you to decide the trade-offs.</p><a class="btn" href="#plan/setup/1">Start planning</a></section>';
-  h += '<p class="note">Covered by the slots so far: '+pl.covered+' of '+pl.total+' ladder steps. Drive times marked "estimate" are replaced as soon as the route service answers.</p>';
+  var nx = nextThing(pl), today = ds[0];
+  var h = '<p class="note">'+countdownLine()+'</p>';
+  var line = "", sub = "";
+  if(nx && nx.rest && nx.day===today && (!nx.n || nx.day!==today)){ line = "Today: no studying. Rest after the hackathon."; sub = "Long day. The plan starts tomorrow."; }
+  else if(nx && nx.n && nx.n.kind==="leave"){ var l = nx.n.x.leg; line = (nx.day===today?"":dayName(nx.day)+": ")+"Leave at "+hm(l.leave)+" for "+((place(l.to)||{}).name||""); sub = "Park "+hm(l.park)+" · inside "+hm(l.inside); }
+  else if(nx && nx.n){ var sl = nx.n.x; line = (nx.day===today?"Next":dayName(nx.day))+": "+hm(sl.s)+" · "+(sl.kind==="learn" && sl.parts && sl.parts[0] ? "Topic "+sl.parts[0].step.topic+", "+sl.parts[0].step.name : sl.kind==="cards" ? "question cards" : "review"); sub = ((place(sl.place)||{}).name||"")+" · "+Math.round(sl.len)+" min"; }
+  else { line = "Nothing planned right now."; }
+  h += '<section class="card pl-next"><div class="eyebrow">Only this</div><p class="pl-one">'+esc(line)+'</p>'+(sub?'<p class="note">'+esc(sub)+'</p>':'')+'</section>';
+  h += '<details class="pl-more"><summary>Show my whole day</summary>';
+  h += '<div class="pl-days" role="tablist">'+ds.map(function(d){ return '<button role="tab" class="pl-day'+(d===selDay?" on":"")+(d===p.exam.date?" exam":"")+'" data-pday="'+d+'"><span>'+dayName(d)+'</span></button>'; }).join("")+'</div>';
+  var md = pl.models[ds.indexOf(selDay)];
+  h += '<section class="card"><h2>'+dayName(selDay,true)+'</h2>'+(md.rest?'<p class="note">Rest day: no study slots.</p>':'')+'<div id="pl-map" class="pl-map" aria-label="Map of this day"></div>'+timeline(md)+'</section></details>';
+  h += p.confirmed ? '<a class="btn ghost" href="#plan/line">My line to the exam</a>' : '<a class="btn ghost" href="#plan/setup/1">Set up or change the plan</a>';
   return h;
 }
+function countdownLine(){ var p = P(), d = Math.round((new Date(p.exam.date+"T"+p.exam.time) - new Date())/86400000); return Math.max(0,d)+" days to the IFRS exam · "+dayName(p.exam.date)+" "+p.exam.time; }
 function vStep1(){
   var p = P();
   var h = stepper("1")+'<div class="stack"><h1>Exam and travel</h1><p class="lead">Set this once. Everything else is calculated from it.</p></div>';
@@ -390,7 +410,12 @@ window.FLPlan = {
     var s = (r.match(/^plan\/setup\/(\d)/)||[])[1];
     return ({"1":vStep1,"2":vStep2,"3":vStep3,"4":vStep4}[s] || vStep1)();
   },
-  after: function(r){ drawMap(r); setTimeout(fetchTravel, 50); }
+  after: function(r){
+    var det = document.querySelector(".pl-more");
+    if(det){ if(moreOpen) det.open = true; det.addEventListener("toggle", function(){ moreOpen = det.open; if(det.open) drawMap(r); }); if(det.open) drawMap(r); }
+    else drawMap(r);
+    setTimeout(fetchTravel, 50);
+  }
 };
 
 /* ---------- events ---------- */
