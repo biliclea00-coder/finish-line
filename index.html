@@ -237,6 +237,11 @@ label.btn.small:focus-within{outline:3px solid var(--accent);outline-offset:2px}
 .pl-dayrow summary::-webkit-details-marker{display:none}
 .pl-progress.small{height:6px}
 .pl-steps,.pl-ev{}
+.linkbtn{font:inherit;background:none;border:0;padding:0;color:var(--deep);text-decoration:underline;cursor:pointer}
+.pl-chips{display:flex;flex-wrap:wrap;gap:8px}
+.pl-chips .opt{width:auto}
+.pl-if{border:1px solid var(--line);border-radius:12px;padding:10px 12px;display:flex;flex-direction:column;gap:6px}
+.pl-if.on{border-color:var(--good);background:var(--good-bg)}
 .pl-pin.home span{border-color:var(--deep)}
 </style>
 </head>
@@ -512,20 +517,22 @@ function vAccount(){
   return h+'<section class="card"><p class="lead">Sign in to save your progress, exam date and PDFs, and to pick up on any device.</p>'+
     '<form id="ac-form" class="stack" autocomplete="on" action="#account" method="post">'+
     '<label class="f" for="ac-email">Email<input type="email" name="email" autocomplete="username" inputmode="email" autocapitalize="none" spellcheck="false" id="ac-email" value="'+esc(acctEmail)+'"></label>'+
-    '<label class="f" for="ac-pass">Password (8 characters or more)<input type="'+(showPw?"text":"password")+'" name="password" autocomplete="current-password" id="ac-pass" value="'+esc(acctPw)+'" style="'+pwStyle+'"></label>'+
+    '<label class="f" for="ac-pass">Password (8 characters or more)<input type="'+(showPw?"text":"password")+'" name="password" autocomplete="'+(acctMode==="up"?"new-password":"current-password")+'" id="ac-pass" value="'+esc(acctPw)+'" style="'+pwStyle+'"></label>'+
     '<label class="check"><input type="checkbox" id="ac-show"'+(showPw?" checked":"")+'><span>Show password</span></label>'+
+    (acctMode==="up" ? '<label class="f" for="ac-pass2">Type the password again<input type="'+(showPw?"text":"password")+'" autocomplete="new-password" id="ac-pass2" style="'+pwStyle+'"></label>' : '')+
     msg+
-    '<button class="btn" type="submit" value="in"'+(acctBusy?" disabled":"")+'>Sign in</button>'+
-    '<button class="btn ghost" type="submit" value="up"'+(acctBusy?" disabled":"")+'>Create account</button>'+
-    '</form><button class="btn ghost" id="ac-forgot" type="button">Forgot password?</button>'+
-    '<p class="note">Your browser can save the password when you sign in. Progress you made before signing in moves into a new account.</p></section>';
+    (acctMode==="up"
+      ? '<button class="btn" type="submit" value="up"'+(acctBusy?" disabled":"")+'>Create my new account</button></form><button class="btn ghost" id="ac-mode" type="button">I already have an account: sign in</button>'
+      : '<button class="btn" type="submit" value="in"'+(acctBusy?" disabled":"")+'>Sign in</button></form><button class="btn ghost" id="ac-forgot" type="button">Forgot password?</button><p class="note">New here? <button class="linkbtn" id="ac-mode" type="button">Create an account</button></p>')+
+    '<p class="note">Your browser can save the password when you sign in.</p></section>';
 }
-var acctEmail = "", acctPw = "";
+var acctEmail = "", acctPw = "", acctMode = "in";
 function acct(kind){
   var em = (document.getElementById("ac-email").value||"").trim(), pw = document.getElementById("ac-pass").value||"";
   acctEmail = em; acctPw = pw;
   if(!/^\S+@\S+\.\S+$/.test(em)){ acctMsg = "Enter a valid email address."; render(); return; }
   if(pw.length < 8){ acctMsg = "The password needs 8 characters or more."; render(); return; }
+  if(kind==="up"){ var p2 = (document.getElementById("ac-pass2")||{}).value||""; if(p2 !== pw){ acctMsg = "The two passwords are different. Type them again."; render(); return; } }
   acctBusy = true; acctMsg = kind==="in" ? "Signing in…" : "Creating your account…"; render();
   var call = kind==="in" ? sb.auth.signInWithPassword({email:em, password:pw}) : sb.auth.signUp({email:em, password:pw, options:{emailRedirectTo: location.origin}});
   call.then(function(r){
@@ -757,7 +764,7 @@ function mountCity(){
 
 /* ================= views ================= */
 var app = document.getElementById("app"), nav = document.getElementById("nav"), tick = null;
-var TABS = [["plan","Plan"],["map","Course map"],["universe","Universe"],["reading","Reading speed"]];
+var TABS = [["plan","Plan"],["journal","Journal"],["map","Course map"],["universe","Universe"],["reading","Reading speed"]];
 function route(){ var h = (location.hash||"").replace("#",""); if(/access_token=|error=|type=recovery/.test(h)) return recovery ? "account" : "map"; return h || "plan"; }
 function go(h){ if(location.hash === "#"+h){ render(); } else { location.hash = h; } window.scrollTo(0,0); }
 
@@ -1068,7 +1075,7 @@ function render(){
   var dr = docRoute(r);
   if(!dr && DV.err){ DV.err = ""; DV.id = ""; }
   if(dr){ openDoc(dr); if(DV.doc && DV.id===dr.id){ S.docPos[dr.id] = dr.page; saveLocal(); } }
-  var isPlan = /^plan(\/|$)/.test(r);
+  var isPlan = /^plan(\/|$)/.test(r) || r==="journal";
   var v = isPlan ? (window.FLPlan ? window.FLPlan.view(r) : '<p class="lead">Loading the planner…</p>') : dr ? vDoc(dr) : m ? vTopic(+m[1]) : ({map:vMap, universe:vUniverse, practice:vPractice, "level-check":vCheck, "context-check":vContext, reading:vReading, "dev-notes":vDev, account:vAccount}[r] || vMap)();
   app.innerHTML = v;
   if(document.getElementById("city")) mountCity();
@@ -1110,6 +1117,7 @@ app.addEventListener("click", function(e){
   if(t.id==="ctx-next"){ S.ctx.i++; S.ctx.picked = null; if(S.ctx.i >= CONTEXT2.length) S.ctxDone = {right:S.ctx.right}; save(); render(); window.scrollTo(0,0); return; }
   if(t.id==="ctx-redo"){ S.ctx = null; save(); render(); return; }
   if(t.id==="ac-forgot"){ forgot(); return; }
+  if(t.id==="ac-mode"){ acctMode = acctMode==="up" ? "in" : "up"; acctMsg = ""; render(); return; }
   if(t.id==="dv-zoom"){ DV.zoom = DV.zoom>1 ? 1 : 2; render(); return; }
   if(t.id==="ac-out" && sb){ sb.auth.signOut().then(function(){ sbUser = null; cloud.ref = null; cloud.assets = null; cloud.fetchFile = null; cloud.state = "signedout"; S = fresh(); saveLocal(); DV.key = null; DV.cache = {}; DV.doc = null; DV.id = ""; acctMsg = ""; setSync(); go("map"); }); return; }
   if(t.dataset.readnow){ rdFor = t.dataset.readnow; go("reading"); return; }
@@ -1199,7 +1207,7 @@ document.addEventListener("change", function(e){
   }
 });
 window.addEventListener("hashchange", function(){ render(); window.scrollTo(0,0); });
-window.FL = {get S(){ return S; }, save:save, render:render, go:go, esc:esc, TOPICS:TOPICS, confetti:confetti};
+window.FL = {get S(){ return S; }, get signedOut(){ return !!(sb && !sbUser && cloud.state==="signedout"); }, save:save, render:render, go:go, esc:esc, TOPICS:TOPICS, confetti:confetti};
 render(); setSync(); initCloud();
 })();
 </script>

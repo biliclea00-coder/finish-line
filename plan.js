@@ -25,6 +25,7 @@ function save(){ FL.save(); }
 
 /* ---------- time helpers ---------- */
 function m(t){ var a = String(t||"0:0").split(":"); return (+a[0])*60 + (+a[1]||0); }
+function fmtDur(x){ x = Math.round(x); var h = Math.floor(x/60), mm = x%60; return (h?h+" h":"")+(h&&mm?" ":"")+(mm||!h?mm+" min":""); }
 function hm(x){ x = Math.round(x); var h = Math.floor(((x%1440)+1440)%1440/60), mm = ((x%60)+60)%60; return ("0"+h).slice(-2)+":"+("0"+mm).slice(-2); }
 function iso(d){ return d.getFullYear()+"-"+("0"+(d.getMonth()+1)).slice(-2)+"-"+("0"+d.getDate()).slice(-2); }
 function todayIso(){ return iso(new Date()); }
@@ -38,7 +39,7 @@ var KIND = {home:"Home", uni:"Uni", work:"Work", training:"Training", cafe:"Caf�
 var QUIET = {home:true, uni:true, library:true, cafe:false, work:false, training:false, other:false};
 
 /* ---------- travel: real times from the routing function, estimates until then ---------- */
-var pending = {}, fetching = false;
+var pending = {}, fetching = false, travelDirty = false;
 function tkey(a, b, mode){ return a+">"+b+">"+mode; }
 function km(a, b){ var R = 6371, dLa = (b.lat-a.lat)*Math.PI/180, dLo = (b.lon-a.lon)*Math.PI/180, x = Math.sin(dLa/2)*Math.sin(dLa/2)+Math.cos(a.lat*Math.PI/180)*Math.cos(b.lat*Math.PI/180)*Math.sin(dLo/2)*Math.sin(dLo/2); return 2*R*Math.asin(Math.sqrt(x)); }
 function travel(a, b){
@@ -53,9 +54,12 @@ function fetchTravel(){
   if(fetching) return; var keys = Object.keys(pending); if(!keys.length) return;
   fetching = true; var job = pending[keys[0]]; delete pending[keys[0]];
   fetch("api/route?from="+job.a.lon+","+job.a.lat+"&to="+job.b.lon+","+job.b.lat+"&mode="+job.mode).then(function(r){ return r.ok ? r.json() : null; }).then(function(j){
-    if(j && j.minutes){ P().travel[job.key] = {min:j.minutes, line:j.line||null, src:j.source}; save(); FL.render(); }
+    if(j && j.minutes){ var old = P().travel[job.key] || {}; P().travel[job.key] = {min:j.minutes, line:j.line||null, src:j.source, manual:old.manual, checkedState:old.checkedState}; save(); travelDirty = true; }
     else P().travel[job.key] = P().travel[job.key] || {failed:true};
-  }).catch(function(){ P().travel[job.key] = {failed:true}; }).then(function(){ fetching = false; setTimeout(fetchTravel, 350); });
+  }).catch(function(){ P().travel[job.key] = {failed:true}; }).then(function(){ fetching = false;
+    if(Object.keys(pending).length) setTimeout(fetchTravel, 350);
+    else if(travelDirty){ travelDirty = false; var ae = document.activeElement; if(!ae || !/INPUT|TEXTAREA|SELECT/.test(ae.tagName)) FL.render(); }
+  });
 }
 function geocodeSeeds(){
   var p = P();
@@ -229,6 +233,73 @@ function timeline(md){
 }
 var selDay = null, moreOpen = false;
 
+/* ---------- before-tomorrow checklist and phone reminders ---------- */
+function tomorrowInfo(){
+  var ds = days(), nt = nights(), d = new Date().getHours() < 5 ? ds[0] : ds[1]; if(!d) return null;
+  var lv = leaveFor(d); return {date:d, wake:nt.wake[d], leave:lv};
+}
+function jr(date){ var p = P(); p.journal = p.journal || {}; return p.journal[date] = p.journal[date] || {mood:{}, ifthen:{}, food:{}, vent:"", checks:{}}; }
+function checklist(){
+  var t = tomorrowInfo(); if(!t) return "";
+  var j = jr(t.date), items = [["alarm", "Alarm set for "+hm(t.wake)+(t.leave!==null?" (you leave at "+hm(t.leave)+")":"")],["food","I know what I'll eat "+(new Date().getHours()<5?"today":"tomorrow")],["bag","Bag packed: laptop, charger, water, snack"]];
+  return '<section class="card"><h2>Before '+(new Date().getHours()<5?"today":"tomorrow")+', '+dayName(t.date)+'</h2>'+items.map(function(it){ return '<label class="check"><input type="checkbox" data-pjc="'+t.date+'|'+it[0]+'"'+(j.checks[it[0]]?" checked":"")+'><span>'+esc(it[1])+'</span></label>'; }).join("")+
+    '<button class="btn small ghost" data-pics="'+t.date+'">Put alarm, leave times and meals in my phone calendar</button><p class="note">Downloads a calendar file. On iPhone tap it, then "Add all". Each entry has a reminder.</p></section>';
+}
+function icsFor(date){
+  var md = dayModel(date), j = jr(date), lines = ["BEGIN:VCALENDAR","VERSION:2.0","PRODID:-//Finish Line//Planner//EN"];
+  var stamp = new Date().toISOString().replace(/[-:]/g,"").split(".")[0]+"Z", n = 0;
+  function dt(min){ var d = new Date(date+"T00:00:00"); d.setMinutes(min); return d.getFullYear()+("0"+(d.getMonth()+1)).slice(-2)+("0"+d.getDate()).slice(-2)+"T"+("0"+d.getHours()).slice(-2)+("0"+d.getMinutes()).slice(-2)+"00"; }
+  function ev(s, e, title, alarmMin){ lines.push("BEGIN:VEVENT","UID:fl-"+date+"-"+(n++)+"@finishline","DTSTAMP:"+stamp,"DTSTART:"+dt(s),"DTEND:"+dt(e),"SUMMARY:"+title.replace(/[,;]/g," "),"BEGIN:VALARM","ACTION:DISPLAY","DESCRIPTION:"+title.replace(/[,;]/g," "),"TRIGGER:-PT"+alarmMin+"M","END:VALARM","END:VEVENT"); }
+  ev(md.wake, md.wake+15, "Wake up: Finish Line", 0);
+  md.legs.forEach(function(l){ if(l.to!=="home") ev(l.leave, l.inside, "Leave now for "+((place(l.to)||{}).name||""), 10); });
+  ev(750, 795, "Lunch"+(j.food.l?": "+j.food.l:""), 5); ev(1140, 1185, "Dinner"+(j.food.d?": "+j.food.d:""), 5);
+  if(md.bed) ev(md.bed - 30, md.bed, "Wind down: in bed by "+hm(md.bed), 0);
+  lines.push("END:VCALENDAR");
+  return lines.join("\r\n");
+}
+
+/* ---------- journal: one page per day, if-then plans, food, a place to write ---------- */
+var MOODS = [["badsleep","I slept badly"],["anxious","I'm anxious"],["overwhelmed","It's too much"],["cantstart","I can't start"],["missed","I missed a slot"],["ok","I'm okay"]];
+var IFTHEN = {
+  badsleep:[["nap","If I slept badly, then I take a 10-minute nap before 15:00, and only after that I start.","A 10-minute afternoon nap after a short night improved alertness and performance straight away, for up to about 2.5 hours (Brooks and Lack 2006)."],
+            ["swap","If I slept badly, then today's new steps become question cards, and I still eat at 12:30.","Tired days are for review. New material can wait one day."]],
+  anxious:[["write","If anxiety spikes, then I write my worries down for 10 minutes before I start.","Students who wrote about their exam worries for 10 minutes right before a test did better than those who didn't (Ramirez and Beilock 2011)."],
+           ["reframe","If my heart races, then I tell myself: my body is getting ready to perform.","People told that arousal helps performance scored higher on the GRE maths section (Jamieson et al. 2010)."]],
+  overwhelmed:[["only","If it all feels like too much, then I only look at 'Only this' and do that one thing.","Plans of the form 'if X, then I do Y' had a medium-to-large effect on reaching goals across 94 studies (Gollwitzer and Sheeran 2006)."]],
+  cantstart:[["ten","If I can't start, then I open one question card and set a 10-minute timer. Stopping after 10 minutes is allowed.","Starting is the hardest part, and a fixed if-then cue helps most exactly there (Gollwitzer and Sheeran 2006)."]],
+  missed:[["kind","If I miss a slot, then I say 'this happens to everyone' and do one card set at the next slot.","Students who treated a failure with self-compassion studied longer for the next test than those who didn't (Breines and Chen 2012)."]],
+  ok:[["keep","If today goes okay, then I light the station and stop on time.","Stopping on time protects tomorrow's energy and sleep."]]
+};
+var KIND_REPLIES = ["Thank you for writing it down. That already takes some weight off your working memory.", "That sounds hard. You are still here and still planning, which is what counts.", "Exams make everyone feel this way. You're not behind as a person, only on a to-do list.", "Written down, it's on the page and not only in your head. Next step: just 'Only this'."];
+var jDay = null, ventSaved = "";
+function vJournal(){
+  var p = P(), ds = days(); if(!jDay || ds.indexOf(jDay)<0) jDay = ds[0];
+  var j = jr(jDay), md = dayModel(jDay), lit = plan().slots.filter(function(sl){ return p.done[sl.id]; }).length;
+  var h = '<div class="stack"><h1>Journal</h1><p class="lead">One page per day until the exam. Private to your account.</p></div>';
+  h += '<div class="pl-days">'+ds.map(function(d){ return '<button class="pl-day'+(d===jDay?" on":"")+(d===p.exam.date?" exam":"")+'" data-jday="'+d+'"><span>'+dayName(d)+'</span></button>'; }).join("")+'</div>';
+  h += '<section class="card"><h2>How is it going?</h2><div class="pl-chips">'+MOODS.map(function(mo){ return '<button type="button" class="opt" data-jmood="'+mo[0]+'" aria-pressed="'+(!!j.mood[mo[0]])+'">'+mo[1]+'</button>'; }).join("")+'</div></section>';
+  var picked = Object.keys(j.mood).filter(function(k){ return j.mood[k]; });
+  if(picked.length){
+    h += '<section class="card"><h2>Your if-then plans</h2><p class="note">Pick the ones you want for today.</p>';
+    picked.forEach(function(k){ (IFTHEN[k]||[]).forEach(function(it){ var on = j.ifthen[it[0]];
+      h += '<div class="pl-if'+(on?" on":"")+'"><p><b>'+esc(it[1])+'</b></p><p class="note">'+esc(it[2])+'</p><button class="btn small '+(on?"":"ghost")+'" data-jif="'+it[0]+'">'+(on?"My plan today ✓":"Make this my plan")+'</button></div>'; }); });
+    h += '</section>';
+  }
+  h += '<section class="card"><h2>Food</h2><p class="note">Lunch 12:30 and dinner 19:00 are kept free in your plan.</p>'+
+    [["b","Breakfast"],["l","Lunch"],["d","Dinner"],["s","Snack to take with me"]].map(function(f){ return '<label class="f">'+f[1]+'<input type="text" data-jfood="'+f[0]+'" value="'+esc(j.food[f[0]]||"")+'" placeholder="e.g. '+({b:"oats and a banana",l:"leftover pasta",d:"something quick",s:"nuts, an apple"})[f[0]]+'"></label>'; }).join("")+
+    '<label class="f">To buy or prep<input type="text" data-jfood="buy" value="'+esc(j.food.buy||"")+'" placeholder="e.g. bread, cook rice the night before"></label>'+
+    '<label class="check"><input type="checkbox" data-jfoodok="1"'+(j.food.ok?" checked":"")+'><span>Bought / prepped</span></label></section>';
+  h += '<section class="card"><h2>Write it out</h2><p class="note">Vent, worry, complain. Nobody reads this. Writing worries down before studying or an exam frees up headspace (Ramirez and Beilock 2011).</p><textarea id="j-vent" placeholder="What\'s on your mind?">'+esc(j.vent||"")+'</textarea><button class="btn small" data-jsave="1">Save</button>'+(ventSaved===jDay?'<p class="pl-calm">'+esc(KIND_REPLIES[(ds.indexOf(jDay)+(j.vent||"").length)%KIND_REPLIES.length])+'</p>':'')+'</section>';
+  h += '<section class="card"><h2>Things that are true</h2><ul class="plain">'+
+    '<li>You made a plan for a whole week with work, training and an exam in it. That is the hard part most people skip.</li>'+
+    '<li>'+(lit ? 'You have already lit '+lit+' station'+(lit===1?"":"s")+'.' : 'Your first station is waiting. One is enough to start.')+'</li>'+
+    '<li>Nerves before an exam are your body getting ready, not a sign you will fail (Jamieson et al. 2010).</li>'+
+    '<li>Being kind to yourself after a bad day makes you more likely to try again, not less (Breines and Chen 2012).</li></ul>'+
+    '<p class="note">If this ever feels like more than exam stress, talk to someone you trust or a doctor.</p></section>';
+  h += '<p class="note">Sources: Brooks A, Lack L. Sleep. 2006;29(6):831–40. Ramirez G, Beilock SL. Science. 2011;331(6014):211–3. Jamieson JP et al. J Exp Soc Psychol. 2010;46(1):208–12. Breines JG, Chen S. Pers Soc Psychol Bull. 2012;38(9):1133–43. Gollwitzer PM, Sheeran P. Adv Exp Soc Psychol. 2006;38:69–119.</p>';
+  return h;
+}
+
 /* ---------- views ---------- */
 function nextThing(pl){
   var p = P(), now = new Date(), t = now.getHours()*60+now.getMinutes(), ds = days();
@@ -246,7 +317,8 @@ function nextThing(pl){
 function vHome(){
   var p = P(), ds = days(), pl = plan(); if(!selDay || ds.indexOf(selDay)<0) selDay = ds[0];
   var nx = nextThing(pl), today = ds[0];
-  var h = '<p class="note">'+countdownLine()+'</p>';
+  var h = FL.signedOut ? '<section class="card pl-rec"><b>You\'re not signed in.</b><span>This is an empty plan on this device. Sign in to see yours.</span><a class="btn small" href="#account">Sign in</a></section>' : '';
+  h += '<p class="note">'+countdownLine()+'</p>';
   var line = "", sub = "";
   if(nx && nx.rest && nx.day===today && (!nx.n || nx.day!==today)){ line = "Today: no studying. Rest after the hackathon."; sub = "Long day. The plan starts tomorrow."; }
   else if(nx && nx.n && nx.n.kind==="leave"){ var l = nx.n.x.leg; line = (nx.day===today?"":dayName(nx.day)+": ")+"Leave at "+hm(l.leave)+" for "+((place(l.to)||{}).name||""); sub = "Park "+hm(l.park)+" · inside "+hm(l.inside); }
@@ -255,6 +327,7 @@ function vHome(){
   var tl = tonightLine(today);
   h += '<section class="card pl-next"><div class="eyebrow">Only this</div><p class="pl-one">'+esc(line)+'</p>'+(sub?'<p class="note">'+esc(sub)+'</p>':'')+'</section>';
   if(tl) h += '<section class="card pl-sleep"><span aria-hidden="true">🌙</span><p>'+esc(tl)+'</p></section>';
+  h += checklist();
   h += '<details class="pl-more"><summary>Show my whole day</summary>';
   h += '<div class="pl-days" role="tablist">'+ds.map(function(d){ return '<button role="tab" class="pl-day'+(d===selDay?" on":"")+(d===p.exam.date?" exam":"")+'" data-pday="'+d+'"><span>'+dayName(d)+'</span></button>'; }).join("")+'</div>';
   var md = pl.models[ds.indexOf(selDay)];
@@ -266,12 +339,12 @@ function countdownLine(){ var p = P(), d = Math.round((new Date(p.exam.date+"T"+
 function vStep1(){
   var p = P();
   var h = stepper("1")+'<div class="stack"><h1>Exam and travel</h1><p class="lead">Set this once. Everything else is calculated from it.</p></div>';
-  h += '<section class="card"><h2>The exam</h2><div class="two"><label class="f">Date<input type="date" data-pf="exam.date" value="'+esc(p.exam.date)+'"></label><label class="f">Time<input type="text" inputmode="numeric" data-pf="exam.time" value="'+esc(p.exam.time)+'"></label></div>'+
+  h += '<section class="card"><h2>The exam</h2><div class="two"><label class="f">Date<input type="date" data-pf="exam.date" value="'+esc(p.exam.date)+'"></label><label class="f">Time<input type="time" data-pf="exam.time" value="'+esc(p.exam.time)+'"></label></div>'+
     '<label class="f">Where<select data-pf="exam.place">'+p.places.map(function(x){ return '<option value="'+x.id+'"'+(x.id===p.exam.place?" selected":"")+'>'+esc(x.name)+'</option>'; }).join("")+'</select></label><p class="note">On exam day the plan aims for you to be inside 15 minutes early.</p></section>';
   h += '<section class="card"><h2>How do you usually get around?</h2><div class="opts">'+Object.keys(MODE).map(function(k){ return '<button type="button" class="opt" data-pmode="'+k+'" aria-pressed="'+(p.mode===k)+'">'+MODE[k]+'</button>'; }).join("")+'</div>'+
     '<p class="note">Car, bike and walking times come from OpenStreetMap routing. Public transport times come from the BVG timetable. In rush hour (7:00–9:30, 16:00–19:00) driving gets 25% extra.</p></section>';
   h += '<section class="card"><h2>Sleep, honestly</h2><p class="lead">When do you fall asleep these days? No judgement. Lots of people with ADHD drift late. This only tells the plan where to start.</p>'+
-    '<div class="two"><label class="f">Lately I fall asleep around<input type="text" inputmode="numeric" data-pf="sleepNow.bed" value="'+esc(p.sleepNow.bed)+'"></label><label class="f">and wake up around<input type="text" inputmode="numeric" data-pf="sleepNow.wake" value="'+esc(p.sleepNow.wake)+'"></label></div>'+
+    '<div class="two"><label class="f">Lately I fall asleep around<input type="time" data-pf="sleepNow.bed" value="'+esc(p.sleepNow.bed)+'"></label><label class="f">and wake up around<input type="time" data-pf="sleepNow.wake" value="'+esc(p.sleepNow.wake)+'"></label></div>'+
     '<p class="note">From there the plan moves bedtime a little earlier each night, so that on exam morning you wake up rested without a shock. You only ever see tonight\'s target.</p>'+
     '<label class="f">Minutes per ladder step, first pass<input type="number" min="15" max="120" data-pf="stepMin" value="'+esc(p.stepMin)+'"></label></section>';
   return h+'<a class="btn" href="#plan/setup/2">Next: your places</a>';
@@ -296,13 +369,14 @@ function vStep3(){
   var h = stepper("3")+'<div class="stack"><h1>Your fixed week</h1><p class="lead">Work, training, classes and anything else. Mark what could move: the check page uses it for the trade-offs.</p></div>';
   ds.forEach(function(d){
     var evs = p.events.filter(function(e){ return e.date===d; }).sort(function(a,b){ return m(a.start)-m(b.start); });
-    h += '<section class="card"><h2>'+dayName(d,true)+'</h2>'+(evs.length?evs.map(function(e){
+    var examRow = d===p.exam.date ? '<div class="pl-row ev"><b>'+esc(p.exam.time)+'</b> · IFRS exam · '+esc((place(p.exam.place)||{}).name||"")+' <span class="note">· change it in step 1</span></div>' : '';
+    h += '<section class="card"><h2>'+dayName(d,true)+'</h2>'+examRow+(evs.length?evs.map(function(e){
       return '<div class="pl-ev"><div class="row"><input type="text" data-pe="'+e.id+'.title" value="'+esc(e.title)+'" aria-label="What"><button type="button" class="btn small ghost" data-pedel="'+e.id+'" aria-label="Delete">✕</button></div>'+
-        '<div class="three"><input type="text" inputmode="numeric" data-pe="'+e.id+'.start" value="'+esc(e.start)+'" aria-label="Start"><input type="text" inputmode="numeric" data-pe="'+e.id+'.end" value="'+esc(e.end)+'" aria-label="End">'+
+        '<div class="three"><input type="time" data-pe="'+e.id+'.start" value="'+esc(e.start)+'" aria-label="Start"><input type="time" data-pe="'+e.id+'.end" value="'+esc(e.end)+'" aria-label="End">'+
         '<select data-pe="'+e.id+'.place" aria-label="Where">'+p.places.map(function(x){ return '<option value="'+x.id+'"'+(x.id===e.place?" selected":"")+'>'+esc(x.name)+'</option>'; }).join("")+'</select></div>'+
         '<div class="two"><select data-pe="'+e.id+'.kind" aria-label="Type">'+["work","training","class","other"].map(function(k){ return '<option value="'+k+'"'+(e.kind===k?" selected":"")+'>'+k[0].toUpperCase()+k.slice(1)+'</option>'; }).join("")+'</select>'+
         '<select data-pe="'+e.id+'.flex" aria-label="Can it move?">'+Object.keys(FLEX).map(function(k){ return '<option value="'+k+'"'+(e.flex===k?" selected":"")+'>'+FLEX[k]+'</option>'; }).join("")+'</select></div></div>';
-    }).join(""):'<p class="note">Nothing fixed.</p>')+'<button type="button" class="btn small ghost" data-peadd="'+d+'">Add something on this day</button></section>';
+    }).join(""):(examRow?'':'<p class="note">Nothing fixed.</p>'))+'<button type="button" class="btn small ghost" data-peadd="'+d+'">Add something on this day</button></section>';
   });
   return h+'<a class="btn" href="#plan/setup/4">Next: see your study slots</a>';
 }
@@ -333,15 +407,20 @@ function cards(pl){
   var short = base.minsLeft > 0, nowShort = pl.minsLeft > 0; pl = {minsLeft:base.minsLeft};
   p.events.forEach(function(e){
     if(e.flex==="fixed") return;
-    var dur = m(e.end)-m(e.start), gain = Math.round((dur + 2*travel("home", e.place).min)/6)/10, before = e.date === lastDay;
+    var dur = m(e.end)-m(e.start), before = e.date === lastDay;
+    var mdW = dayModel(e.date), withIt = mdW.slots.reduce(function(a,b){ return a+b.len; },0), keepD = p.decisions["ev-"+e.id]; p.decisions["ev-"+e.id] = "drop";
+    var mdO = dayModel(e.date), without = mdO.slots.reduce(function(a,b){ return a+b.len; },0), sleepMore = mdO.wake - mdW.wake;
+    if(keepD === undefined) delete p.decisions["ev-"+e.id]; else p.decisions["ev-"+e.id] = keepD;
+    var gainMin = Math.max(0, without - withIt);
+    var how = "The "+e.title.toLowerCase()+" itself is "+fmtDur(dur)+" ("+e.start+"–"+e.end+"). With the drive and the time around it, your study time that day grows by about "+fmtDur(gainMin)+(sleepMore>=20?", and you can sleep until "+hm(mdO.wake)+" instead of "+hm(mdW.wake):"")+".";
     var rec = before || (e.kind==="class" && short) ? "drop" : "keep";
     var why = before
-      ? "It is the day before the exam. Removing it frees about "+gain+" h for the final review and an evening to calm down and sleep early. Asking now is easier on your colleagues than a sick call on the day."
-      : rec==="drop" ? "The plan is about "+Math.round(pl.minsLeft/6)/10+" h short and this frees about "+gain+" h. If the class covers IFRS exam material, keep it instead."
+      ? "It is the day before the exam. "+how+" That time goes to the final review and an early, calm evening. Asking now is easier on your colleagues than a sick call on the day."
+      : rec==="drop" ? "Your week is about "+fmtDur(pl.minsLeft)+" short. "+how+" If the class covers IFRS exam material, go instead."
       : "The plan fits without it, so keeping it costs you nothing important.";
-    out.push({id:"ev-"+e.id, title:e.title+", "+dayName(e.date)+" "+e.start+"–"+e.end, rec:rec, why:why,
+    out.push({id:"ev-"+e.id, day:dayName(e.date,true), title:e.title+" · "+e.start+"–"+e.end, rec:rec, why:why,
       opts:[["keep", e.kind==="work"?"Keep the shift":"Go"],["drop", e.flex==="swap" ? (e.kind==="work"?"Swap or cancel the shift":"Move it") : "Skip it and study"]],
-      cost:{keep:"No change.", drop:"Frees about "+gain+" h including travel."}});
+      cost:{keep:"No change to your week.", drop:"About "+fmtDur(gainMin)+" more study time on "+dayName(e.date)+(sleepMore>=20?" and "+fmtDur(sleepMore)+" more sleep":"")+"."}});
   });
   out.push({id:"noise", title:"Where you study", rec:"split",
     why:"For people with ADHD, steady background noise such as pink noise helped a little in lab tasks, while it hurt people without ADHD (Nigg et al. 2024). So new steps go to quiet places and reviews can go anywhere.",
@@ -390,7 +469,7 @@ function vCheck(){
   }
   if(it.t==="card"){
     var c = it.c, cur = p.decisions[c.id], recO = c.opts.filter(function(o){ return o[0]===c.rec; })[0];
-    h += '<section class="card pl-big"><div class="eyebrow">Decide</div><h1>'+esc(c.title)+'</h1><div class="pl-rec"><b>I\'d go with: '+esc(recO[1])+'</b><br><span>'+esc(c.why)+'</span></div>'+
+    h += '<section class="card pl-big"><div class="eyebrow">Decide'+(c.day?' · '+esc(c.day):'')+'</div><h1>'+esc(c.title)+'</h1><div class="pl-rec"><b>I\'d go with: '+esc(recO[1])+'</b><br><span>'+esc(c.why)+'</span></div>'+
       c.opts.map(function(o){ return '<button type="button" class="btn '+(o[0]===c.rec?"":"ghost")+(cur===o[0]?" picked":"")+'" data-pdec="'+c.id+'|'+o[0]+'">'+esc(o[1])+(cur===o[0]?" ✓":"")+'</button><p class="note pl-cost">'+esc(c.cost[o[0]]||"")+'</p>'; }).join("")+
       '<p class="note">Your call. Either way the plan adjusts.</p>';
     if(cur==="drop" && /^ev-/.test(c.id)){ var ev = p.events.filter(function(e){ return "ev-"+e.id===c.id; })[0];
@@ -435,7 +514,7 @@ function drawMap(r){
   var el = document.getElementById("pl-map"); if(map){ try{ map.remove(); }catch(e){} map = null; }
   if(!el || !window.L) return;
   var p = P(), L = window.L;
-  map = L.map(el, {zoomControl:false, attributionControl:true}).setView([52.49, 13.33], 10);
+  map = L.map(el, {zoomControl:false, attributionControl:true, fadeAnimation:false, zoomAnimation:false, markerZoomAnimation:false}).setView([52.49, 13.33], 10);
   L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {maxZoom:18, attribution:'© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'}).addTo(map);
   var pts = [], icon = function(txt, cls){ return L.divIcon({className:"pl-pin "+(cls||""), html:'<span>'+txt+'</span>', iconSize:null}); };
   if(r==="plan/check" && curLeg){
@@ -451,15 +530,16 @@ function drawMap(r){
       if(!used[l.to]){ used[l.to] = 1; var B = place(l.to); L.marker([B.lat,B.lon], {icon:icon((l.to==="home"?"":"Leave "+hm(l.leave)+" → ")+esc(B.name), B.kind)}).addTo(map); } });
     var H = place("home"); L.marker([H.lat,H.lon], {icon:icon("Home","home")}).addTo(map); pts.push([H.lat,H.lon]);
   }
-  if(pts.length > 1) map.fitBounds(pts, {padding:[24,24]}); else if(pts.length) map.setView(pts[0], 13);
+  if(pts.length > 1) map.fitBounds(pts, {padding:[24,24], animate:false}); else if(pts.length) map.setView(pts[0], 13, {animate:false});
 }
 
 /* ---------- routing hooks used by the main app ---------- */
 window.FLPlan = {
-  match: function(r){ return r==="plan" || /^plan\//.test(r); },
+  match: function(r){ return r==="plan" || r==="journal" || /^plan\//.test(r); },
   view: function(r){
     P(); geocodeSeeds();
     if(r==="plan") return vHome();
+    if(r==="journal") return vJournal();
     if(r==="plan/check") return vCheck();
     if(r==="plan/line") return vLine();
     var s = (r.match(/^plan\/setup\/(\d)/)||[])[1];
@@ -479,6 +559,11 @@ var app = document.getElementById("app");
 app.addEventListener("click", function(e){
   var t = e.target.closest("button"); if(!t) return; var p = P(), d = t.dataset;
   if(d.pday){ selDay = d.pday; FL.render(); return; }
+  if(d.jday){ jDay = d.jday; ventSaved = ""; FL.render(); return; }
+  if(d.jmood){ var jm = jr(jDay).mood; jm[d.jmood] = !jm[d.jmood]; save(); FL.render(); return; }
+  if(d.jif){ var ji = jr(jDay).ifthen; ji[d.jif] = !ji[d.jif]; save(); FL.render(); return; }
+  if(d.jsave){ jr(jDay).vent = (document.getElementById("j-vent")||{}).value || ""; ventSaved = jDay; save(); FL.render(); return; }
+  if(d.pics){ var blob = new Blob([icsFor(d.pics)], {type:"text/calendar"}), a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = "finish-line-"+d.pics+".ics"; document.body.appendChild(a); a.click(); setTimeout(function(){ URL.revokeObjectURL(a.href); a.remove(); }, 1000); return; }
   if(d.pmode){ p.mode = d.pmode; save(); FL.render(); return; }
   if(d.pview){ lineView = d.pview; FL.render(); return; }
   if(d.pdel){ p.places = p.places.filter(function(x){ return x.id!==d.pdel; }); p.events.forEach(function(ev){ if(ev.place===d.pdel) ev.place = "home"; }); save(); FL.render(); return; }
@@ -502,6 +587,9 @@ app.addEventListener("change", function(e){
   if(d.pf){ setPath(p, d.pf, d.pf==="stepMin" ? +t.value : t.value); save(); FL.render(); }
   if(d.pp){ var a = d.pp.split("."), x = place(a[0]); if(x){ x[a[1]] = a[1]==="park" ? +t.value : t.value; save(); FL.render(); } }
   if(d.pe){ var b = d.pe.split("."), ev = p.events.filter(function(z){ return z.id===b[0]; })[0]; if(ev){ ev[b[1]] = t.value; save(); FL.render(); } }
+  if(d.pjc){ var c2 = d.pjc.split("|"); jr(c2[0]).checks[c2[1]] = t.checked; save(); return; }
+  if(d.jfood){ jr(jDay).food[d.jfood] = t.value; save(); return; }
+  if(d.jfoodok){ jr(jDay).food.ok = t.checked; save(); return; }
   if(d.pman){ var tr = p.travel[d.pman] = p.travel[d.pman] || {}; tr.manual = +t.value || null; save(); FL.render(); }
 });
 app.addEventListener("submit", function(e){
