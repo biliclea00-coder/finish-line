@@ -168,15 +168,24 @@ function dayModel(date){
 }
 
 /* ---------- topics into slots: highest exam points first, reviews in short slots ---------- */
-function stepQueue(){
-  var p = P(), order = [2,3,4,5,1], q = [], dec = p.decisions.coverage;
+function stepQueue(opts){
+  var p = P(), order = [2,3,4,5,1], q = [], dec = p.decisions.coverage, prot = (opts && opts.nomiss) ? {} : (p.protect || {});
+  if(Object.keys(prot).some(function(k){ return prot[k]; })){
+    var dm0 = doneMins(), cur = order.filter(function(n){ return FL.TOPICS[n-1].steps.some(function(st){ return dm0[st[0]]; }); })[0] || order[0];
+    /* a protected topic swaps places with the lowest-scoring unprotected topic ahead of it, so the cut falls where it costs the fewest exam points */
+    var pts = function(n){ return +((FL.TOPICS[n-1].exam||"").match(/^(\d+)/)||[0,0])[1]; };
+    order.slice().forEach(function(n){ if(!prot[n] || n===cur) return;
+      var i = order.indexOf(n), before = order.slice(0, i).filter(function(x){ return x!==cur && !prot[x]; });
+      if(!before.length) return; var low = before.sort(function(a,b){ return pts(a)-pts(b); })[0];
+      order.splice(i, 1); order.splice(order.indexOf(low), 0, n); });
+  }
   order.forEach(function(n){
     var t = FL.TOPICS[n-1];
     t.steps.forEach(function(st){
       var mins = +p.stepMin || 50;
-      if(dec === "focus" && (n===1 || n===4 || n===5)) mins = Math.round(mins*0.45);
-      if(dec === "once") mins = Math.round(mins*0.7);
-      if(dec === "dropT4" && n===4) return;
+      if(dec === "focus" && (n===1 || n===4 || n===5) && !prot[n]) mins = Math.round(mins*0.45);
+      if(dec === "once" && !prot[n]) mins = Math.round(mins*0.7);
+      if(dec === "dropT4" && n===4 && !prot[n]) return;
       q.push({topic:n, id:st[0], name:st[1], slides:st[3] ? "slides "+st[3]+"–"+st[4] : "cases", mins:mins});
     });
     if(p.decisions.books === "read23" && (n===2 || n===3)) bookReads(n).forEach(function(r){ q.push(r); });
@@ -192,7 +201,7 @@ function nowMin(){ var d = new Date(); return d.getHours()*60 + d.getMinutes(); 
 function plan(opts){
   opts = opts || {};
   var p = P(); p.log = p.log || {};
-  var ds = days(), models = ds.map(dayModel), full = stepQueue(), dm = doneMins(), learned = [], allSlots = [];
+  var ds = days(), models = ds.map(dayModel), full = stepQueue(opts), dm = doneMins(), learned = [], allSlots = [];
   var lastDay = addDays(p.exam.date, -1), lastN = 0, tot = {}, got = {}, today = todayIso(), tnow = nowMin();
   full.forEach(function(x){ tot[x.topic] = (tot[x.topic]||0) + x.mins; got[x.topic] = (got[x.topic]||0) + Math.min(x.mins, dm[x.id]||0); });
   var q = full.map(function(x){ var y = {}; for(var k in x) y[k] = x[k]; y.full = x.mins; y.mins = x.mins - Math.min(x.mins, dm[x.id]||0); return y; }).filter(function(x){ return x.mins > 0; });
@@ -438,9 +447,28 @@ function behindCard(pl){
   ];
   h += '<h3>Choose a trade-off</h3>'+opts.map(function(o){ var on = (j.trade||"")===o[0] || (o[0]==="calm" && j.low);
     return '<div class="pl-if'+(on?" on":"")+'"><p><b>'+esc(o[1])+'</b>'+(o[0]==="keep"?' <span class="pill solid">Recommended</span>':'')+'</p><p>'+esc(o[2])+'</p><p class="note">'+esc(o[3])+'</p><button class="btn small '+(on?"":"ghost")+'" data-trade="'+o[0]+'">'+(on?"Chosen ✓":"Choose this")+'</button></div>'; }).join("");
-  h += '<label class="f">Your own trade-off (saved in your journal)<input type="text" id="bh-own" value="'+esc(j.tradeNote||"")+'" placeholder="e.g. Skip the café, study at home instead"></label><button class="btn small ghost" data-trade="own">Save my idea</button>'+(j.tradeNote?' <span class="note">Saved ✓ The plan can\'t read it yet; Reflect with Claude in the journal can help you work it out.</span>':'');
+  var prot = P().protect || {};
+  h += '<h3>Keep a topic as full steps</h3><p class="note">Not okay with a topic becoming question cards? Protect it. Another topic then gives way, and "What moved" above shows which.</p><div class="pl-chips">'+[1,2,3,4,5].map(function(n){ return '<button type="button" class="opt" data-protect="'+n+'" aria-pressed="'+(!!prot[n])+'">'+(prot[n]?'🔒 ':'')+'Topic '+n+'</button>'; }).join("")+'</div>';
+  h += '<label class="f">Your own trade-off (saved in your journal)<input type="text" id="bh-own" value="'+esc(j.tradeNote||"")+'" placeholder="e.g. Fine with tonight, but keep Topic 5 as full steps"></label><button class="btn small ghost" data-trade="own">Save my idea</button>';
+  if(j.tradeNote){ var named = []; (j.tradeNote.match(/topic\s*([1-5])/gi)||[]).forEach(function(x){ var n = +x.replace(/\D/g,""); if(named.indexOf(n)<0) named.push(n); });
+    var offer = named.filter(function(n){ return !prot[n]; });
+    h += '<p class="note">Saved in your journal ✓</p>';
+    if(offer.length) h += '<div class="pl-if"><p>You mentioned '+offer.map(function(n){ return 'Topic '+n; }).join(" and ")+'. Should '+(offer.length>1?'they':'it')+' stay as full steps?</p>'+offer.map(function(n){ return '<button class="btn small" data-protect="'+n+'">Yes, keep Topic '+n+' as full steps</button>'; }).join(" ")+'</div>';
+    else if(!named.length) h += '<p class="note">The plan can only act on the choices above. If your idea is something else, Reflect with Claude in the journal can help you work it out.</p>'; }
+  if(j.trade || Object.keys(prot).some(function(k){ return prot[k]; })) h += afterCheck(j);
   h += '<p class="note">Source: Okano K, Kaczmarzyk JR, Dave N, Gabrieli JDE, Grossman JC. Sleep quality, duration, and consistency are associated with better academic performance in college students. NPJ Sci Learn. 2019;4:16.</p>';
   h += '<button class="btn small ghost" data-behind="clear">I\'m on time after all</button></section>';
+  return h;
+}
+/* after a change: a short check that you're okay with it. Putting a feeling into words lowers its intensity (Lieberman et al. 2007). */
+function afterCheck(j){
+  var a = j.after || "";
+  var h = '<div class="pl-if on"><p><b>Now that it\'s rearranged: how do you feel about it?</b></p><div class="pl-chips">'+[["better","Better, I can work with this"],["worried","Still worried"],["sad","Sad about what's cut"]].map(function(o){ return '<button type="button" class="opt" data-after="'+o[0]+'" aria-pressed="'+(a===o[0])+'">'+o[1]+'</button>'; }).join("")+'</div>';
+  if(a==="better") h += '<p>Good. Your next step is only the first station. Everything else is handled.</p>';
+  if(a==="worried") h += '<p>Write the worry down in one sentence. Naming a feeling makes it less intense (Lieberman et al. 2007), and writing worries out before studying frees up headspace (Ramirez and Beilock 2011).</p>';
+  if(a==="sad") h += '<p>It makes sense to be sad about it: you care about doing this properly. Being kind to yourself after a setback makes you more likely to try again (Breines and Chen 2012). If one cut really matters, protect that topic above.</p>';
+  if(a) h += '<label class="f">In one sentence (goes into today\'s journal)<input type="text" id="af-note" value="'+esc(j.afterNote||"")+'"></label><button class="btn small ghost" data-after="note">Save</button>'+(j.afterNote?' <span class="note">Saved ✓</span>':'');
+  h += '<p class="note">Lieberman MD, Eisenberger NI, Crockett MJ, Tom SM, Pfeifer JH, Way BM. Putting feelings into words. Psychol Sci. 2007;18(5):421–8.</p></div>';
   return h;
 }
 function lowSwitch(date){ var on = !!jr(date).low;
@@ -493,7 +521,7 @@ function reflectPrompt(){
   var txt = "I'm a student preparing for an IFRS exam on "+p.exam.date+". These are my last journal days from my study app.\n\n";
   dates.forEach(function(d){ var j = js[d], ms = Object.keys(j.mood||{}).filter(function(k){ return j.mood[k]; }).map(function(k){ return mood[k]; }), hb = hs.filter(function(x){ return (j.hab||{})[x.id]; }).map(function(x){ return (x.kind==="care"?"[self-care] ":"[sets me back] ")+x.name; });
     if(!ms.length && !hb.length && !j.vent && !j.intent) return;
-    txt += "## "+d+"\n"+(ms.length?"Mood: "+ms.join(", ")+"\n":"")+(hb.length?"Habits: "+hb.join("; ")+"\n":"")+(j.low?"Low-energy day\n":"")+(j.intent?"Intention: "+j.intent+"\n":"")+(j.vent?"Wrote: "+j.vent+"\n":"")+"Study stations done: "+litOn(d)+"\n\n"; });
+    txt += "## "+d+"\n"+(ms.length?"Mood: "+ms.join(", ")+"\n":"")+(hb.length?"Habits: "+hb.join("; ")+"\n":"")+(j.low?"Low-energy day\n":"")+(j.intent?"Intention: "+j.intent+"\n":"")+(j.vent?"Wrote: "+j.vent+"\n":"")+(j.tradeNote?"Trade-off idea: "+j.tradeNote+"\n":"")+(j.after?"After rearranging I felt: "+j.after+(j.afterNote?" ("+j.afterNote+")":"")+"\n":"")+"Study stations done: "+litOn(d)+"\n\n"; });
   txt += "Please help me reflect, kindly and honestly:\n1. Which patterns do you see?\n2. Which things are habits that genuinely set me back, and which are things I'm too harsh on myself about (needs, not failures)?\n3. Suggest one small experiment for the next few days, not a big plan.\nAsk me questions if something is unclear. You're not my therapist; if something sounds like more than exam stress, tell me to talk to someone.";
   return txt;
 }
@@ -684,7 +712,9 @@ function movedSummary(pl){
   });
   base.slots.forEach(function(s){ (s.parts||[]).forEach(function(pt){ if(!whereIs(pt.step.id) && gone.indexOf(pt.step)<0 && !td.slots.some(function(m){ return m.missed && m.id===s.id; })) gone.push(pt.step); }); });
   var h = '<div class="pl-calm"><p><b>What moved</b></p><ul>'+(out.join("")||'<li>Nothing moved.</li>')+'</ul>';
-  if(gone.length) h += '<p>To make room, '+gone.map(function(st){ return 'Topic '+st.topic+' '+esc(st.name); }).join(", ")+' '+(gone.length===1?'becomes':'become')+' question cards instead of a full step.</p>';
+  if(gone.length){ var byT = {}; gone.forEach(function(st){ (byT[st.topic] = byT[st.topic] || []).push(st.name); });
+    h += '<p>To make room, these become question cards instead of full steps:</p><ul>'+Object.keys(byT).map(function(n){ var ex = (FL.TOPICS[n-1].exam||"").match(/^(\d+)/);
+      return '<li><b>Topic '+n+'</b>'+(ex?' ('+ex[1]+' of 75 points in 2023)':'')+': '+byT[n].map(esc).join("; ")+'</li>'; }).join("")+'</ul>'; }
   h += '<p>'+(jr(jToday()).trade==="late"?'Your fixed plans stay the same. Tonight you study 30 minutes longer, so you have less time to wind down.':'Your bedtime and your fixed plans stay the same. Only the study stations shifted.')+'</p></div>';
   return h;
 }
@@ -822,6 +852,8 @@ app.addEventListener("click", function(e){
     if(d.behind==="at"){ var tv2 = (document.getElementById("bh-at")||{}).value; if(tv2){ jb2.startAt = m(tv2); } }
     else jb2.startAt = nowMin() + (+d.behind);
     behindOpen = true; save(); FL.render(); return; }
+  if(d.protect){ p.protect = p.protect || {}; var pn = +d.protect; p.protect[pn] = !p.protect[pn]; if(!p.protect[pn]) delete p.protect[pn]; save(); FL.render(); return; }
+  if(d.after){ var ja = jr(jToday()); if(d.after==="note"){ ja.afterNote = ((document.getElementById("af-note")||{}).value||"").trim(); } else ja.after = d.after; save(); FL.render(); return; }
   if(d.trade){ var jt2 = jr(jToday());
     if(d.trade==="own"){ jt2.tradeNote = ((document.getElementById("bh-own")||{}).value||"").trim(); save(); FL.render(); return; }
     if(d.trade==="calm"){ jt2.low = !jt2.low; if(jt2.low) jt2.trade = "calm"; else delete jt2.trade; }
