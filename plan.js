@@ -475,6 +475,7 @@ function makeFit(pl){
   if(!p.earlyFrom){
     levers.push({id:"e2230", ch:{earlyFrom:"22:30"}, title:"In bed 22:30 from tonight, up 06:30", cost:"Same 8 hours of sleep, just earlier, so every morning gets longer. After your late shift you go to bed once you're home."});
     levers.push({id:"e2200", ch:{earlyFrom:"22:00"}, title:"In bed 22:00 from tonight, up 06:00", cost:"Same 8 hours of sleep, even earlier mornings. Good with a morning workout."});
+    if(sm > 40) levers.push({id:"e2300s40", ch:{earlyFrom:"23:00", stepMin:40}, title:"In bed 23:00, up 07:00, and 40-minute steps", cost:"A gentler jump from your current rhythm, plus a faster first pass for each step."});
     if(sm > 40) levers.push({id:"e2230s40", ch:{earlyFrom:"22:30", stepMin:40}, title:"In bed 22:30, up 06:30, and 40-minute steps", cost:"Earlier mornings plus a faster first pass for each step."});
   }
   if(sm > 40) levers.push({id:"s40", ch:{stepMin:40}, title:"Shorter steps: 40 instead of "+sm+" minutes", cost:"Each step gets a faster first pass. You go deeper with the question cards later."});
@@ -890,7 +891,7 @@ app.addEventListener("click", function(e){
     behindOpen = true; save(); FL.render(); return; }
   if(d.fit){
     if(d.fit==="reset"){ if(p.fitOld){ p.stepMin = p.fitOld.stepMin; p.lateAll = p.fitOld.lateAll; p.decisions.books = p.fitOld.books; if(p.fitOld.earlyFrom) p.earlyFrom = p.fitOld.earlyFrom; else delete p.earlyFrom; } delete p.fitPick; delete p.fitOld; save(); FL.render(); return; }
-    var lv = {e2230:{earlyFrom:"22:30"}, e2200:{earlyFrom:"22:00"}, e2230s40:{earlyFrom:"22:30", stepMin:40}, s40:{stepMin:40}, s35:{stepMin:35}, nobooks:{books:"lookup"}, late:{lateAll:true}, s40late:{stepMin:40, lateAll:true}}[d.fit], names = {e2230:"in bed 22:30, up 06:30", e2200:"in bed 22:00, up 06:00", e2230s40:"in bed 22:30, up 06:30, and 40-minute steps", s40:"40-minute steps", s35:"35-minute steps", nobooks:"no textbook readings", late:"30 minutes longer each evening", s40late:"40-minute steps and 30 minutes longer each evening"};
+    var lv = {e2230:{earlyFrom:"22:30"}, e2200:{earlyFrom:"22:00"}, e2230s40:{earlyFrom:"22:30", stepMin:40}, e2300s40:{earlyFrom:"23:00", stepMin:40}, s40:{stepMin:40}, s35:{stepMin:35}, nobooks:{books:"lookup"}, late:{lateAll:true}, s40late:{stepMin:40, lateAll:true}}[d.fit], names = {e2230:"in bed 22:30, up 06:30", e2200:"in bed 22:00, up 06:00", e2230s40:"in bed 22:30, up 06:30, and 40-minute steps", e2300s40:"in bed 23:00, up 07:00, and 40-minute steps", s40:"40-minute steps", s35:"35-minute steps", nobooks:"no textbook readings", late:"30 minutes longer each evening", s40late:"40-minute steps and 30 minutes longer each evening"};
     if(lv){ if(!p.fitOld) p.fitOld = {stepMin:p.stepMin, lateAll:!!p.lateAll, books:p.decisions.books, earlyFrom:p.earlyFrom}; for(var k in lv){ if(k==="books") p.decisions.books = lv[k]; else p[k] = lv[k]; } p.fitPick = names[d.fit]; jr(jToday()).trade = jr(jToday()).trade || "keep"; save(); FL.render(); }
     return; }
   if(d.protect){ p.protect = p.protect || {}; var pn = +d.protect; p.protect[pn] = !p.protect[pn]; if(!p.protect[pn]) delete p.protect[pn]; save(); FL.render(); return; }
