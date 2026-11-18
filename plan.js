@@ -88,11 +88,13 @@ function leaveFor(date){
 function bedMin(t){ var x = m(t); return x < 720 ? x + 1440 : x; }
 var nightCache = null;
 function nights(){
-  var p = P(), ds = days(), n = ds.length - 1, start = bedMin(p.sleepNow.bed), out = {bed:{}, wake:{}, natural:{}};
+  var p = P(), ds = days(), n = ds.length - 1, start = bedMin(p.earlyFrom || p.sleepNow.bed), out = {bed:{}, wake:{}, natural:{}};
   var exLeave = leaveFor(p.exam.date); var end = (exLeave === null ? 480 : exLeave - 60) + 1440 - 480;
   for(var i=0;i<n;i++){
     var b = n ? start + (end - start) * (i+1) / n : end; b = Math.round(b/15)*15;
     var nl = leaveFor(ds[i+1]); if(nl !== null) b = Math.min(b, nl - 60 + 1440 - 450);
+    /* never in bed before you are home from a late shift or class, plus 30 minutes to wind down */
+    p.events.filter(function(e){ return e.date===ds[i] && !removed(e) && e.place && e.place!=="home"; }).forEach(function(e){ var back = m(e.end) + travel(e.place, "home").min + 30; if(back > b - 0 && back > 1080) b = Math.max(b, Math.round(back/15)*15); });
     out.bed[ds[i]] = b;
   }
   out.bed[ds[n]] = start;
@@ -212,7 +214,8 @@ function plan(opts){
   Object.keys(p.log).forEach(function(id){ var lg = p.log[id]; if(p.done[id] && lg && lg.quiz) quizzed[lg.quiz] = 1; });
   function touched(){ var o = Object.keys(seenT).map(Number); learned.forEach(function(x){ if(o.indexOf(x.topic)<0) o.push(x.topic); }); return o.length ? o.sort() : [q.length ? q[0].topic : 2]; }
   var jt = (p.journal||{})[today] || {}, startAt = opts.nomiss ? 0 : (+jt.startAt||0);
-  if(!opts.nomiss && jt.trade==="late" && models[0] && models[0].date===today){ var ls = models[0].slots.filter(function(s){ return !p.done[s.id]; }).slice(-1)[0]; if(ls){ ls.e += 30; ls.len = ls.e - ls.s; ls.late = true; } }
+  if(!opts.nomiss && p.lateAll) models.forEach(function(md){ if(md.date===p.exam.date || md.date===lastDay) return; var ls = md.slots.filter(function(s){ return !p.done[s.id]; }).slice(-1)[0]; if(ls){ ls.e += 30; ls.len = ls.e - ls.s; ls.late = true; } });
+  if(!opts.nomiss && !p.lateAll && jt.trade==="late" && models[0] && models[0].date===today){ var ls = models[0].slots.filter(function(s){ return !p.done[s.id]; }).slice(-1)[0]; if(ls){ ls.e += 30; ls.len = ls.e - ls.s; ls.late = true; } }
   models.forEach(function(md){
     md.slots.forEach(function(sl){
       if(startAt && md.date===today && !p.done[sl.id] && sl.id !== opts.avail && sl.s < startAt){
@@ -311,13 +314,13 @@ function icsFor(date){
 /* ---------- journal: one page per day, if-then plans, food, a place to write ---------- */
 var MOODS = [["badsleep","I slept badly"],["anxious","I'm anxious"],["overwhelmed","It's too much"],["cantstart","I can't start"],["missed","I missed a slot"],["ok","I'm okay"]];
 var IFTHEN = {
-  badsleep:[["nap","If I slept badly, then I take a 10-minute nap before 15:00, and only after that I start.","A 10-minute afternoon nap after a short night improved alertness and performance straight away, for up to about 2.5 hours (Brooks and Lack 2006)."],
+  badsleep:[["nap","If I slept badly, then I take a 10-minute nap before 15:00, and only after that I start.","A 10-minute afternoon nap after a short night improved alertness and performance straight away, for up to about 2.5 hours."],
             ["swap","If I slept badly, then today's new steps become question cards, and I still eat at 12:30.","Tired days are for review. New material can wait one day."]],
-  anxious:[["write","If anxiety spikes, then I write my worries down for 10 minutes before I start.","Students who wrote about their exam worries for 10 minutes right before a test did better than those who didn't (Ramirez and Beilock 2011)."],
-           ["reframe","If my heart races, then I tell myself: my body is getting ready to perform.","People told that arousal helps performance scored higher on the GRE maths section (Jamieson et al. 2010)."]],
-  overwhelmed:[["only","If it all feels like too much, then I only look at 'Only this' and do that one thing.","Plans of the form 'if X, then I do Y' had a medium-to-large effect on reaching goals across 94 studies (Gollwitzer and Sheeran 2006)."]],
-  cantstart:[["ten","If I can't start, then I open one question card and set a 10-minute timer. Stopping after 10 minutes is allowed.","Starting is the hardest part, and a fixed if-then cue helps most exactly there (Gollwitzer and Sheeran 2006)."]],
-  missed:[["kind","If I miss a slot, then I say 'this happens to everyone' and do one card set at the next slot.","Students who treated a failure with self-compassion studied longer for the next test than those who didn't (Breines and Chen 2012)."]],
+  anxious:[["write","If anxiety spikes, then I write my worries down for 10 minutes before I start.","Students who wrote about their exam worries for 10 minutes right before a test did better than those who didn't."],
+           ["reframe","If my heart races, then I tell myself: my body is getting ready to perform.","People told that arousal helps performance scored higher on the GRE maths section."]],
+  overwhelmed:[["only","If it all feels like too much, then I only look at 'Only this' and do that one thing.","Plans of the form 'if X, then I do Y' had a medium-to-large effect on reaching goals across 94 studies."]],
+  cantstart:[["ten","If I can't start, then I open one question card and set a 10-minute timer. Stopping after 10 minutes is allowed.","Starting is the hardest part, and a fixed if-then cue helps most exactly there."]],
+  missed:[["kind","If I miss a slot, then I say 'this happens to everyone' and do one card set at the next slot.","Students who treated a failure with self-compassion studied longer for the next test than those who didn't."]],
   ok:[["keep","If today goes okay, then I light the station and stop on time.","Stopping on time protects tomorrow's energy and sleep."]]
 };
 var KIND_REPLIES = ["Thank you for writing it down. That already takes some weight off your working memory.", "That sounds hard. You are still here and still planning, which is what counts.", "Exams make everyone feel this way. You're not behind as a person, only on a to-do list.", "Written down, it's on the page and not only in your head. Next step: just 'Only this'."];
@@ -342,15 +345,14 @@ function vJournal(){
     [["b","Breakfast"],["l","Lunch"],["d","Dinner"],["s","Snack to take with me"]].map(function(f){ return '<label class="f">'+f[1]+'<input type="text" data-jfood="'+f[0]+'" value="'+esc(j.food[f[0]]||"")+'" placeholder="e.g. '+({b:"oats and a banana",l:"leftover pasta",d:"something quick",s:"nuts, an apple"})[f[0]]+'"></label>'; }).join("")+
     '<label class="f">To buy or prep<input type="text" data-jfood="buy" value="'+esc(j.food.buy||"")+'" placeholder="e.g. bread, cook rice the night before"></label>'+
     '<label class="check"><input type="checkbox" data-jfoodok="1"'+(j.food.ok?" checked":"")+'><span>Bought / prepped</span></label></section>';
-  h += '<section class="card"><h2>Write it out</h2><p class="note">Vent, worry, complain. Nobody reads this. Writing worries down before studying or an exam frees up headspace (Ramirez and Beilock 2011).</p><textarea id="j-vent" placeholder="What\'s on your mind?">'+esc(j.vent||"")+'</textarea><button class="btn small" data-jsave="1">Save</button>'+(ventSaved===jDay?'<p class="pl-calm">'+esc(KIND_REPLIES[(ds.indexOf(jDay)+(j.vent||"").length)%KIND_REPLIES.length])+'</p>':'')+'</section>';
+  h += '<section class="card"><h2>Write it out</h2><p class="note">Vent, worry, complain. Nobody reads this. Writing worries down before studying or an exam frees up headspace.</p><textarea id="j-vent" placeholder="What\'s on your mind?">'+esc(j.vent||"")+'</textarea><button class="btn small" data-jsave="1">Save</button>'+(ventSaved===jDay?'<p class="pl-calm">'+esc(KIND_REPLIES[(ds.indexOf(jDay)+(j.vent||"").length)%KIND_REPLIES.length])+'</p>':'')+'</section>';
   h += lowSwitch(jDay) + habitsCard(jDay);
   h += '<section class="card"><h2>Things that are true</h2><ul class="plain">'+
     '<li>You made a plan for a whole week with work, training and an exam in it. That is the hard part most people skip.</li>'+
     '<li>'+(lit ? 'You have already lit '+lit+' station'+(lit===1?"":"s")+'.' : 'Your first station is waiting. One is enough to start.')+'</li>'+
-    '<li>Nerves before an exam are your body getting ready, not a sign you will fail (Jamieson et al. 2010).</li>'+
-    '<li>Being kind to yourself after a bad day makes you more likely to try again, not less (Breines and Chen 2012).</li></ul>'+
+    '<li>Nerves before an exam are your body getting ready, not a sign you will fail.</li>'+
+    '<li>Being kind to yourself after a bad day makes you more likely to try again, not less.</li></ul>'+
     '<p class="note">If this ever feels like more than exam stress, talk to someone you trust or a doctor.</p></section>';
-  h += '<p class="note">Sources: Brooks A, Lack L. Sleep. 2006;29(6):831–40. Ramirez G, Beilock SL. Science. 2011;331(6014):211–3. Jamieson JP et al. J Exp Soc Psychol. 2010;46(1):208–12. Breines JG, Chen S. Pers Soc Psychol Bull. 2012;38(9):1133–43. Gollwitzer PM, Sheeran P. Adv Exp Soc Psychol. 2006;38:69–119.</p>';
   return h;
 }
 
@@ -412,7 +414,7 @@ function vNow(pl){
   var then = []; for(var i=0;i<after.length && then.length<4;i++){ then.push(after[i]); if(after[i].slot) break; }
   if(cur && cur.slot) then = [];
   var h = '<section class="card pl-next"><div class="eyebrow">Now · '+hm(t)+'</div>';
-  if(cur){ h += '<p class="pl-one">'+esc(cur.now)+'</p>'; if(cur.slot) h += '<p>'+slotLink(cur.slot)+'</p><p>'+doneBtn(cur.slot)+'</p>'; }
+  if(cur){ h += '<p class="pl-one">'+esc(cur.now)+'</p>'; if(cur.slot) h += '<p>'+doneBtn(cur.slot)+'</p>'; }
   else if(then.length) h += '<p class="pl-one">Free until '+hm(then[0].s)+'</p><p class="note">Rest, eat, or get ready. Nothing to do yet.</p>';
   else { var b = nights().bed[md.date]; h += '<p class="pl-one">That\'s it for today.</p>'+(b!==undefined?'<p class="note">In bed by '+hm(b)+'. Tomorrow is planned already.</p>':''); }
   if(then.length) h += '<div class="eyebrow" style="margin-top:12px">Then</div><ul class="plain">'+then.map(function(x){ return '<li><b>'+hm(x.s)+'</b> '+esc(x.then)+(x.slot?'<br>'+slotLink(x.slot):'')+'</li>'; }).join("")+'</ul>';
@@ -426,7 +428,7 @@ function vNow(pl){
     h += '<section class="card"><h2>Something\'s off</h2>';
     missed.forEach(function(s){ h += '<div class="pl-row st"><b>'+hm(s.s)+'–'+hm(s.e)+'</b> · missed<br>'+doneBtn(s)+'</div>'; });
     h += lowSwitch(jToday());
-    h += movedSummary(pl);
+    h += movedSummary(pl) + makeFit(pl);
     h += '<p><a href="#plan/setup/3">Change a fixed plan</a> (a shift, training, an appointment) and the stations move around it.</p></section>';
   }
   return h;
@@ -441,7 +443,7 @@ function behindCard(pl){
   h += '<p class="pl-calm">Okay. Studying from '+hm(j.startAt)+'. Here is what that changes.</p>' + movedSummary(pl);
   var last = md.slots.filter(function(s){ return !s.missed && !s.lit && !P().done[s.id]; }).slice(-1)[0], bed = nights().bed[md.date];
   var opts = [
-    ["keep", "Keep my bedtime", "Tonight gets shorter. What doesn't fit moves to the next days or becomes question cards.", "Recommended. Students who sleep regular hours with enough sleep get better grades (Okano et al. 2019), and sleep is when today's learning settles."],
+    ["keep", "Keep my bedtime", "Tonight gets shorter. What doesn't fit moves to the next days or becomes question cards.", "Recommended. Students who sleep regular hours with enough sleep get better grades, and sleep is when today's learning settles."],
     ["late", "Study 30 minutes longer tonight", last ? "You'd study until "+hm(last.e + (j.trade==="late"?0:30))+". That leaves 30 minutes instead of an hour to wind down"+(bed!==undefined?" before bed at "+hm(bed):"")+"." : "Adds 30 minutes to your last station tonight.", "Fine once. Not every day: it eats into sleep."],
     ["calm", "Make tonight calm: question cards only", "Nothing new tonight. The new steps move to the next days.", "Good when you're tired or in pain."]
   ];
@@ -455,20 +457,54 @@ function behindCard(pl){
     h += '<p class="note">Saved in your journal ✓</p>';
     if(offer.length) h += '<div class="pl-if"><p>You mentioned '+offer.map(function(n){ return 'Topic '+n; }).join(" and ")+'. Should '+(offer.length>1?'they':'it')+' stay as full steps?</p>'+offer.map(function(n){ return '<button class="btn small" data-protect="'+n+'">Yes, keep Topic '+n+' as full steps</button>'; }).join(" ")+'</div>';
     else if(!named.length) h += '<p class="note">The plan can only act on the choices above. If your idea is something else, Reflect with Claude in the journal can help you work it out.</p>'; }
+  h += makeFit(pl);
   if(j.trade || Object.keys(prot).some(function(k){ return prot[k]; })) h += afterCheck(j);
-  h += '<p class="note">Source: Okano K, Kaczmarzyk JR, Dave N, Gabrieli JDE, Grossman JC. Sleep quality, duration, and consistency are associated with better academic performance in college students. NPJ Sci Learn. 2019;4:16.</p>';
   h += '<button class="btn small ghost" data-behind="clear">I\'m on time after all</button></section>';
   return h;
 }
-/* after a change: a short check that you're okay with it. Putting a feeling into words lowers its intensity (Lieberman et al. 2007). */
+/* when steps still don't fit: try each way of finding time on the real plan, and say what each one costs */
+function cutOf(pl){ var o = {}; pl.queue.slice(pl.covered).forEach(function(s){ o[s.topic] = (o[s.topic]||0) + 1; }); return o; }
+function cutText(c){ var k = Object.keys(c).filter(function(x){ return x!=="__left"; }); return k.length ? k.map(function(n){ return 'Topic '+n+' ('+c[n]+' step'+(c[n]>1?'s':'')+')'; }).join(", ") : ""; }
+function simulate(ch){ var p = P(), old = {stepMin:p.stepMin, lateAll:p.lateAll, books:p.decisions.books, earlyFrom:p.earlyFrom};
+  for(var k in ch){ if(k==="books") p.decisions.books = ch[k]; else p[k] = ch[k]; }
+  var pl0 = plan(), r = cutOf(pl0); r.__left = pl0.minsLeft; p.stepMin = old.stepMin; p.lateAll = old.lateAll; p.decisions.books = old.books; if(old.earlyFrom) p.earlyFrom = old.earlyFrom; else delete p.earlyFrom; return r; }
+function makeFit(pl){
+  var p = P(), now = cutOf(pl); if(!Object.keys(now).length && !p.fitPick) return '';
+  var sm = +p.stepMin || 50, levers = [];
+  /* first try finding time without losing sleep: the same 8 hours, earlier */
+  if(!p.earlyFrom){
+    levers.push({id:"e2230", ch:{earlyFrom:"22:30"}, title:"In bed 22:30 from tonight, up 06:30", cost:"Same 8 hours of sleep, just earlier, so every morning gets longer. After your late shift you go to bed once you're home."});
+    levers.push({id:"e2200", ch:{earlyFrom:"22:00"}, title:"In bed 22:00 from tonight, up 06:00", cost:"Same 8 hours of sleep, even earlier mornings. Good with a morning workout."});
+    if(sm > 40) levers.push({id:"e2230s40", ch:{earlyFrom:"22:30", stepMin:40}, title:"In bed 22:30, up 06:30, and 40-minute steps", cost:"Earlier mornings plus a faster first pass for each step."});
+  }
+  if(sm > 40) levers.push({id:"s40", ch:{stepMin:40}, title:"Shorter steps: 40 instead of "+sm+" minutes", cost:"Each step gets a faster first pass. You go deeper with the question cards later."});
+  if(sm > 35) levers.push({id:"s35", ch:{stepMin:35}, title:"Much shorter steps: 35 minutes", cost:"A quick first pass for every step; harder steps may feel rushed."});
+  if(p.decisions.books==="read23") levers.push({id:"nobooks", ch:{books:"lookup"}, title:"Skip the textbook readings", cost:"You look things up in the book only when stuck, instead of reading chapters."});
+  if(!p.lateAll) levers.push({id:"late", ch:{lateAll:true}, title:"Study 30 minutes longer every evening", cost:"Less wind-down time before bed every night until the exam. Sleep matters for remembering what you learned."});
+  if(sm > 40 && !p.lateAll) levers.push({id:"s40late", ch:{stepMin:40, lateAll:true}, title:"Both: 40-minute steps and 30 minutes longer each evening", cost:"The two costs above together."});
+  levers.forEach(function(l){ l.res = simulate(l.ch); l.left = l.res.__left; delete l.res.__left; l.fits = !Object.keys(l.res).length; });
+  var rec = levers.filter(function(l){ return l.fits; })[0];
+  var h = '<h3>Make it fit</h3>';
+  h += Object.keys(now).length ? '<p>Right now these don\'t fit as full steps: <b>'+cutText(now)+'</b>. The time has to come from somewhere. Here is what each option would do with your real week:</p>' : '<p>Everything fits now ✓</p>';
+  h += levers.map(function(l){ return '<div class="pl-if'+(l===rec?' on':'')+'"><p><b>'+esc(l.title)+'</b>'+(l===rec?' <span class="pill solid">Recommended</span>':'')+'</p><p>'+(l.fits?'Everything fits as full steps ✓':'Still doesn\'t fit: '+cutText(l.res))+'</p><p class="note">'+esc(l.cost)+'</p><button class="btn small '+(l===rec?'':'ghost')+'" data-fit="'+l.id+'">Choose this</button></div>'; }).join("");
+  if(!rec && levers.length){
+    var best = simulate({stepMin:Math.min(sm,35), lateAll:true, books:"lookup"}), bl = best.__left || 0; delete best.__left;
+    var pts = function(n){ return +((FL.TOPICS[n-1].exam||"").match(/^(\d+)/)||[0,0])[1]; }, cheap = Object.keys(now).sort(function(a,b){ return pts(a)-pts(b); })[0];
+    h += '<div class="pl-calm"><p><b>Honestly: not everything fits.</b> Even with 35-minute steps, no readings and longer evenings, about '+Math.max(1,Math.round(bl/60))+' hour'+(Math.round(bl/60)>1?'s':'')+' of steps are left over ('+cutText(best)+'). That is the size of the course against the days left, not a failure of yours.</p>'+
+      (cheap?'<p>The fairest cut is the topic worth the fewest exam points: <b>Topic '+cheap+'</b> ('+pts(cheap)+' of 75 points in 2023). Unprotect it and the topics worth more keep their full steps.</p>':'')+
+      '<p>Topics that become question cards are still practised: the last day before the exam has question cards from every topic. The other big lever is a fixed plan, like giving away a shift: Something\'s off → Change a fixed plan.</p></div>'; }
+  if(p.fitPick) h += '<p class="note">You chose: '+esc(p.fitPick)+'. <button class="btn small ghost" data-fit="reset">Undo</button></p>';
+  return h;
+}
+/* after a change: a short check that you're okay with it. Putting a feeling into words lowers its intensity. */
 function afterCheck(j){
   var a = j.after || "";
   var h = '<div class="pl-if on"><p><b>Now that it\'s rearranged: how do you feel about it?</b></p><div class="pl-chips">'+[["better","Better, I can work with this"],["worried","Still worried"],["sad","Sad about what's cut"]].map(function(o){ return '<button type="button" class="opt" data-after="'+o[0]+'" aria-pressed="'+(a===o[0])+'">'+o[1]+'</button>'; }).join("")+'</div>';
   if(a==="better") h += '<p>Good. Your next step is only the first station. Everything else is handled.</p>';
-  if(a==="worried") h += '<p>Write the worry down in one sentence. Naming a feeling makes it less intense (Lieberman et al. 2007), and writing worries out before studying frees up headspace (Ramirez and Beilock 2011).</p>';
-  if(a==="sad") h += '<p>It makes sense to be sad about it: you care about doing this properly. Being kind to yourself after a setback makes you more likely to try again (Breines and Chen 2012). If one cut really matters, protect that topic above.</p>';
+  if(a==="worried") h += '<p>Write the worry down in one sentence. Naming a feeling makes it less intense, and writing worries out before studying frees up headspace.</p>';
+  if(a==="sad") h += '<p>It makes sense to be sad about it: you care about doing this properly. Being kind to yourself after a setback makes you more likely to try again. If one cut really matters, protect that topic above.</p>';
   if(a) h += '<label class="f">In one sentence (goes into today\'s journal)<input type="text" id="af-note" value="'+esc(j.afterNote||"")+'"></label><button class="btn small ghost" data-after="note">Save</button>'+(j.afterNote?' <span class="note">Saved ✓</span>':'');
-  h += '<p class="note">Lieberman MD, Eisenberger NI, Crockett MJ, Tom SM, Pfeifer JH, Way BM. Putting feelings into words. Psychol Sci. 2007;18(5):421–8.</p></div>';
+  h += '</div>';
   return h;
 }
 function lowSwitch(date){ var on = !!jr(date).low;
@@ -613,13 +649,13 @@ function cards(pl){
       cost:{keep:"No change to your week.", drop:"About "+fmtDur(gainMin)+" more study time on "+dayName(e.date)+(sleepMore>=20?" and "+fmtDur(sleepMore)+" more sleep":"")+"."}});
   });
   out.push({id:"noise", title:"Where you study", rec:"split",
-    why:"For people with ADHD, steady background noise such as pink noise helped a little in lab tasks, while it hurt people without ADHD (Nigg et al. 2024). So new steps go to quiet places and reviews can go anywhere.",
+    why:"For people with ADHD, steady background noise such as pink noise helped a little in lab tasks, while it hurt people without ADHD. So new steps go to quiet places and reviews can go anywhere.",
     opts:[["split","Quiet for new steps, noise is fine for reviews"],["quiet","Always somewhere quiet"],["noisy","I focus better with background noise"]],
     cost:{split:"Recommended balance.", quiet:"Short slots at the café become cards only.", noisy:"New steps can also go to noisy places."}});
   var all = 0; Object.keys(FL.BOOKMAP||{}).forEach(function(n){ FL.BOOKMAP[n].forEach(function(r){ all += r[3]-r[2]+1; }); });
   var extra = bookReads(2).concat(bookReads(3)).reduce(function(a,b){ return a+b.mins; }, 0);
   out.push({id:"books", title:"Textbook reading", rec:"lookup",
-    why:"All the Elliott and Melville chapters for your five topics are about "+all+" pages, roughly "+fmtDur(all*readRate())+" at "+(Math.round(readRate()*10)/10)+" min per page, which is more than your free time this week. Testing yourself helps learning much more than rereading (Dunlosky et al. 2013). So the books are best for looking up a step when you are stuck: each ladder step has a button to the right pages.",
+    why:"All the Elliott and Melville chapters for your five topics are about "+all+" pages, roughly "+fmtDur(all*readRate())+" at "+(Math.round(readRate()*10)/10)+" min per page, which is more than your free time this week. Testing yourself helps learning much more than rereading. So the books are best for looking up a step when you are stuck: each ladder step has a button to the right pages.",
     opts:[["lookup","Look things up when stuck"],["read23","Also read the Melville chapters for Topics 2 and 3"]],
     cost:{lookup:"No extra time in the plan.", read23:"About "+fmtDur(extra)+" more in the plan. It goes after the steps of each topic."}});
   if(nowShort || p.decisions.coverage) out.push({id:"coverage", title:"Not everything fits", rec:"focus",
@@ -852,6 +888,11 @@ app.addEventListener("click", function(e){
     if(d.behind==="at"){ var tv2 = (document.getElementById("bh-at")||{}).value; if(tv2){ jb2.startAt = m(tv2); } }
     else jb2.startAt = nowMin() + (+d.behind);
     behindOpen = true; save(); FL.render(); return; }
+  if(d.fit){
+    if(d.fit==="reset"){ if(p.fitOld){ p.stepMin = p.fitOld.stepMin; p.lateAll = p.fitOld.lateAll; p.decisions.books = p.fitOld.books; if(p.fitOld.earlyFrom) p.earlyFrom = p.fitOld.earlyFrom; else delete p.earlyFrom; } delete p.fitPick; delete p.fitOld; save(); FL.render(); return; }
+    var lv = {e2230:{earlyFrom:"22:30"}, e2200:{earlyFrom:"22:00"}, e2230s40:{earlyFrom:"22:30", stepMin:40}, s40:{stepMin:40}, s35:{stepMin:35}, nobooks:{books:"lookup"}, late:{lateAll:true}, s40late:{stepMin:40, lateAll:true}}[d.fit], names = {e2230:"in bed 22:30, up 06:30", e2200:"in bed 22:00, up 06:00", e2230s40:"in bed 22:30, up 06:30, and 40-minute steps", s40:"40-minute steps", s35:"35-minute steps", nobooks:"no textbook readings", late:"30 minutes longer each evening", s40late:"40-minute steps and 30 minutes longer each evening"};
+    if(lv){ if(!p.fitOld) p.fitOld = {stepMin:p.stepMin, lateAll:!!p.lateAll, books:p.decisions.books, earlyFrom:p.earlyFrom}; for(var k in lv){ if(k==="books") p.decisions.books = lv[k]; else p[k] = lv[k]; } p.fitPick = names[d.fit]; jr(jToday()).trade = jr(jToday()).trade || "keep"; save(); FL.render(); }
+    return; }
   if(d.protect){ p.protect = p.protect || {}; var pn = +d.protect; p.protect[pn] = !p.protect[pn]; if(!p.protect[pn]) delete p.protect[pn]; save(); FL.render(); return; }
   if(d.after){ var ja = jr(jToday()); if(d.after==="note"){ ja.afterNote = ((document.getElementById("af-note")||{}).value||"").trim(); } else ja.after = d.after; save(); FL.render(); return; }
   if(d.trade){ var jt2 = jr(jToday());
