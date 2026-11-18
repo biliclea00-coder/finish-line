@@ -206,7 +206,7 @@ function plan(opts){
     md.slots.forEach(function(sl){
       var eff = Math.round(sl.len * 50/60), parts = [];
       if(p.done[sl.id] && sl.id !== opts.avail){ var lg = p.log[sl.id] || {}; sl.lit = true; sl.kind = lg.kind || "done"; sl.what = lg.what || "Done"; sl.prog = lg.prog; sl.parts = []; sl.quiz = lg.quiz; if(md.date===lastDay) lastN++; allSlots.push(sl); return; }
-      if(md.date === today && sl.e <= tnow && sl.id !== opts.avail){ sl.kind = "missed"; sl.missed = true; sl.what = "Missed. Its work moved on to your next stations."; allSlots.push(sl); return; }
+      if(md.date === today && sl.e <= tnow && sl.id !== opts.avail && !opts.nomiss){ sl.kind = "missed"; sl.missed = true; sl.what = "Missed. Its work moved on to your next stations."; allSlots.push(sl); return; }
       if(sl.cardsOnly){ sl.kind = "cards"; sl.what = "Question cards only: calm review, nothing new"; }
       else if(md.date === lastDay){ sl.kind = "review"; lastN++;
         sl.what = lastN===1 ? "Write your 2 cheat sheets (4 pages): formulas and the steps of each ladder" : lastN===2 && sl.len >= 75 ? "The Nov 2023 exam, timed: 75 minutes, calculator and cheat sheets only" : "Mixed review: question cards from every topic"; }
@@ -546,6 +546,23 @@ function doneBtn(s){
 }
 
 /* ---------- start of the day: a one-minute check-in before the plan ---------- */
+var ciSaved = "", showMoved = false;
+/* in plain sentences: what the missed stations held, and where that work went */
+function movedSummary(pl){
+  var base = plan({nomiss:true}), td = pl.models[0] || {slots:[]}, out = [], gone = [];
+  function whereIs(id){ for(var i=0;i<pl.slots.length;i++){ var s = pl.slots[i]; if(s.missed || s.lit) continue; if((s.parts||[]).some(function(pt){ return pt.step.id===id; })) return s; } return null; }
+  td.slots.filter(function(s){ return s.missed; }).forEach(function(s){
+    var b = base.slots.filter(function(x){ return x.id===s.id; })[0] || {};
+    if(b.kind==="learn" && b.parts && b.parts.length){ b.parts.forEach(function(pt){ var to = whereIs(pt.step.id);
+      out.push('<li>'+hm(s.s)+': <b>Topic '+pt.step.topic+', '+esc(pt.step.name)+'</b> → '+(to ? (to.date===td.date?'today':esc(dayName(to.date)))+' at '+hm(to.s) : 'later in the week, as question cards')+'.</li>'); }); }
+    else out.push('<li>'+hm(s.s)+': '+esc(b.what||"question cards")+' → skipped. There are more question cards later, so nothing is lost.</li>');
+  });
+  base.slots.forEach(function(s){ (s.parts||[]).forEach(function(pt){ if(!whereIs(pt.step.id) && gone.indexOf(pt.step)<0 && !td.slots.some(function(m){ return m.missed && m.id===s.id; })) gone.push(pt.step); }); });
+  var h = '<div class="pl-calm"><p><b>What moved</b></p><ul>'+(out.join("")||'<li>Nothing moved.</li>')+'</ul>';
+  if(gone.length) h += '<p>To make room, '+gone.map(function(st){ return 'Topic '+st.topic+' '+esc(st.name); }).join(", ")+' '+(gone.length===1?'becomes':'become')+' question cards instead of a full step.</p>';
+  h += '<p>Your bedtime and your fixed plans stay the same. Only the study stations shifted.</p></div>';
+  return h;
+}
 function vCheckin(pl){
   var p = P(), today = jToday(), j = jr(today), tnow = nowMin(); jDay = today;
   var td = pl.models[0] || {slots:[]}, missed = td.slots.filter(function(s){ return s.missed; }), lit = td.slots.filter(function(s){ return s.lit; });
@@ -555,14 +572,14 @@ function vCheckin(pl){
   var picked = Object.keys(j.mood).filter(function(k){ return j.mood[k]; });
   picked.forEach(function(k){ (IFTHEN[k]||[]).forEach(function(it){ var on = j.ifthen[it[0]];
     h += '<div class="pl-if'+(on?" on":"")+'"><p><b>'+esc(it[1])+'</b></p><p class="note">'+esc(it[2])+'</p><button class="btn small '+(on?"":"ghost")+'" data-jif="'+it[0]+'">'+(on?"My plan today ✓":"Make this my plan")+'</button></div>'; }); });
-  h += '<label class="f">Anything on your mind? (optional, only you see this)<textarea id="ci-vent" placeholder="Write it out">'+esc(j.vent||"")+'</textarea></label></section>';
+  h += '<label class="f">Anything on your mind? (optional, only you see this)<textarea id="ci-vent" placeholder="Write it out">'+esc(j.vent||"")+'</textarea></label><button class="btn small" data-cisave="1">Save to my journal</button>'+(ciSaved===today?' <span class="note">Saved in today\'s journal ✓</span>':'')+'</section>';
   h += '<section class="card"><h2>2. What already happened today</h2>';
   if(!missed.length && !lit.length) h += '<p>Nothing yet. Your day starts fresh.</p>';
   missed.forEach(function(s){ h += '<div class="pl-row st"><b>'+hm(s.s)+'–'+hm(s.e)+'</b> · '+esc((place(s.place)||{}).name||"")+'<br>'+doneBtn(s)+'</div>'; });
   lit.forEach(function(s){ h += '<div class="pl-row st done"><b>'+hm(s.s)+'–'+hm(s.e)+'</b> · '+esc(s.what||"")+'<br>'+doneBtn(s)+'<span class="note"> Lit by mistake? Undo puts its work back in the plan.</span></div>'; });
   if(missed.length) h += '<p class="pl-calm">That happens to everyone. The plan has already moved that work to your next stations, so you don\'t have to redo anything in your head.</p>';
   var pct = pl.total ? Math.round(pl.covered/pl.total*100) : 100;
-  h += '<p class="note">'+(pl.minsLeft > 0 ? 'A few steps now become question cards instead, so the essentials still fit. <a href="#plan/check">See what moved</a> whenever you feel like it.' : 'Everything still fits before the exam.')+'</p></section>';
+  h += '<p class="note">'+(pl.minsLeft > 0 ? 'A few steps now become question cards instead, so the essentials still fit. <button class="btn small ghost" data-pmoved="1">'+(showMoved?'Hide':'What moved?')+'</button>' : 'Everything still fits before the exam.')+'</p>'+(showMoved ? movedSummary(pl) : '')+'</section>';
   var nx = nextThing(pl), first = "";
   if(nx && nx.n && nx.n.kind==="slot"){ var sl = nx.n.x; first = (nx.day===pl.models[0].date ? "Today " : dayName(nx.day)+" ")+hm(sl.s)+": "+(sl.kind==="learn" && sl.parts && sl.parts[0] ? "Topic "+sl.parts[0].step.topic+", "+sl.parts[0].step.name : sl.kind==="quiz" ? "Topic "+sl.quiz+" quiz, timed" : "question cards"); }
   else if(nx && nx.n && nx.n.kind==="leave"){ first = "Leave at "+hm(nx.n.x.leg.leave)+" for "+((place(nx.n.x.leg.to)||{}).name||""); }
@@ -673,6 +690,8 @@ app.addEventListener("click", function(e){
   if(d.pdone){
     if(armed !== d.pdone){ armed = d.pdone; FL.render(); clearTimeout(armT); armT = setTimeout(function(){ armed = ""; FL.render(); }, 5000); return; }
     armed = ""; clearTimeout(armT); lightSlot(d.pdone); save(); FL.render(); if(window.FL.confetti) window.FL.confetti(); return; }
+  if(d.cisave){ var tv = document.getElementById("ci-vent"); if(tv){ jr(jToday()).vent = tv.value; ciSaved = jToday(); save(); FL.render(); } return; }
+  if(d.pmoved){ showMoved = !showMoved; FL.render(); return; }
   if(d.pundo){ delete p.done[d.pundo]; if(p.log) delete p.log[d.pundo]; save(); FL.render(); return; }
   if(d.pcheckin){ var jc = jr(jToday()), ta = document.getElementById("ci-vent"), ti = document.getElementById("ci-intent");
     if(ta) jc.vent = ta.value; if(ti) jc.intent = ti.value; jc.checkin = d.pcheckin === "skip" ? "skipped" : new Date().toISOString(); save(); FL.render(); window.scrollTo(0,0); return; }
