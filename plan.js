@@ -202,8 +202,13 @@ function plan(opts){
   Object.keys(tot).forEach(function(n){ if(got[n] >= tot[n]) doneT[n] = 1; });
   Object.keys(p.log).forEach(function(id){ var lg = p.log[id]; if(p.done[id] && lg && lg.quiz) quizzed[lg.quiz] = 1; });
   function touched(){ var o = Object.keys(seenT).map(Number); learned.forEach(function(x){ if(o.indexOf(x.topic)<0) o.push(x.topic); }); return o.length ? o.sort() : [q.length ? q[0].topic : 2]; }
+  var jt = (p.journal||{})[today] || {}, startAt = opts.nomiss ? 0 : (+jt.startAt||0);
+  if(!opts.nomiss && jt.trade==="late" && models[0] && models[0].date===today){ var ls = models[0].slots.filter(function(s){ return !p.done[s.id]; }).slice(-1)[0]; if(ls){ ls.e += 30; ls.len = ls.e - ls.s; ls.late = true; } }
   models.forEach(function(md){
     md.slots.forEach(function(sl){
+      if(startAt && md.date===today && !p.done[sl.id] && sl.id !== opts.avail && sl.s < startAt){
+        if(sl.e - startAt < 20){ sl.kind = "missed"; sl.missed = true; sl.behind = true; sl.what = "Moved: you're starting later."; allSlots.push(sl); return; }
+        sl.s = startAt; sl.len = sl.e - sl.s; }
       var eff = Math.round(sl.len * 50/60), parts = [];
       if(p.done[sl.id] && sl.id !== opts.avail){ var lg = p.log[sl.id] || {}; sl.lit = true; sl.kind = lg.kind || "done"; sl.what = lg.what || "Done"; sl.prog = lg.prog; sl.parts = []; sl.quiz = lg.quiz; if(md.date===lastDay) lastN++; allSlots.push(sl); return; }
       if(md.date === today && sl.e <= tnow && sl.id !== opts.avail && !opts.nomiss){ sl.kind = "missed"; sl.missed = true; sl.what = "Missed. Its work moved on to your next stations."; allSlots.push(sl); return; }
@@ -403,6 +408,9 @@ function vNow(pl){
   else { var b = nights().bed[md.date]; h += '<p class="pl-one">That\'s it for today.</p>'+(b!==undefined?'<p class="note">In bed by '+hm(b)+'. Tomorrow is planned already.</p>':''); }
   if(then.length) h += '<div class="eyebrow" style="margin-top:12px">Then</div><ul class="plain">'+then.map(function(x){ return '<li><b>'+hm(x.s)+'</b> '+esc(x.then)+(x.slot?'<br>'+slotLink(x.slot):'')+'</li>'; }).join("")+'</ul>';
   h += '</section>';
+  var jb = jr(jToday());
+  h += '<button class="btn '+(behindOpen||jb.startAt?'':'ghost')+'" data-behind="open">'+(jb.startAt?'Running behind: studying from '+hm(jb.startAt):'I\'m running behind')+'</button>';
+  if(behindOpen || jb.startAt) h += behindCard(pl);
   h += '<div class="two"><a class="btn ghost" href="#journal">What\'s on my mind</a><button class="btn ghost" data-nowoff="1">'+(nowOff?'Close':'Something\'s off')+'</button></div>';
   if(nowOff){
     var missed = md.slots.filter(function(s){ return s.missed; }), j = jr(jToday());
@@ -412,6 +420,27 @@ function vNow(pl){
     h += movedSummary(pl);
     h += '<p><a href="#plan/setup/3">Change a fixed plan</a> (a shift, training, an appointment) and the stations move around it.</p></section>';
   }
+  return h;
+}
+var behindOpen = false;
+function behindCard(pl){
+  var j = jr(jToday()), t = nowMin(), md = pl.models[0] || {slots:[]};
+  var h = '<section class="card"><h2>Running behind</h2><p class="note">When can you start studying? Fixed plans like training or a shift stay where they are; only the study stations move.</p><div class="pl-chips">'+
+    [[15,"In 15 min"],[30,"In 30 min"],[60,"In 1 hour"]].map(function(o){ return '<button type="button" class="opt" data-behind="'+o[0]+'">'+o[1]+'</button>'; }).join("")+'</div>'+
+    '<label class="f">Or from<input type="time" id="bh-at" value="'+(j.startAt?hm(j.startAt):hm(Math.ceil((t+15)/5)*5))+'"></label><button class="btn small ghost" data-behind="at">Start from this time</button>';
+  if(!j.startAt){ return h + '</section>'; }
+  h += '<p class="pl-calm">Okay. Studying from '+hm(j.startAt)+'. Here is what that changes.</p>' + movedSummary(pl);
+  var last = md.slots.filter(function(s){ return !s.missed && !s.lit && !P().done[s.id]; }).slice(-1)[0], bed = nights().bed[md.date];
+  var opts = [
+    ["keep", "Keep my bedtime", "Tonight gets shorter. What doesn't fit moves to the next days or becomes question cards.", "Recommended. Students who sleep regular hours with enough sleep get better grades (Okano et al. 2019), and sleep is when today's learning settles."],
+    ["late", "Study 30 minutes longer tonight", last ? "You'd study until "+hm(last.e + (j.trade==="late"?0:30))+". That leaves 30 minutes instead of an hour to wind down"+(bed!==undefined?" before bed at "+hm(bed):"")+"." : "Adds 30 minutes to your last station tonight.", "Fine once. Not every day: it eats into sleep."],
+    ["calm", "Make tonight calm: question cards only", "Nothing new tonight. The new steps move to the next days.", "Good when you're tired or in pain."]
+  ];
+  h += '<h3>Choose a trade-off</h3>'+opts.map(function(o){ var on = (j.trade||"")===o[0] || (o[0]==="calm" && j.low);
+    return '<div class="pl-if'+(on?" on":"")+'"><p><b>'+esc(o[1])+'</b>'+(o[0]==="keep"?' <span class="pill solid">Recommended</span>':'')+'</p><p>'+esc(o[2])+'</p><p class="note">'+esc(o[3])+'</p><button class="btn small '+(on?"":"ghost")+'" data-trade="'+o[0]+'">'+(on?"Chosen ✓":"Choose this")+'</button></div>'; }).join("");
+  h += '<label class="f">Your own trade-off (saved in your journal)<input type="text" id="bh-own" value="'+esc(j.tradeNote||"")+'" placeholder="e.g. Skip the café, study at home instead"></label><button class="btn small ghost" data-trade="own">Save my idea</button>'+(j.tradeNote?' <span class="note">Saved ✓ The plan can\'t read it yet; Reflect with Claude in the journal can help you work it out.</span>':'');
+  h += '<p class="note">Source: Okano K, Kaczmarzyk JR, Dave N, Gabrieli JDE, Grossman JC. Sleep quality, duration, and consistency are associated with better academic performance in college students. NPJ Sci Learn. 2019;4:16.</p>';
+  h += '<button class="btn small ghost" data-behind="clear">I\'m on time after all</button></section>';
   return h;
 }
 function lowSwitch(date){ var on = !!jr(date).low;
@@ -645,16 +674,18 @@ var ciSaved = "", showMoved = false;
 function movedSummary(pl){
   var base = plan({nomiss:true}), td = pl.models[0] || {slots:[]}, out = [], gone = [];
   function whereIs(id){ for(var i=0;i<pl.slots.length;i++){ var s = pl.slots[i]; if(s.missed || s.lit) continue; if((s.parts||[]).some(function(pt){ return pt.step.id===id; })) return s; } return null; }
-  td.slots.filter(function(s){ return s.missed; }).forEach(function(s){
+  td.slots.forEach(function(s){
+    if(s.lit || P().done[s.id]) return;
     var b = base.slots.filter(function(x){ return x.id===s.id; })[0] || {};
     if(b.kind==="learn" && b.parts && b.parts.length){ b.parts.forEach(function(pt){ var to = whereIs(pt.step.id);
-      out.push('<li>'+hm(s.s)+': <b>Topic '+pt.step.topic+', '+esc(pt.step.name)+'</b> → '+(to ? (to.date===td.date?'today':esc(dayName(to.date)))+' at '+hm(to.s) : 'later in the week, as question cards')+'.</li>'); }); }
-    else out.push('<li>'+hm(s.s)+': '+esc(b.what||"question cards")+' → skipped. There are more question cards later, so nothing is lost.</li>');
+      if(to && to.id===s.id) return;
+      out.push('<li>'+hm(b.s)+': <b>Topic '+pt.step.topic+', '+esc(pt.step.name)+'</b> → '+(to ? (to.date===td.date?'today':esc(dayName(to.date)))+' at '+hm(to.s) : 'later in the week, as question cards')+'.</li>'); }); }
+    else if(s.missed) out.push('<li>'+hm(b.s)+': '+esc(b.what||"question cards")+' → skipped. There are more question cards later, so nothing is lost.</li>');
   });
   base.slots.forEach(function(s){ (s.parts||[]).forEach(function(pt){ if(!whereIs(pt.step.id) && gone.indexOf(pt.step)<0 && !td.slots.some(function(m){ return m.missed && m.id===s.id; })) gone.push(pt.step); }); });
   var h = '<div class="pl-calm"><p><b>What moved</b></p><ul>'+(out.join("")||'<li>Nothing moved.</li>')+'</ul>';
   if(gone.length) h += '<p>To make room, '+gone.map(function(st){ return 'Topic '+st.topic+' '+esc(st.name); }).join(", ")+' '+(gone.length===1?'becomes':'become')+' question cards instead of a full step.</p>';
-  h += '<p>Your bedtime and your fixed plans stay the same. Only the study stations shifted.</p></div>';
+  h += '<p>'+(jr(jToday()).trade==="late"?'Your fixed plans stay the same. Tonight you study 30 minutes longer, so you have less time to wind down.':'Your bedtime and your fixed plans stay the same. Only the study stations shifted.')+'</p></div>';
   return h;
 }
 function vCheckin(pl){
@@ -785,6 +816,17 @@ app.addEventListener("click", function(e){
     if(armed !== d.pdone){ armed = d.pdone; FL.render(); clearTimeout(armT); armT = setTimeout(function(){ armed = ""; FL.render(); }, 5000); return; }
     armed = ""; clearTimeout(armT); lightSlot(d.pdone); save(); FL.render(); if(window.FL.confetti) window.FL.confetti(); return; }
   if(d.cisave){ var tv = document.getElementById("ci-vent"); if(tv){ jr(jToday()).vent = tv.value; ciSaved = jToday(); save(); FL.render(); } return; }
+  if(d.behind){ var jb2 = jr(jToday());
+    if(d.behind==="open"){ behindOpen = !behindOpen || !!jb2.startAt; FL.render(); return; }
+    if(d.behind==="clear"){ delete jb2.startAt; if(jb2.trade==="late") delete jb2.trade; behindOpen = false; save(); FL.render(); return; }
+    if(d.behind==="at"){ var tv2 = (document.getElementById("bh-at")||{}).value; if(tv2){ jb2.startAt = m(tv2); } }
+    else jb2.startAt = nowMin() + (+d.behind);
+    behindOpen = true; save(); FL.render(); return; }
+  if(d.trade){ var jt2 = jr(jToday());
+    if(d.trade==="own"){ jt2.tradeNote = ((document.getElementById("bh-own")||{}).value||"").trim(); save(); FL.render(); return; }
+    if(d.trade==="calm"){ jt2.low = !jt2.low; if(jt2.low) jt2.trade = "calm"; else delete jt2.trade; }
+    else { jt2.trade = jt2.trade===d.trade ? "" : d.trade; if(d.trade!=="calm" && jt2.trade) jt2.low = false; }
+    save(); FL.render(); return; }
   if(d.nowoff){ nowOff = !nowOff; FL.render(); return; }
   if(d.jlow){ var jl = jr(d.jlow); jl.low = !jl.low; save(); FL.render(); return; }
   if(d.htog){ var ht = d.htog.split("|"), jh = jr(ht[0]); jh.hab = jh.hab || {}; jh.hab[ht[1]] = !jh.hab[ht[1]]; save(); FL.render(); return; }
