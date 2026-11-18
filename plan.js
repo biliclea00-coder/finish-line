@@ -207,7 +207,8 @@ function plan(opts){
       var eff = Math.round(sl.len * 50/60), parts = [];
       if(p.done[sl.id] && sl.id !== opts.avail){ var lg = p.log[sl.id] || {}; sl.lit = true; sl.kind = lg.kind || "done"; sl.what = lg.what || "Done"; sl.prog = lg.prog; sl.parts = []; sl.quiz = lg.quiz; if(md.date===lastDay) lastN++; allSlots.push(sl); return; }
       if(md.date === today && sl.e <= tnow && sl.id !== opts.avail && !opts.nomiss){ sl.kind = "missed"; sl.missed = true; sl.what = "Missed. Its work moved on to your next stations."; allSlots.push(sl); return; }
-      if(sl.cardsOnly){ sl.kind = "cards"; sl.what = "Question cards only: calm review, nothing new"; }
+      var lowDay = p.journal && p.journal[md.date] && p.journal[md.date].low && md.date !== lastDay && !opts.nomiss;
+      if(sl.cardsOnly || lowDay){ sl.kind = "cards"; sl.what = lowDay ? "Low-energy day: question cards only, nothing new" : "Question cards only: calm review, nothing new"; }
       else if(md.date === lastDay){ sl.kind = "review"; lastN++;
         sl.what = lastN===1 ? "Write your 2 cheat sheets (4 pages): formulas and the steps of each ladder" : lastN===2 && sl.len >= 75 ? "The Nov 2023 exam, timed: 75 minutes, calculator and cheat sheets only" : "Mixed review: question cards from every topic"; }
       else if(sl.len < 45 || sl.s >= 1230 || (!QUIET[(place(sl.place)||{}).kind] && p.decisions.noise !== "noisy")){
@@ -328,6 +329,7 @@ function vJournal(){
     '<label class="f">To buy or prep<input type="text" data-jfood="buy" value="'+esc(j.food.buy||"")+'" placeholder="e.g. bread, cook rice the night before"></label>'+
     '<label class="check"><input type="checkbox" data-jfoodok="1"'+(j.food.ok?" checked":"")+'><span>Bought / prepped</span></label></section>';
   h += '<section class="card"><h2>Write it out</h2><p class="note">Vent, worry, complain. Nobody reads this. Writing worries down before studying or an exam frees up headspace (Ramirez and Beilock 2011).</p><textarea id="j-vent" placeholder="What\'s on your mind?">'+esc(j.vent||"")+'</textarea><button class="btn small" data-jsave="1">Save</button>'+(ventSaved===jDay?'<p class="pl-calm">'+esc(KIND_REPLIES[(ds.indexOf(jDay)+(j.vent||"").length)%KIND_REPLIES.length])+'</p>':'')+'</section>';
+  h += lowSwitch(jDay) + habitsCard(jDay);
   h += '<section class="card"><h2>Things that are true</h2><ul class="plain">'+
     '<li>You made a plan for a whole week with work, training and an exam in it. That is the hard part most people skip.</li>'+
     '<li>'+(lit ? 'You have already lit '+lit+' station'+(lit===1?"":"s")+'.' : 'Your first station is waiting. One is enough to start.')+'</li>'+
@@ -364,7 +366,9 @@ function vHome(){
   else if(nx && nx.n){ var sl = nx.n.x; line = (nx.day===today?"Next":dayName(nx.day))+": "+hm(sl.s)+" · "+(sl.kind==="learn" && sl.parts && sl.parts[0] ? "Topic "+sl.parts[0].step.topic+", "+sl.parts[0].step.name : sl.kind==="cards" ? "question cards" : sl.kind==="quiz" ? "Topic "+sl.quiz+" quiz, timed" : (sl.what||"review")); sub = ((place(sl.place)||{}).name||"")+" · "+Math.round(sl.len)+" min"; }
   else { line = "Nothing planned right now."; }
   var tl = tonightLine(today);
-  h += '<section class="card pl-next"><div class="eyebrow">Only this</div><p class="pl-one">'+esc(line)+'</p>'+(sub?'<p class="note">'+esc(sub)+'</p>':'')+(nx && nx.n && nx.n.kind==="slot" ? slotLink(nx.n.x) : '')+'</section>';
+  var nowH = p.confirmed && !FL.signedOut ? vNow(pl) : '';
+  if(nowH) h += nowH + '<details class="pl-more"><summary>See the whole week</summary>';
+  else h += '<section class="card pl-next"><div class="eyebrow">Only this</div><p class="pl-one">'+esc(line)+'</p>'+(sub?'<p class="note">'+esc(sub)+'</p>':'')+(nx && nx.n && nx.n.kind==="slot" ? slotLink(nx.n.x) : '')+'</section>';
   if(tl) h += '<section class="card pl-sleep"><span aria-hidden="true">🌙</span><p>'+esc(tl)+'</p></section>';
   h += checklist();
   h += '<details class="pl-more"><summary>Show my whole day</summary>';
@@ -372,7 +376,97 @@ function vHome(){
   var md = pl.models[ds.indexOf(selDay)];
   h += '<section class="card"><h2>'+dayName(selDay,true)+'</h2>'+(md.rest?'<p class="note">Rest day: no study slots.</p>':'')+'<div id="pl-map" class="pl-map" aria-label="Map of this day"></div>'+timeline(md)+'</section></details>';
   h += p.confirmed ? '<a class="btn ghost" href="#plan/line">My line to the exam</a>' : '<a class="btn ghost" href="#plan/setup/1">Set up or change the plan</a>';
+  if(nowH) h += '</details>';
   return h;
+}
+
+/* ---------- Now: only the stretch you are in, up to your next study station ---------- */
+var nowOff = false;
+function vNow(pl){
+  var p = P(), t = nowMin(), md = pl.models[0]; if(!md || md.date !== todayIso()) return "";
+  var list = [];
+  md.items.forEach(function(x){
+    if(x.type==="travel"){ var l = x.leg, to = (place(l.to)||{}).name || "";
+      var hm0 = l.to==="home"; list.push({s:l.leave, e:l.inside, now:(hm0?'On your way home · home by ':'On your way to '+to+' · inside by ')+hm(l.inside), then:(hm0?'Leave for home · home by ':'Leave for '+to+' · inside by ')+hm(l.inside)}); }
+    else list.push({s:x.ev.s, e:x.ev.e, now:x.ev.title+' · until '+hm(x.ev.e), then:x.ev.title+' · '+hm(x.ev.s)+'–'+hm(x.ev.e)});
+  });
+  md.slots.forEach(function(sl){ if(p.done[sl.id] || sl.missed || sl.lit) return;
+    var w = sl.kind==="learn" && sl.parts && sl.parts[0] ? "Topic "+sl.parts[0].step.topic+", "+sl.parts[0].step.name : sl.kind==="quiz" ? "Topic "+sl.quiz+" quiz, timed" : (sl.what||"Question cards");
+    list.push({s:sl.s, e:sl.e, slot:sl, now:'Study station · until '+hm(sl.e)+': '+w, then:'Study station · '+hm(sl.s)+'–'+hm(sl.e)+': '+w}); });
+  list.sort(function(a,b){ return a.s-b.s; });
+  var cur = list.filter(function(x){ return x.s <= t && t < x.e; })[0], after = list.filter(function(x){ return x.s > t; });
+  var then = []; for(var i=0;i<after.length && then.length<4;i++){ then.push(after[i]); if(after[i].slot) break; }
+  if(cur && cur.slot) then = [];
+  var h = '<section class="card pl-next"><div class="eyebrow">Now · '+hm(t)+'</div>';
+  if(cur){ h += '<p class="pl-one">'+esc(cur.now)+'</p>'; if(cur.slot) h += '<p>'+slotLink(cur.slot)+'</p><p>'+doneBtn(cur.slot)+'</p>'; }
+  else if(then.length) h += '<p class="pl-one">Free until '+hm(then[0].s)+'</p><p class="note">Rest, eat, or get ready. Nothing to do yet.</p>';
+  else { var b = nights().bed[md.date]; h += '<p class="pl-one">That\'s it for today.</p>'+(b!==undefined?'<p class="note">In bed by '+hm(b)+'. Tomorrow is planned already.</p>':''); }
+  if(then.length) h += '<div class="eyebrow" style="margin-top:12px">Then</div><ul class="plain">'+then.map(function(x){ return '<li><b>'+hm(x.s)+'</b> '+esc(x.then)+(x.slot?'<br>'+slotLink(x.slot):'')+'</li>'; }).join("")+'</ul>';
+  h += '</section>';
+  h += '<div class="two"><a class="btn ghost" href="#journal">What\'s on my mind</a><button class="btn ghost" data-nowoff="1">'+(nowOff?'Close':'Something\'s off')+'</button></div>';
+  if(nowOff){
+    var missed = md.slots.filter(function(s){ return s.missed; }), j = jr(jToday());
+    h += '<section class="card"><h2>Something\'s off</h2>';
+    missed.forEach(function(s){ h += '<div class="pl-row st"><b>'+hm(s.s)+'–'+hm(s.e)+'</b> · missed<br>'+doneBtn(s)+'</div>'; });
+    h += lowSwitch(jToday());
+    h += movedSummary(pl);
+    h += '<p><a href="#plan/setup/3">Change a fixed plan</a> (a shift, training, an appointment) and the stations move around it.</p></section>';
+  }
+  return h;
+}
+function lowSwitch(date){ var on = !!jr(date).low;
+  return '<div class="pl-if'+(on?" on":"")+'"><p><b>Low-energy day</b></p><p class="note">Pain, a bad night, a hard day. New steps wait; today becomes question cards only.</p><button class="btn small '+(on?"":"ghost")+'" data-jlow="'+date+'">'+(on?"Low-energy day is on ✓":"Make today a low-energy day")+'</button></div>'; }
+
+/* ---------- habits: notice what sets you back and what is self-care, without judging ---------- */
+var HABIT_SUGG = {watch:[["smoke","Smoked"],["series","Lost an evening to a series"],["phonebed","Phone in bed"],["latebed","Went to bed late"],["skipmeal","Skipped a meal"]],
+  care:[["cooked","Cooked a proper meal"],["rest","Rested when my body needed it"],["outside","Got outside or moved"],["slept","Slept enough"]]};
+var HABIT_TIP = {smoke:"Start by only counting, not quitting: tap it each day this week and look at the pattern on Sunday.",
+  series:"If-then: if I start an episode on a study evening, then I set a timer for one episode.",
+  phonebed:"If-then: if I go to bed, then the phone charges outside the bedroom.",
+  latebed:"Your plan has a bedtime every night. Try aiming for that one only, nothing else.",
+  skipmeal:"Food is part of the plan: write tomorrow's meals in the Food box the evening before.",
+  cooked:"Cooking takes you real time, and it's worth it. If it happens often, add a cooking slot as a fixed plan so the stations move around it."};
+function habits(){ var p = P(); p.habits = p.habits || []; return p.habits; }
+function habitsCard(date){
+  var hs = habits(), j = jr(date); j.hab = j.hab || {};
+  var h = '<section class="card"><h2>Notice your patterns</h2><p class="note">After writing it out: what set you back today, and where did you look after yourself? Only you see this.</p>';
+  if(hs.length){ h += '<div class="pl-chips">'+hs.map(function(x){ var on = !!j.hab[x.id];
+    return '<button type="button" class="opt" data-htog="'+date+'|'+x.id+'" aria-pressed="'+on+'">'+(x.kind==="care"?"💚 ":"")+esc(x.name)+'</button>'; }).join("")+'</div><p class="note">Tap what happened today. 💚 means you looked after yourself; that never counts against you.</p>'; }
+  var have = {}; hs.forEach(function(x){ have[x.id] = 1; });
+  var sw = HABIT_SUGG.watch.filter(function(s){ return !have[s[0]]; }), sc = HABIT_SUGG.care.filter(function(s){ return !have[s[0]]; });
+  h += '<details'+(hs.length?'':' open')+'><summary>'+(hs.length?'Add another':'Add what you want to notice')+'</summary>';
+  if(sw.length) h += '<p class="note">Things that might set you back</p><div class="pl-chips">'+sw.map(function(s){ return '<button type="button" class="opt" data-hadd="watch|'+s[0]+'|'+date+'">'+esc(s[1])+'</button>'; }).join("")+'</div>';
+  if(sc.length) h += '<p class="note">Ways you look after yourself</p><div class="pl-chips">'+sc.map(function(s){ return '<button type="button" class="opt" data-hadd="care|'+s[0]+'|'+date+'">💚 '+esc(s[1])+'</button>'; }).join("")+'</div>';
+  h += '<label class="f">Your own<input type="text" id="h-new" placeholder="e.g. Coffee after 16:00"></label><div class="two"><button class="btn small ghost" data-hcustom="watch|'+date+'">Add: sets me back</button><button class="btn small ghost" data-hcustom="care|'+date+'">Add: 💚 self-care</button></div></details>';
+  h += patterns() + '<button class="btn small ghost" data-reflect="1">'+(reflectCopied?'Copied ✓ Paste it into Claude':'Reflect with Claude')+'</button><p class="note">Copies your last 7 journal days into a message for Claude, which can help you sort out patterns. It is not a therapist; for anything heavy, talk to someone you trust or a doctor.</p></section>';
+  return h;
+}
+function litOn(date){ var p = P(); return Object.keys(p.done||{}).filter(function(id){ return p.done[id] && id.indexOf(date+"-")===0; }).length; }
+function patterns(){
+  var p = P(), js = p.journal || {}, dates = Object.keys(js).filter(function(d){ return js[d].hab && Object.keys(js[d].hab).length; }).sort().slice(-7);
+  if(dates.length < 2) return '<p class="note">After a few days of tapping, patterns show up here.</p>';
+  var out = [];
+  habits().forEach(function(x){
+    var yes = dates.filter(function(d){ return js[d].hab[x.id]; }), no = dates.filter(function(d){ return !js[d].hab[x.id]; });
+    if(!yes.length) return;
+    var line = (x.kind==="care"?"💚 ":"")+'<b>'+esc(x.name)+'</b>: '+yes.length+' of the last '+dates.length+' days.';
+    if(x.kind==="watch" && no.length){ var a = yes.reduce(function(s,d){ return s+litOn(d); },0)/yes.length, b = no.reduce(function(s,d){ return s+litOn(d); },0)/no.length;
+      if(b > a) line += ' On those days you lit '+a.toFixed(1)+' stations, on the others '+b.toFixed(1)+'.'; }
+    if(x.kind==="care") line += ' That counts.';
+    if(HABIT_TIP[x.id] && yes.length >= 2) line += '<br><span class="note">'+esc(HABIT_TIP[x.id])+'</span>';
+    out.push('<li>'+line+'</li>');
+  });
+  return out.length ? '<h3>Your week so far</h3><ul class="plain">'+out.join("")+'</ul>' : '';
+}
+var reflectCopied = false;
+function reflectPrompt(){
+  var p = P(), js = p.journal || {}, dates = Object.keys(js).sort().slice(-7), hs = habits(), mood = {}; MOODS.forEach(function(m0){ mood[m0[0]] = m0[1]; });
+  var txt = "I'm a student preparing for an IFRS exam on "+p.exam.date+". These are my last journal days from my study app.\n\n";
+  dates.forEach(function(d){ var j = js[d], ms = Object.keys(j.mood||{}).filter(function(k){ return j.mood[k]; }).map(function(k){ return mood[k]; }), hb = hs.filter(function(x){ return (j.hab||{})[x.id]; }).map(function(x){ return (x.kind==="care"?"[self-care] ":"[sets me back] ")+x.name; });
+    if(!ms.length && !hb.length && !j.vent && !j.intent) return;
+    txt += "## "+d+"\n"+(ms.length?"Mood: "+ms.join(", ")+"\n":"")+(hb.length?"Habits: "+hb.join("; ")+"\n":"")+(j.low?"Low-energy day\n":"")+(j.intent?"Intention: "+j.intent+"\n":"")+(j.vent?"Wrote: "+j.vent+"\n":"")+"Study stations done: "+litOn(d)+"\n\n"; });
+  txt += "Please help me reflect, kindly and honestly:\n1. Which patterns do you see?\n2. Which things are habits that genuinely set me back, and which are things I'm too harsh on myself about (needs, not failures)?\n3. Suggest one small experiment for the next few days, not a big plan.\nAsk me questions if something is unclear. You're not my therapist; if something sounds like more than exam stress, tell me to talk to someone.";
+  return txt;
 }
 function countdownLine(){ var p = P(), d = Math.round((new Date(p.exam.date+"T"+p.exam.time) - new Date())/86400000); return Math.max(0,d)+" days to the IFRS exam · "+dayName(p.exam.date)+" "+p.exam.time; }
 function vStep1(){
@@ -572,7 +666,7 @@ function vCheckin(pl){
   var picked = Object.keys(j.mood).filter(function(k){ return j.mood[k]; });
   picked.forEach(function(k){ (IFTHEN[k]||[]).forEach(function(it){ var on = j.ifthen[it[0]];
     h += '<div class="pl-if'+(on?" on":"")+'"><p><b>'+esc(it[1])+'</b></p><p class="note">'+esc(it[2])+'</p><button class="btn small '+(on?"":"ghost")+'" data-jif="'+it[0]+'">'+(on?"My plan today ✓":"Make this my plan")+'</button></div>'; }); });
-  h += '<label class="f">Anything on your mind? (optional, only you see this)<textarea id="ci-vent" placeholder="Write it out">'+esc(j.vent||"")+'</textarea></label><button class="btn small" data-cisave="1">Save to my journal</button>'+(ciSaved===today?' <span class="note">Saved in today\'s journal ✓</span>':'')+'</section>';
+  h += '<label class="f">Anything on your mind? (optional, only you see this)<textarea id="ci-vent" placeholder="Write it out">'+esc(j.vent||"")+'</textarea></label><button class="btn small" data-cisave="1">Save to my journal</button>'+(ciSaved===today?' <span class="note">Saved in today\'s journal ✓</span>':'')+lowSwitch(today)+'</section>'+habitsCard(today);
   h += '<section class="card"><h2>2. What already happened today</h2>';
   if(!missed.length && !lit.length) h += '<p>Nothing yet. Your day starts fresh.</p>';
   missed.forEach(function(s){ h += '<div class="pl-row st"><b>'+hm(s.s)+'–'+hm(s.e)+'</b> · '+esc((place(s.place)||{}).name||"")+'<br>'+doneBtn(s)+'</div>'; });
@@ -691,6 +785,12 @@ app.addEventListener("click", function(e){
     if(armed !== d.pdone){ armed = d.pdone; FL.render(); clearTimeout(armT); armT = setTimeout(function(){ armed = ""; FL.render(); }, 5000); return; }
     armed = ""; clearTimeout(armT); lightSlot(d.pdone); save(); FL.render(); if(window.FL.confetti) window.FL.confetti(); return; }
   if(d.cisave){ var tv = document.getElementById("ci-vent"); if(tv){ jr(jToday()).vent = tv.value; ciSaved = jToday(); save(); FL.render(); } return; }
+  if(d.nowoff){ nowOff = !nowOff; FL.render(); return; }
+  if(d.jlow){ var jl = jr(d.jlow); jl.low = !jl.low; save(); FL.render(); return; }
+  if(d.htog){ var ht = d.htog.split("|"), jh = jr(ht[0]); jh.hab = jh.hab || {}; jh.hab[ht[1]] = !jh.hab[ht[1]]; save(); FL.render(); return; }
+  if(d.hadd){ var ha = d.hadd.split("|"), sg = HABIT_SUGG[ha[0]].filter(function(s){ return s[0]===ha[1]; })[0]; if(sg && !habits().some(function(x){ return x.id===sg[0]; })){ habits().push({id:sg[0], name:sg[1], kind:ha[0]}); var jh2 = jr(ha[2]); jh2.hab = jh2.hab || {}; jh2.hab[sg[0]] = true; save(); } FL.render(); return; }
+  if(d.hcustom){ var hc = d.hcustom.split("|"), nm = ((document.getElementById("h-new")||{}).value||"").trim(); if(nm){ var hid = "h"+Date.now().toString(36); habits().push({id:hid, name:nm.slice(0,60), kind:hc[0]}); var jh3 = jr(hc[1]); jh3.hab = jh3.hab || {}; jh3.hab[hid] = true; save(); } FL.render(); return; }
+  if(d.reflect){ var rt = reflectPrompt(), fin = function(){ reflectCopied = true; FL.render(); window.open("https://claude.ai/new", "_blank"); }; if(navigator.clipboard) navigator.clipboard.writeText(rt).then(fin, fin); else fin(); return; }
   if(d.pmoved){ showMoved = !showMoved; FL.render(); return; }
   if(d.pundo){ delete p.done[d.pundo]; if(p.log) delete p.log[d.pundo]; save(); FL.render(); return; }
   if(d.pcheckin){ var jc = jr(jToday()), ta = document.getElementById("ci-vent"), ti = document.getElementById("ci-intent");
