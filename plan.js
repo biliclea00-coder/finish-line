@@ -562,7 +562,7 @@ function vCheckin(pl){
   lit.forEach(function(s){ h += '<div class="pl-row st done"><b>'+hm(s.s)+'–'+hm(s.e)+'</b> · '+esc(s.what||"")+'<br>'+doneBtn(s)+'<span class="note"> Lit by mistake? Undo puts its work back in the plan.</span></div>'; });
   if(missed.length) h += '<p class="pl-calm">That happens to everyone. The plan has already moved that work to your next stations, so you don\'t have to redo anything in your head.</p>';
   var pct = pl.total ? Math.round(pl.covered/pl.total*100) : 100;
-  h += '<p class="note">'+(pl.minsLeft > 0 ? 'With today\'s changes, '+pct+'% of the ladder steps still fit before the exam. The rest becomes question cards. <a href="#plan/check">Look at the trade-offs</a> if you want to choose what to drop.' : 'Everything still fits before the exam.')+'</p></section>';
+  h += '<p class="note">'+(pl.minsLeft > 0 ? 'A few steps now become question cards instead, so the essentials still fit. <a href="#plan/check">See what moved</a> whenever you feel like it.' : 'Everything still fits before the exam.')+'</p></section>';
   var nx = nextThing(pl), first = "";
   if(nx && nx.n && nx.n.kind==="slot"){ var sl = nx.n.x; first = (nx.day===pl.models[0].date ? "Today " : dayName(nx.day)+" ")+hm(sl.s)+": "+(sl.kind==="learn" && sl.parts && sl.parts[0] ? "Topic "+sl.parts[0].step.topic+", "+sl.parts[0].step.name : sl.kind==="quiz" ? "Topic "+sl.quiz+" quiz, timed" : "question cards"); }
   else if(nx && nx.n && nx.n.kind==="leave"){ first = "Leave at "+hm(nx.n.x.leg.leave)+" for "+((place(nx.n.x.leg.to)||{}).name||""); }
