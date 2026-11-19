@@ -426,6 +426,9 @@ function vNow(pl){
   if(nowOff){
     var missed = md.slots.filter(function(s){ return s.missed; }), j = jr(jToday());
     h += '<section class="card"><h2>Something\'s off</h2>';
+    var todays = P().events.filter(function(e){ return e.date===md.date; });
+    if(todays.length) h += '<h3>Plans changed today?</h3><p class="note">Cancelled a shift or training? Tap it, and the free time becomes study stations.</p>'+todays.map(function(e){ var off = removed(e);
+      return '<div class="pl-row st"><b>'+e.start+'–'+e.end+'</b> · '+esc(e.title)+(off?' · <b>cancelled</b>':'')+'<br><button class="btn small '+(off?'':'ghost')+'" data-evcancel="'+e.id+'">'+(off?'Undo: it\'s happening after all':'This is cancelled today')+'</button></div>'; }).join("");
     missed.forEach(function(s){ h += '<div class="pl-row st"><b>'+hm(s.s)+'–'+hm(s.e)+'</b> · missed<br>'+doneBtn(s)+'</div>'; });
     h += lowSwitch(jToday());
     h += movedSummary(pl) + makeFit(pl);
@@ -890,6 +893,7 @@ app.addEventListener("click", function(e){
     if(d.behind==="at"){ var tv2 = (document.getElementById("bh-at")||{}).value; if(tv2){ jb2.startAt = m(tv2); } }
     else jb2.startAt = nowMin() + (+d.behind);
     behindOpen = true; save(); FL.render(); return; }
+  if(d.evcancel){ var dk = "ev-"+d.evcancel; if(p.decisions[dk]==="drop") delete p.decisions[dk]; else p.decisions[dk] = "drop"; save(); FL.render(); return; }
   if(d.fit){
     if(d.fit==="reset"){ if(p.fitOld){ p.stepMin = p.fitOld.stepMin; p.lateAll = p.fitOld.lateAll; p.decisions.books = p.fitOld.books; if(p.fitOld.earlyFrom) p.earlyFrom = p.fitOld.earlyFrom; else delete p.earlyFrom; } delete p.fitPick; delete p.fitOld; save(); FL.render(); return; }
     var lv = {e2230:{earlyFrom:"22:30"}, e2200:{earlyFrom:"22:00"}, e2230s40:{earlyFrom:"22:30", stepMin:40}, e2300s40:{earlyFrom:"23:00", stepMin:40}, e2230s38:{earlyFrom:"22:30", stepMin:38}, s40:{stepMin:40}, s35:{stepMin:35}, nobooks:{books:"lookup"}, late:{lateAll:true}, s40late:{stepMin:40, lateAll:true}}[d.fit], names = {e2230:"in bed 22:30, up 06:30", e2200:"in bed 22:00, up 06:00", e2230s40:"in bed 22:30, up 06:30, and 40-minute steps", e2300s40:"in bed 23:00, up 07:00, and 40-minute steps", e2230s38:"in bed 22:30, up 06:30, and 38-minute steps", s40:"40-minute steps", s35:"35-minute steps", nobooks:"no textbook readings", late:"30 minutes longer each evening", s40late:"40-minute steps and 30 minutes longer each evening"};
