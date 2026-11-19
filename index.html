@@ -729,10 +729,10 @@ function gen(type){
   }
   if(type==="e2"){
     var V = pick([30,40,60,80]), G = pick([10,20,30,50]); I = Es + V + G; Ap = Ep + Lp - I;
-    x.intro = P+" buys 100% of "+T+" for €"+I+"k. "+T+" has built a brand that is not on its balance sheet. Its fair value is €"+V+"k. Balance sheets on the acquisition date (in €k):";
+    x.intro = P+" buys 100% of "+T+" for €"+I+"k. "+T+" has built its own brand, so the brand is not on "+T+"'s balance sheet (book value 0). The brand alone is worth €"+V+"k at fair value. Everything else on "+T+"'s balance sheet is already at fair value. Balance sheets on the acquisition date (in €k):";
     x.sheets = [sheet(P, [["Investment in "+T, I],["Other assets", Ap]], [["Equity", Ep],["Liabilities", Lp]]), sheet(T, [["Assets", As]], [["Equity", Es],["Liabilities", Ls]])];
     x.fields = [["vd","Valuation difference (brand)",V],["gw","Goodwill",G],["ta","Total consolidated assets",Ap+As+V+G],["eq","Consolidated equity",Ep]];
-    x.hintText = "Split the gap between the price and "+T+"'s book equity in two: first what you can name and value (the brand), then the rest.";
+    x.hintText = "Net assets = assets − liabilities = equity ("+Es+" here). Split the gap between the price and that in two: first what you can name and value (the brand, "+V+"), then the rest is goodwill.";
     x.sol = ["Purchase price allocation: price "+I+" − book value of net assets "+Es+" = total difference "+(I-Es)+".",
       "Valuation difference for the brand: "+V+" − 0 = "+V+". It is an identifiable asset, so it goes on the balance sheet as a brand.",
       "Goodwill is the remainder: "+(I-Es)+" − "+V+" = "+G+". Same result the other way: price "+I+" − fair value of net assets "+(Es+V)+" = "+G+".",
@@ -1283,6 +1283,9 @@ function gradeEx(x){
   else { S.misses[id] = (S.misses[id]||0)+1; x.msg = "The fields marked in amber are off. Read the solution, then this type will come up again soon."; }
 }
 
+function keepEx(x){ if(!x) return; S.exHist = (S.exHist||[]).filter(function(h){ return h.ex !== x; }); S.exHist.unshift({at:new Date().toISOString().slice(0,16).replace("T"," "), ex:JSON.parse(JSON.stringify(x))}); S.exHist = S.exHist.slice(0,15); }
+function pastExHtml(){ var hs = S.exHist||[]; if(!hs.length) return "";
+  return '<details class="card"><summary>Past exercises ('+hs.length+')</summary><ul class="plain">'+hs.map(function(h,i){ return '<li><b>'+esc(h.at)+'</b> · '+esc(TYPE_NAME[h.ex.type]||h.ex.type)+' · '+esc(h.ex.P)+' and '+esc(h.ex.T)+(h.ex.ok===true?' ✓':h.ex.ok===false?' ✗':'')+' <button class="btn small ghost" data-reopen="'+i+'">Open again</button></li>'; }).join("")+'</ul></details>'; }
 function vPractice(){
   if(!S.ex) S.ex = gen(nextType()), save();
   var x = S.ex, n = S.attemptsByDay[today()]||0;
@@ -1293,6 +1296,7 @@ function vPractice(){
       ? '<section class="card finish"><div class="eyebrow">Today</div><div class="big" style="font-size:32px">Done for today.</div><p>Two exercises finished. Come back tomorrow for the second unaided answers.</p></section><a class="btn" href="#map">Back to the course map</a><button class="btn ghost" id="next-ex">Optional extra exercise</button>'
       : '<button class="btn" id="next-ex">Next exercise</button>';
   }
+  h += pastExHtml();
   return h;
 }
 
@@ -1530,15 +1534,15 @@ function checkAdvance(){
   S.notes.push({topic:2, type:x.type, rating:c.rating, text:(c.text||"").slice(0,600)});
   var first = c.log[0], second = c.log[1];
   if(!second){
-    c.ex = gen(first.ok ? "e3" : "e1"); c.rating = null; c.text = "";
+    keepEx(x); c.ex = gen(first.ok ? "e3" : "e1"); c.rating = null; c.text = "";
   } else {
     c.startStep = first.ok ? (second.ok ? 4 : 3) : (second.ok ? 2 : 1);
-    c.done = true; c.ex = null;
+    keepEx(x); c.done = true; c.ex = null;
   }
 }
 app.addEventListener("click", function(e){
   var a = e.target.closest("a[data-start]");
-  if(a){ S.ex = gen(a.dataset.start); save(); return; }
+  if(a){ keepEx(S.ex); S.ex = gen(a.dataset.start); save(); return; }
   var t = e.target.closest("button"); if(!t) return;
   var dsg = t.dataset;
   if(dsg.qzpick !== undefined && QZ){ var it0 = QZ.items[QZ.i]; QZ.picked = +dsg.qzpick; var ok = QZ.picked===it0.a; if(ok) QZ.right++; S.qlog = S.qlog || {}; S.qlog[it0.id] = {t:Date.now(), miss:!ok}; save(); render(); return; }
@@ -1559,7 +1563,8 @@ app.addEventListener("click", function(e){
   var x = curEx();
   if(t.id==="hint" && x){ x.hint = true; save(); render(); return; }
   if(t.id==="check" && x){ gradeEx(x); save(); render(); if(x.ok && !x.hint) confetti(); var fb = app.querySelector(".fb"); if(fb) fb.scrollIntoView({block:"center"}); return; }
-  if(t.id==="next-ex"){ S.ex = gen(nextType()); save(); render(); window.scrollTo(0,0); return; }
+  if(t.id==="next-ex"){ keepEx(S.ex); S.ex = gen(nextType()); save(); render(); window.scrollTo(0,0); return; }
+  if(t.dataset.reopen){ var hx = (S.exHist||[])[+t.dataset.reopen]; if(hx){ keepEx(S.ex); S.ex = JSON.parse(JSON.stringify(hx.ex)); S.ex.checked = false; S.ex.values = {}; S.ex.ok = null; S.ex.hint = false; save(); location.hash = "#practice"; render(); window.scrollTo(0,0); } return; }
   if(t.id==="check-start"){ S.check = {ex:gen("e2"), log:[], rating:null, text:"", done:false}; save(); render(); window.scrollTo(0,0); return; }
   if(t.dataset.selfrate){ S.check.rating = t.dataset.selfrate; var f = document.getElementById("feel"); if(f) S.check.text = f.value; save(); render(); var b = document.getElementById("check-next"); if(b) b.scrollIntoView({block:"nearest"}); return; }
   if(t.id==="check-next"){ var f2 = document.getElementById("feel"); if(f2) S.check.text = f2.value; checkAdvance(); save(); render(); window.scrollTo(0,0); return; }
