@@ -100,6 +100,7 @@ function nights(){
   out.bed[ds[n]] = start;
   ds.forEach(function(d, i){
     var nat = i === 0 ? m(p.sleepNow.wake) : out.bed[ds[i-1]] - 1440 + 480, lv = leaveFor(d);
+    if(p.wakeOn && p.wakeOn[d] !== undefined) nat = +p.wakeOn[d];
     out.natural[d] = nat; out.wake[d] = lv !== null ? Math.min(nat, lv - 60) : nat;
   });
   return out;
@@ -477,11 +478,25 @@ function behindCard(pl){
 /* when steps still don't fit: try each way of finding time on the real plan, and say what each one costs */
 function cutOf(pl){ var o = {}; pl.queue.slice(pl.covered).forEach(function(s){ o[s.topic] = (o[s.topic]||0) + 1; }); return o; }
 function cutText(c){ var k = Object.keys(c).filter(function(x){ return x!=="__left"; }); return k.length ? k.map(function(n){ return 'Topic '+n+' ('+c[n]+' step'+(c[n]>1?'s':'')+')'; }).join(", ") : ""; }
-function simulate(ch){ var p = P(), old = {stepMin:p.stepMin, lateAll:p.lateAll, books:p.decisions.books, earlyFrom:p.earlyFrom};
-  for(var k in ch){ if(k==="books") p.decisions.books = ch[k]; else p[k] = ch[k]; }
-  var pl0 = plan(), r = cutOf(pl0); r.__left = pl0.minsLeft; p.stepMin = old.stepMin; p.lateAll = old.lateAll; p.decisions.books = old.books; if(old.earlyFrom) p.earlyFrom = old.earlyFrom; else delete p.earlyFrom; return r; }
+function simulate(ch){ var p = P(), old = {}, oldBooks = p.decisions.books;
+  for(var k in ch){ if(k==="books") p.decisions.books = ch[k]; else { old[k] = {had:(k in p), v:p[k]}; p[k] = ch[k]; } }
+  var pl0 = plan(), r = cutOf(pl0); r.__left = pl0.minsLeft;
+  p.decisions.books = oldBooks; for(var k2 in old){ if(old[k2].had) p[k2] = old[k2].v; else delete p[k2]; } return r; }
+/* your own times: stop tonight, start this morning, and a bedtime for the nights after */
+function ownTimes(){
+  var p = P(), today = todayIso(), j = pj(), t = nowMin(), o = p.ownT || {};
+  var stop = o.stop || (t < 300 ? "01:00" : ""), start = o.start || "07:30", bed = o.bed || "23:00";
+  var h = '<div class="pl-if'+(p.ownT?' on':'')+'"><p><b>Your own times</b></p><p class="note">None of the options fit? Tell the app what you will really do.</p>';
+  if(t < 300 || o.stop) h += '<label class="f">Tonight I study until<input type="time" id="ot-stop" value="'+esc(stop)+'"></label>';
+  h += '<label class="f">'+(t < 300 ? 'This morning' : 'Tomorrow')+' my first station starts at<input type="time" id="ot-start" value="'+esc(start)+'"></label>';
+  h += '<label class="f">From then on I\'m in bed by<input type="time" id="ot-bed" value="'+esc(bed)+'"></label>';
+  h += '<button class="btn small" data-own="go">Use my times</button>';
+  if(p.ownT) h += ' <button class="btn small ghost" data-own="clear">Undo</button>';
+  if(p.ownT && p.ownT.sleep !== undefined) h += '<p class="note">That gives you '+(Math.floor(p.ownT.sleep/60))+' h '+(p.ownT.sleep%60? (p.ownT.sleep%60)+' min ':'')+'of sleep tonight'+(p.ownT.sleep < 390 ? '. One short night is okay; two in a row makes studying slower, so keep the bedtime after this.':'.')+'</p>';
+  return h + '</div>';
+}
 function makeFit(pl){
-  var p = P(), now = cutOf(pl); if(!Object.keys(now).length && !p.fitPick) return '';
+  var p = P(), now = cutOf(pl); if(!Object.keys(now).length && !p.fitPick && !p.ownT) return '';
   var sm = +p.stepMin || 50, levers = [];
   /* first try finding time without losing sleep: the same 8 hours, earlier */
   if(!p.earlyFrom){
@@ -498,7 +513,7 @@ function makeFit(pl){
   if(sm > 40 && !p.lateAll) levers.push({id:"s40late", ch:{stepMin:40, lateAll:true}, title:"Both: 40-minute steps and 30 minutes longer each evening", cost:"The two costs above together."});
   levers.forEach(function(l){ l.res = simulate(l.ch); l.left = l.res.__left; delete l.res.__left; l.fits = !Object.keys(l.res).length; });
   var rec = levers.filter(function(l){ return l.fits; })[0];
-  var h = '<h3>Make it fit</h3>';
+  var h = '<h3>Make it fit</h3>' + ownTimes();
   h += Object.keys(now).length ? '<p>Right now these don\'t fit as full steps: <b>'+cutText(now)+'</b>. The time has to come from somewhere. Here is what each option would do with your real week:</p>' : '<p>Everything fits now ✓</p>';
   h += levers.map(function(l){ return '<div class="pl-if'+(l===rec?' on':'')+'"><p><b>'+esc(l.title)+'</b>'+(l===rec?' <span class="pill solid">Recommended</span>':'')+'</p><p>'+(l.fits?'Everything fits as full steps ✓':'Still doesn\'t fit: '+cutText(l.res))+'</p><p class="note">'+esc(l.cost)+'</p><button class="btn small '+(l===rec?'':'ghost')+'" data-fit="'+l.id+'">Choose this</button></div>'; }).join("");
   if(!rec && levers.length){
@@ -853,7 +868,7 @@ function drawMap(r){
 }
 
 /* ---------- routing hooks used by the main app ---------- */
-window.FLPlan = {
+window.FLPlan = { _sim: function(ch){ return simulate(ch); },
   match: function(r){ return r==="plan" || r==="journal" || /^plan\//.test(r); },
   view: function(r){
     P(); geocodeSeeds();
@@ -912,6 +927,18 @@ app.addEventListener("click", function(e){
     else jb2.startAt = nowMin() + (+d.behind);
     behindOpen = true; save(); FL.render(); return; }
   if(d.evcancel){ var dk = "ev-"+d.evcancel; if(p.decisions[dk]==="drop") delete p.decisions[dk]; else p.decisions[dk] = "drop"; save(); FL.render(); return; }
+  if(d.own){
+    var todayO = todayIso(), jo = pj();
+    if(d.own==="clear"){ if(p.ownT && p.ownT.oldWake !== undefined){ if(p.ownT.oldWake === null) delete p.wakeOn; else p.wakeOn = p.ownT.oldWake; } if(p.ownT && "oldEarly" in p.ownT){ if(p.ownT.oldEarly) p.earlyFrom = p.ownT.oldEarly; else delete p.earlyFrom; } if(p.ownT && p.ownT.stop) delete jo.extraUntil; delete p.ownT; save(); FL.render(); return; }
+    var gv = function(id){ return ((document.getElementById(id)||{}).value||"").trim(); };
+    var so = gv("ot-stop"), st = gv("ot-start"), bd = gv("ot-bed"); if(!st || !bd) return;
+    var tn = nowMin(), dayW = tn < 300 ? todayIso() : days()[1];
+    var prev = p.ownT || {oldWake: p.wakeOn ? JSON.parse(JSON.stringify(p.wakeOn)) : null, oldEarly: p.earlyFrom || ""};
+    p.wakeOn = p.wakeOn || {}; p.wakeOn[dayW] = m(st) - 30;
+    p.earlyFrom = bd;
+    var o2 = {start:st, bed:bd, oldWake:prev.oldWake, oldEarly:prev.oldEarly};
+    if(so && tn < 300){ var sm2 = m(so); if(sm2 > tn){ jo.extraUntil = sm2; jo.startAt = tn; } o2.stop = so; o2.sleep = (m(st) - 30) - Math.max(sm2, tn); }
+    p.ownT = o2; p.fitPick = "your own times"; savedFlash = Date.now(); save(); FL.render(); return; }
   if(d.fit){
     if(d.fit==="reset"){ if(p.fitOld){ p.stepMin = p.fitOld.stepMin; p.lateAll = p.fitOld.lateAll; p.decisions.books = p.fitOld.books; if(p.fitOld.earlyFrom) p.earlyFrom = p.fitOld.earlyFrom; else delete p.earlyFrom; } delete p.fitPick; delete p.fitOld; save(); FL.render(); return; }
     var lv = {e2230:{earlyFrom:"22:30"}, e2200:{earlyFrom:"22:00"}, e2230s40:{earlyFrom:"22:30", stepMin:40}, e2300s40:{earlyFrom:"23:00", stepMin:40}, e2230s38:{earlyFrom:"22:30", stepMin:38}, s40:{stepMin:40}, s35:{stepMin:35}, nobooks:{books:"lookup"}, late:{lateAll:true}, s40late:{stepMin:40, lateAll:true}}[d.fit], names = {e2230:"in bed 22:30, up 06:30", e2200:"in bed 22:00, up 06:00", e2230s40:"in bed 22:30, up 06:30, and 40-minute steps", e2300s40:"in bed 23:00, up 07:00, and 40-minute steps", e2230s38:"in bed 22:30, up 06:30, and 38-minute steps", s40:"40-minute steps", s35:"35-minute steps", nobooks:"no textbook readings", late:"30 minutes longer each evening", s40late:"40-minute steps and 30 minutes longer each evening"};
