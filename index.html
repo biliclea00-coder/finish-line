@@ -260,6 +260,7 @@ table.sol{width:100%;border-collapse:collapse;font-size:15px;margin:6px 0}table.
 .pl-if{border:1px solid var(--line);border-radius:12px;padding:10px 12px;display:flex;flex-direction:column;gap:6px}
 .pl-if.on{border-color:var(--good);background:var(--good-bg)}
 .pl-pin.home span{border-color:var(--deep)}
+input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}input[type=number]{-moz-appearance:textfield}
 </style>
 </head>
 <body>
@@ -1493,7 +1494,7 @@ function exHtml(x, label){
     '<h2>'+(x.caseId==="c7"?"Enter the consolidated income statement":x.fields.some(function(f){ return f[0]==="tot"; })?"Fill in every line of the consolidated balance sheet (some answers can be 0)":(x.type==="e4"||x.type==="ppa")?"Enter the three figures (in €k)":"Prepare the consolidated balance sheet. Enter the key lines (in €k)")+'</h2><div class="fields">'+
     x.fields.map(function(f){ var v = x.values[f[0]], cls = "", ans = "";
       if(x.checked){ var okf = fieldOk(f, v); cls = okf ? " right" : " wrong"; if(!okf) ans = '<span class="ans">Correct: '+fmt(f[2])+'</span>'; }
-      return '<div class="fld"><label for="f-'+f[0]+'">'+f[1]+'</label><input class="'+cls.trim()+'" type="text" inputmode="decimal" autocomplete="off" id="f-'+f[0]+'" data-field="'+f[0]+'" value="'+esc(v===undefined?"":v)+'"'+(x.checked?" disabled":"")+'>'+(x.checked?'':'<button type="button" class="btn small ghost" data-neg="'+f[0]+'" aria-label="Switch between plus and minus" style="min-width:44px;margin-left:6px">±</button>')+ans+'</div>'; }).join("")+'</div>';
+      return '<div class="fld"><label for="f-'+f[0]+'">'+f[1]+'</label><input class="'+cls.trim()+'" type="number" step="any" autocomplete="off" id="f-'+f[0]+'" data-field="'+f[0]+'" value="'+esc(v===undefined?"":v)+'"'+(x.checked?" disabled":"")+'>'+ans+'</div>'; }).join("")+'</div>';
   if(x.hint) h += '<p class="exam"><b>Hint.</b> '+esc(x.hintText)+'</p>';
   if(!x.checked){
     h += '<button class="btn" id="check">Check my answer</button>'+(x.hint?'':'<button class="btn ghost" id="hint">Show a hint (this attempt will not count as unaided)</button>');
