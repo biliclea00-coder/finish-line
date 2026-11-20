@@ -215,6 +215,8 @@ function plan(opts){
   function touched(){ var o = Object.keys(seenT).map(Number); learned.forEach(function(x){ if(o.indexOf(x.topic)<0) o.push(x.topic); }); return o.length ? o.sort() : [q.length ? q[0].topic : 2]; }
   var jt = (p.journal||{})[today] || {}, startAt = opts.nomiss ? 0 : (+jt.startAt||0);
   if(!opts.nomiss && p.lateAll) models.forEach(function(md){ if(md.date===p.exam.date || md.date===lastDay) return; var ls = md.slots.filter(function(s){ return !p.done[s.id]; }).slice(-1)[0]; if(ls){ ls.e += 30; ls.len = ls.e - ls.s; ls.late = true; } });
+  if(!opts.nomiss && +jt.extraUntil && models[0] && models[0].date===today){ var xs = Math.max(nowMin(), startAt||0), lastE = models[0].slots.reduce(function(a,s){ return Math.max(a, s.e); }, 0); xs = Math.max(xs, lastE);
+    if(+jt.extraUntil - xs >= 15) models[0].slots.push({s:xs, e:+jt.extraUntil, place:"home", id:today+"-x", date:today, len:+jt.extraUntil - xs, extra:true}); }
   if(!opts.nomiss && !p.lateAll && jt.trade==="late" && models[0] && models[0].date===today){ var ls = models[0].slots.filter(function(s){ return !p.done[s.id]; }).slice(-1)[0]; if(ls){ ls.e += 30; ls.len = ls.e - ls.s; ls.late = true; } }
   models.forEach(function(md){
     md.slots.forEach(function(sl){
@@ -228,7 +230,7 @@ function plan(opts){
       if(sl.cardsOnly || lowDay){ sl.kind = "cards"; sl.what = lowDay ? "Low-energy day: question cards only, nothing new" : "Question cards only: calm review, nothing new"; }
       else if(md.date === lastDay){ sl.kind = "review"; lastN++;
         sl.what = lastN===1 ? "Write your 2 cheat sheets (4 pages): formulas and the steps of each ladder" : lastN===2 && sl.len >= 75 ? "The Nov 2023 exam, timed: 75 minutes, calculator and cheat sheets only" : "Mixed review: question cards from every topic"; }
-      else if(sl.len < 45 || sl.s >= 1230 || (!QUIET[(place(sl.place)||{}).kind] && p.decisions.noise !== "noisy")){
+      else if(!sl.extra && (sl.len < 45 || sl.s >= 1230) || (!sl.extra && !QUIET[(place(sl.place)||{}).kind] && p.decisions.noise !== "noisy")){
         var qn = Object.keys(doneT).filter(function(n){ return hasQuiz[n] && !quizzed[n]; })[0];
         if(qn && sl.len >= 24){ quizzed[qn] = 1; sl.kind = "quiz"; sl.quiz = +qn; sl.what = "Your Topic "+qn+" quiz, timed: 24 minutes"; }
         else { sl.kind = "cards"; sl.cards = touched(); sl.what = "Question cards: Topic"+(sl.cards.length>1?"s ":" ")+sl.cards.join(", ")+" (8 mixed questions, missed ones first)"; }
@@ -417,7 +419,7 @@ function vNow(pl){
   h += '<section class="card pl-next"><div class="eyebrow">Now · '+hm(t)+'</div>';
   if(cur){ h += '<p class="pl-one">'+esc(cur.now)+'</p>'; if(cur.slot) h += '<p>'+doneBtn(cur.slot)+'</p>'; }
   else if(then.length) h += '<p class="pl-one">Free until '+hm(then[0].s)+'</p><p class="note">Rest, eat, or get ready. Nothing to do yet.</p>';
-  else { var b = nights().bed[md.date]; h += '<p class="pl-one">That\'s it for today.</p>'+(b!==undefined?'<p class="note">In bed by '+hm(b)+'. Tomorrow is planned already.</p>':''); }
+  else { var b = nights().bed[md.date]; h += '<p class="pl-one">That\'s it for today.</p>'+(b!==undefined?'<p class="note">In bed by '+hm(b)+'. Tomorrow is planned already.</p>':'') + extraChips(t); }
   if(then.length) h += '<div class="eyebrow" style="margin-top:12px">Then</div><ul class="plain">'+then.map(function(x){ return '<li><b>'+hm(x.s)+'</b> '+esc(x.then)+(x.slot?'<br>'+slotLink(x.slot):'')+'</li>'; }).join("")+'</ul>';
   h += '</section>';
   var jb = jr(jToday());
@@ -449,10 +451,10 @@ function behindCard(pl){
   var last = md.slots.filter(function(s){ return !s.missed && !s.lit && !P().done[s.id]; }).slice(-1)[0], bed = nights().bed[md.date];
   var opts = [
     ["keep", "Keep my bedtime", "Tonight gets shorter. What doesn't fit moves to the next days or becomes question cards.", "Recommended. Students who sleep regular hours with enough sleep get better grades, and sleep is when today's learning settles."],
-    ["late", "Study 30 minutes longer tonight", last ? "You'd study until "+hm(last.e + (j.trade==="late"?0:30))+". That leaves 30 minutes instead of an hour to wind down"+(bed!==undefined?" before bed at "+hm(bed):"")+"." : "Adds 30 minutes to your last station tonight.", "Fine once. Not every day: it eats into sleep."],
     ["calm", "Make tonight calm: question cards only", "Nothing new tonight. The new steps move to the next days.", "Good when you're tired or in pain."]
   ];
-  h += '<h3>Choose a trade-off</h3>'+opts.map(function(o){ var on = (j.trade||"")===o[0] || (o[0]==="calm" && j.low);
+  h += '<h3>Study later tonight</h3>'+extraChips(nowMin())+(+j.extraUntil?'<p class="note">Station tonight until '+hm(+j.extraUntil)+' ✓ <button class="linkbtn" data-extra="0">Not tonight after all</button></p>':'');
+  h += '<h3>Or choose a trade-off</h3>'+opts.map(function(o){ var on = (j.trade||"")===o[0] || (o[0]==="calm" && j.low);
     return '<div class="pl-if'+(on?" on":"")+'"><p><b>'+esc(o[1])+'</b>'+(o[0]==="keep"?' <span class="pill solid">Recommended</span>':'')+'</p><p>'+esc(o[2])+'</p><p class="note">'+esc(o[3])+'</p><button class="btn small '+(on?"":"ghost")+'" data-trade="'+o[0]+'">'+(on?"Chosen ✓":"Choose this")+'</button></div>'; }).join("");
   var prot = P().protect || {};
   h += '<h3>Keep a topic as full steps</h3><p class="note">Not okay with a topic becoming question cards? Protect it. Another topic then gives way, and "What moved" above shows which.</p><div class="pl-chips">'+[1,2,3,4,5].map(function(n){ return '<button type="button" class="opt" data-protect="'+n+'" aria-pressed="'+(!!prot[n])+'">'+(prot[n]?'🔒 ':'')+'Topic '+n+'</button>'; }).join("")+'</div>';
@@ -514,6 +516,13 @@ function afterCheck(j){
   if(a) h += '<label class="f">In one sentence (goes into today\'s journal)<input type="text" id="af-note" value="'+esc(j.afterNote||"")+'"></label><button class="btn small ghost" data-after="note">Save</button>'+(j.afterNote?' <span class="note">Saved ✓</span>':'');
   h += '</div>';
   return h;
+}
+/* studying later than planned tonight: a real station from now until the time you pick, filled with your next step */
+function extraChips(t){
+  if(t < 300) return "";
+  var j = jr(jToday()), opts = [], base = Math.ceil((t+30)/15)*15;
+  [0,30,60].forEach(function(add){ opts.push(base + add); });
+  return '<div class="pl-if"><p><b>Want to keep studying tonight?</b> Pick when you stop, and the app makes a station from now with your next step.</p><div class="pl-chips">'+opts.map(function(x){ return '<button type="button" class="opt" data-extra="'+x+'" aria-pressed="'+(+j.extraUntil===x)+'">Until '+hm(x)+'</button>'; }).join("")+'</div><p class="note">You keep the same alarm tomorrow, so every half hour now is half an hour less sleep.</p></div>';
 }
 function lowSwitch(date){ var on = !!jr(date).low;
   return '<div class="pl-if'+(on?" on":"")+'"><p><b>Low-energy day</b></p><p class="note">Pain, a bad night, a hard day. New steps wait; today becomes question cards only.</p><button class="btn small '+(on?"":"ghost")+'" data-jlow="'+date+'">'+(on?"Low-energy day is on ✓":"Make today a low-energy day")+'</button></div>'; }
@@ -910,6 +919,7 @@ app.addEventListener("click", function(e){
     if(d.trade==="calm"){ jt2.low = !jt2.low; if(jt2.low) jt2.trade = "calm"; else delete jt2.trade; }
     else { jt2.trade = jt2.trade===d.trade ? "" : d.trade; if(d.trade!=="calm" && jt2.trade) jt2.low = false; }
     save(); FL.render(); return; }
+  if(d.extra !== undefined){ var jx = jr(jToday()); if(+d.extra && +jx.extraUntil !== +d.extra) jx.extraUntil = +d.extra; else delete jx.extraUntil; jx.behindDone = true; behindOpen = false; nowOff = false; savedFlash = Date.now(); save(); FL.render(); window.scrollTo(0,0); return; }
   if(d.nowoff){ if(d.nowoff==="done"){ nowOff = false; behindOpen = false; savedFlash = Date.now(); save(); FL.render(); window.scrollTo(0,0); return; } nowOff = !nowOff; FL.render(); return; }
   if(d.jlow){ var jl = jr(d.jlow); jl.low = !jl.low; save(); FL.render(); return; }
   if(d.htog){ var ht = d.htog.split("|"), jh = jr(ht[0]); jh.hab = jh.hab || {}; jh.hab[ht[1]] = !jh.hab[ht[1]]; save(); FL.render(); return; }
