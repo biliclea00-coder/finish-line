@@ -218,8 +218,8 @@ function plan(opts){
   function touched(){ var o = Object.keys(seenT).map(Number); learned.forEach(function(x){ if(o.indexOf(x.topic)<0) o.push(x.topic); }); return o.length ? o.sort() : [q.length ? q[0].topic : 2]; }
   var jt = (p.journal||{})[today] || {}, startAt = opts.nomiss ? 0 : (+jt.startAt||0);
   if(!opts.nomiss && p.lateAll) models.forEach(function(md){ if(md.date===p.exam.date || md.date===lastDay) return; var ls = md.slots.filter(function(s){ return !p.done[s.id]; }).slice(-1)[0]; if(ls){ ls.e += 30; ls.len = ls.e - ls.s; ls.late = true; } });
-  if(!opts.nomiss && +jt.extraUntil && models[0] && models[0].date===today){ var xs = Math.max(nowMin(), startAt||0), lastE = models[0].slots.reduce(function(a,s){ return Math.max(a, s.e); }, 0); xs = Math.max(xs, lastE);
-    if(+jt.extraUntil - xs >= 15) models[0].slots.push({s:xs, e:+jt.extraUntil, place:"home", id:today+"-x", date:today, len:+jt.extraUntil - xs, extra:true}); }
+  if(!opts.nomiss && +jt.extraUntil && models[0] && models[0].date===today){ var xs = Math.max(nowMin(), startAt||0), lastE = models[0].slots.reduce(function(a,s){ return s.s < +jt.extraUntil ? Math.max(a, s.e) : a; }, 0); xs = Math.max(xs, lastE);
+    if(+jt.extraUntil - xs >= 15) { models[0].slots.push({s:xs, e:+jt.extraUntil, place:"home", id:today+"-x", date:today, len:+jt.extraUntil - xs, extra:true}); models[0].slots.sort(function(a,b){ return a.s - b.s; }); } }
   if(!opts.nomiss && !p.lateAll && jt.trade==="late" && models[0] && models[0].date===today){ var ls = models[0].slots.filter(function(s){ return !p.done[s.id]; }).slice(-1)[0]; if(ls){ ls.e += 30; ls.len = ls.e - ls.s; ls.late = true; } }
   models.forEach(function(md){
     md.slots.forEach(function(sl){
@@ -421,17 +421,18 @@ function vNow(pl){
   var h = (Date.now() - savedFlash < 15000) ? '<section class="card pl-calm" role="status"><p><b>Saved ✓</b> Your plan is updated. This is what comes next.</p></section>' : '';
   h += '<section class="card pl-next"><div class="eyebrow">Now · '+hm(t)+'</div>';
   if(cur){ h += '<p class="pl-one">'+esc(cur.now)+'</p>'; if(cur.slot) h += '<p>'+doneBtn(cur.slot)+'</p>'; }
+  else if(then.length && t < 300) h += '<p class="pl-one">It\'s the middle of the night.</p><p class="note">Your first station is at '+hm(then[0].s)+'. Sleep is part of the plan.</p>'+extraChips(t);
   else if(then.length) h += '<p class="pl-one">Free until '+hm(then[0].s)+'</p><p class="note">Rest, eat, or get ready. Nothing to do yet.</p>';
   else { var b = nights().bed[md.date]; h += '<p class="pl-one">That\'s it for today.</p>'+(b!==undefined?'<p class="note">In bed by '+hm(b)+'. Tomorrow is planned already.</p>':'') + extraChips(t); }
   if(then.length) h += '<div class="eyebrow" style="margin-top:12px">Then</div><ul class="plain">'+then.map(function(x){ return '<li><b>'+hm(x.s)+'</b> '+esc(x.then)+(x.slot?'<br>'+slotLink(x.slot):'')+'</li>'; }).join("")+'</ul>';
   h += '</section>';
-  var jb = jr(jToday());
+  var jb = pj();
   var showBehind = behindOpen || (jb.startAt && !jb.behindDone);
   h += '<button class="btn '+(showBehind?'':'ghost')+'" data-behind="open">'+(jb.startAt?(showBehind?'Running behind: studying from '+hm(jb.startAt):'Studying from '+hm(jb.startAt)+' · tap to change'):'I\'m running behind')+'</button>';
   if(showBehind) h += behindCard(pl);
   h += '<div class="two"><a class="btn ghost" href="#journal">What\'s on my mind</a><button class="btn ghost" data-nowoff="1">'+(nowOff?'Close':'Something\'s off')+'</button></div>';
   if(nowOff){
-    var missed = md.slots.filter(function(s){ return s.missed; }), j = jr(jToday());
+    var missed = md.slots.filter(function(s){ return s.missed; }), j = pj();
     h += '<section class="card"><h2>Something\'s off</h2>';
     var todays = P().events.filter(function(e){ return e.date===md.date; });
     if(todays.length) h += '<h3>Plans changed today?</h3><p class="note">Cancelled a shift or training? Tap it, and the free time becomes study stations.</p>'+todays.map(function(e){ var off = removed(e);
@@ -445,7 +446,7 @@ function vNow(pl){
 }
 var behindOpen = false;
 function behindCard(pl){
-  var j = jr(jToday()), t = nowMin(), md = pl.models[0] || {slots:[]};
+  var j = pj(), t = nowMin(), md = pl.models[0] || {slots:[]};
   var h = '<section class="card"><h2>Running behind</h2><p class="note">When can you start studying? Fixed plans like training or a shift stay where they are; only the study stations move.</p><div class="pl-chips">'+
     [[15,"In 15 min"],[30,"In 30 min"],[60,"In 1 hour"]].map(function(o){ return '<button type="button" class="opt" data-behind="'+o[0]+'">'+o[1]+'</button>'; }).join("")+'</div>'+
     '<label class="f">Or from<input type="time" id="bh-at" value="'+(j.startAt?hm(j.startAt):hm(Math.ceil((t+15)/5)*5))+'"></label><button class="btn small ghost" data-behind="at">Start from this time</button>';
@@ -522,11 +523,12 @@ function afterCheck(j){
 }
 /* studying later than planned tonight: a real station from now until the time you pick, filled with your next step */
 function extraChips(t){
-  if(t < 300) return "";
-  var j = jr(jToday()), opts = [], base = Math.ceil((t+30)/15)*15;
+  var j = pj(), opts = [], base = Math.ceil((t+30)/15)*15;
   [0,30,60].forEach(function(add){ opts.push(base + add); });
   return '<div class="pl-if"><p><b>Want to keep studying tonight?</b> Pick when you stop, and the app makes a station from now with your next step.</p><div class="pl-chips">'+opts.map(function(x){ return '<button type="button" class="opt" data-extra="'+x+'" aria-pressed="'+(+j.extraUntil===x)+'">Until '+hm(x)+'</button>'; }).join("")+'</div><p class="note">You keep the same alarm tomorrow, so every half hour now is half an hour less sleep.</p></div>';
 }
+/* the calendar day the plan is computing (after midnight that is already the new day) */
+function pj(){ return jr(todayIso()); }
 function lowSwitch(date){ var on = !!jr(date).low;
   return '<div class="pl-if'+(on?" on":"")+'"><p><b>Low-energy day</b></p><p class="note">Pain, a bad night, a hard day. New steps wait; today becomes question cards only.</p><button class="btn small '+(on?"":"ghost")+'" data-jlow="'+date+'">'+(on?"Low-energy day is on ✓":"Make today a low-energy day")+'</button></div>'; }
 
@@ -771,7 +773,7 @@ function movedSummary(pl){
   if(gone.length){ var byT = {}; gone.forEach(function(st){ (byT[st.topic] = byT[st.topic] || []).push(st.name); });
     h += '<p>To make room, these become question cards instead of full steps:</p><ul>'+Object.keys(byT).map(function(n){ var ex = (FL.TOPICS[n-1].exam||"").match(/^(\d+)/);
       return '<li><b>Topic '+n+'</b>'+(ex?' ('+ex[1]+' of 75 points in 2023)':'')+': '+byT[n].map(esc).join("; ")+'</li>'; }).join("")+'</ul>'; }
-  h += '<p>'+(jr(jToday()).trade==="late"?'Your fixed plans stay the same. Tonight you study 30 minutes longer, so you have less time to wind down.':'Your bedtime and your fixed plans stay the same. Only the study stations shifted.')+'</p></div>';
+  h += '<p>'+(pj().trade==="late"?'Your fixed plans stay the same. Tonight you study 30 minutes longer, so you have less time to wind down.':'Your bedtime and your fixed plans stay the same. Only the study stations shifted.')+'</p></div>';
   return h;
 }
 function vCheckin(pl){
@@ -902,7 +904,7 @@ app.addEventListener("click", function(e){
     if(armed !== d.pdone){ armed = d.pdone; FL.render(); clearTimeout(armT); armT = setTimeout(function(){ armed = ""; FL.render(); }, 5000); return; }
     armed = ""; clearTimeout(armT); lightSlot(d.pdone); save(); FL.render(); if(window.FL.confetti) window.FL.confetti(); return; }
   if(d.cisave){ var tv = document.getElementById("ci-vent"); if(tv){ jr(jToday()).vent = tv.value; ciSaved = jToday(); save(); FL.render(); } return; }
-  if(d.behind){ var jb2 = jr(jToday());
+  if(d.behind){ var jb2 = pj();
     if(d.behind==="open"){ behindOpen = true; jb2.behindDone = false; FL.render(); return; }
     if(d.behind==="done"){ jb2.behindDone = true; behindOpen = false; nowOff = false; savedFlash = Date.now(); save(); FL.render(); window.scrollTo(0,0); return; }
     if(d.behind==="clear"){ delete jb2.startAt; if(jb2.trade==="late") delete jb2.trade; behindOpen = false; save(); FL.render(); return; }
@@ -916,13 +918,13 @@ app.addEventListener("click", function(e){
     if(lv){ if(!p.fitOld) p.fitOld = {stepMin:p.stepMin, lateAll:!!p.lateAll, books:p.decisions.books, earlyFrom:p.earlyFrom}; for(var k in lv){ if(k==="books") p.decisions.books = lv[k]; else p[k] = lv[k]; } p.fitPick = names[d.fit]; jr(jToday()).trade = jr(jToday()).trade || "keep"; save(); FL.render(); }
     return; }
   if(d.protect){ p.protect = p.protect || {}; var pn = +d.protect; p.protect[pn] = !p.protect[pn]; if(!p.protect[pn]) delete p.protect[pn]; save(); FL.render(); return; }
-  if(d.after){ var ja = jr(jToday()); if(d.after==="note"){ ja.afterNote = ((document.getElementById("af-note")||{}).value||"").trim(); } else ja.after = d.after; save(); FL.render(); return; }
-  if(d.trade){ var jt2 = jr(jToday());
+  if(d.after){ var ja = pj(); if(d.after==="note"){ ja.afterNote = ((document.getElementById("af-note")||{}).value||"").trim(); } else ja.after = d.after; save(); FL.render(); return; }
+  if(d.trade){ var jt2 = pj();
     if(d.trade==="own"){ jt2.tradeNote = ((document.getElementById("bh-own")||{}).value||"").trim(); save(); FL.render(); return; }
     if(d.trade==="calm"){ jt2.low = !jt2.low; if(jt2.low) jt2.trade = "calm"; else delete jt2.trade; }
     else { jt2.trade = jt2.trade===d.trade ? "" : d.trade; if(d.trade!=="calm" && jt2.trade) jt2.low = false; }
     save(); FL.render(); return; }
-  if(d.extra !== undefined){ var jx = jr(jToday()); if(+d.extra && +jx.extraUntil !== +d.extra) jx.extraUntil = +d.extra; else delete jx.extraUntil; jx.behindDone = true; behindOpen = false; nowOff = false; savedFlash = Date.now(); save(); FL.render(); window.scrollTo(0,0); return; }
+  if(d.extra !== undefined){ var jx = pj(); if(+d.extra && +jx.extraUntil !== +d.extra) jx.extraUntil = +d.extra; else delete jx.extraUntil; jx.behindDone = true; behindOpen = false; nowOff = false; savedFlash = Date.now(); save(); FL.render(); window.scrollTo(0,0); return; }
   if(d.nowoff){ if(d.nowoff==="done"){ nowOff = false; behindOpen = false; savedFlash = Date.now(); save(); FL.render(); window.scrollTo(0,0); return; } nowOff = !nowOff; FL.render(); return; }
   if(d.jlow){ var jl = jr(d.jlow); jl.low = !jl.low; save(); FL.render(); return; }
   if(d.htog){ var ht = d.htog.split("|"), jh = jr(ht[0]); jh.hab = jh.hab || {}; jh.hab[ht[1]] = !jh.hab[ht[1]]; save(); FL.render(); return; }
