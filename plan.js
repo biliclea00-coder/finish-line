@@ -397,7 +397,7 @@ function vHome(){
 }
 
 /* ---------- Now: only the stretch you are in, up to your next study station ---------- */
-var nowOff = false;
+var nowOff = false, savedFlash = 0;
 function vNow(pl){
   var p = P(), t = nowMin(), md = pl.models[0]; if(!md || md.date !== todayIso()) return "";
   var list = [];
@@ -413,15 +413,17 @@ function vNow(pl){
   var cur = list.filter(function(x){ return x.s <= t && t < x.e; })[0], after = list.filter(function(x){ return x.s > t; });
   var then = []; for(var i=0;i<after.length && then.length<4;i++){ then.push(after[i]); if(after[i].slot) break; }
   if(cur && cur.slot) then = [];
-  var h = '<section class="card pl-next"><div class="eyebrow">Now · '+hm(t)+'</div>';
+  var h = (Date.now() - savedFlash < 15000) ? '<section class="card pl-calm" role="status"><p><b>Saved ✓</b> Your plan is updated. This is what comes next.</p></section>' : '';
+  h += '<section class="card pl-next"><div class="eyebrow">Now · '+hm(t)+'</div>';
   if(cur){ h += '<p class="pl-one">'+esc(cur.now)+'</p>'; if(cur.slot) h += '<p>'+doneBtn(cur.slot)+'</p>'; }
   else if(then.length) h += '<p class="pl-one">Free until '+hm(then[0].s)+'</p><p class="note">Rest, eat, or get ready. Nothing to do yet.</p>';
   else { var b = nights().bed[md.date]; h += '<p class="pl-one">That\'s it for today.</p>'+(b!==undefined?'<p class="note">In bed by '+hm(b)+'. Tomorrow is planned already.</p>':''); }
   if(then.length) h += '<div class="eyebrow" style="margin-top:12px">Then</div><ul class="plain">'+then.map(function(x){ return '<li><b>'+hm(x.s)+'</b> '+esc(x.then)+(x.slot?'<br>'+slotLink(x.slot):'')+'</li>'; }).join("")+'</ul>';
   h += '</section>';
   var jb = jr(jToday());
-  h += '<button class="btn '+(behindOpen||jb.startAt?'':'ghost')+'" data-behind="open">'+(jb.startAt?'Running behind: studying from '+hm(jb.startAt):'I\'m running behind')+'</button>';
-  if(behindOpen || jb.startAt) h += behindCard(pl);
+  var showBehind = behindOpen || (jb.startAt && !jb.behindDone);
+  h += '<button class="btn '+(showBehind?'':'ghost')+'" data-behind="open">'+(jb.startAt?(showBehind?'Running behind: studying from '+hm(jb.startAt):'Studying from '+hm(jb.startAt)+' · tap to change'):'I\'m running behind')+'</button>';
+  if(showBehind) h += behindCard(pl);
   h += '<div class="two"><a class="btn ghost" href="#journal">What\'s on my mind</a><button class="btn ghost" data-nowoff="1">'+(nowOff?'Close':'Something\'s off')+'</button></div>';
   if(nowOff){
     var missed = md.slots.filter(function(s){ return s.missed; }), j = jr(jToday());
@@ -432,7 +434,7 @@ function vNow(pl){
     missed.forEach(function(s){ h += '<div class="pl-row st"><b>'+hm(s.s)+'–'+hm(s.e)+'</b> · missed<br>'+doneBtn(s)+'</div>'; });
     h += lowSwitch(jToday());
     h += movedSummary(pl) + makeFit(pl);
-    h += '<p><a href="#plan/setup/3">Change a fixed plan</a> (a shift, training, an appointment) and the stations move around it.</p></section>';
+    h += '<p><a href="#plan/setup/3">Change a fixed plan</a> (a shift, training, an appointment) and the stations move around it.</p><button class="btn" data-nowoff="done">Done: save and show my next station</button></section>';
   }
   return h;
 }
@@ -462,6 +464,7 @@ function behindCard(pl){
     else if(!named.length) h += '<p class="note">The plan can only act on the choices above. If your idea is something else, Reflect with Claude in the journal can help you work it out.</p>'; }
   h += makeFit(pl);
   if(j.trade || Object.keys(prot).some(function(k){ return prot[k]; })) h += afterCheck(j);
+  h += '<button class="btn" data-behind="done">Done: save and show my next station</button>';
   h += '<button class="btn small ghost" data-behind="clear">I\'m on time after all</button></section>';
   return h;
 }
@@ -888,7 +891,8 @@ app.addEventListener("click", function(e){
     armed = ""; clearTimeout(armT); lightSlot(d.pdone); save(); FL.render(); if(window.FL.confetti) window.FL.confetti(); return; }
   if(d.cisave){ var tv = document.getElementById("ci-vent"); if(tv){ jr(jToday()).vent = tv.value; ciSaved = jToday(); save(); FL.render(); } return; }
   if(d.behind){ var jb2 = jr(jToday());
-    if(d.behind==="open"){ behindOpen = !behindOpen || !!jb2.startAt; FL.render(); return; }
+    if(d.behind==="open"){ behindOpen = true; jb2.behindDone = false; FL.render(); return; }
+    if(d.behind==="done"){ jb2.behindDone = true; behindOpen = false; nowOff = false; savedFlash = Date.now(); save(); FL.render(); window.scrollTo(0,0); return; }
     if(d.behind==="clear"){ delete jb2.startAt; if(jb2.trade==="late") delete jb2.trade; behindOpen = false; save(); FL.render(); return; }
     if(d.behind==="at"){ var tv2 = (document.getElementById("bh-at")||{}).value; if(tv2){ jb2.startAt = m(tv2); } }
     else jb2.startAt = nowMin() + (+d.behind);
@@ -906,7 +910,7 @@ app.addEventListener("click", function(e){
     if(d.trade==="calm"){ jt2.low = !jt2.low; if(jt2.low) jt2.trade = "calm"; else delete jt2.trade; }
     else { jt2.trade = jt2.trade===d.trade ? "" : d.trade; if(d.trade!=="calm" && jt2.trade) jt2.low = false; }
     save(); FL.render(); return; }
-  if(d.nowoff){ nowOff = !nowOff; FL.render(); return; }
+  if(d.nowoff){ if(d.nowoff==="done"){ nowOff = false; behindOpen = false; savedFlash = Date.now(); save(); FL.render(); window.scrollTo(0,0); return; } nowOff = !nowOff; FL.render(); return; }
   if(d.jlow){ var jl = jr(d.jlow); jl.low = !jl.low; save(); FL.render(); return; }
   if(d.htog){ var ht = d.htog.split("|"), jh = jr(ht[0]); jh.hab = jh.hab || {}; jh.hab[ht[1]] = !jh.hab[ht[1]]; save(); FL.render(); return; }
   if(d.hadd){ var ha = d.hadd.split("|"), sg = HABIT_SUGG[ha[0]].filter(function(s){ return s[0]===ha[1]; })[0]; if(sg && !habits().some(function(x){ return x.id===sg[0]; })){ habits().push({id:sg[0], name:sg[1], kind:ha[0]}); var jh2 = jr(ha[2]); jh2.hab = jh2.hab || {}; jh2.hab[sg[0]] = true; save(); } FL.render(); return; }
