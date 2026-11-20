@@ -555,6 +555,13 @@ function loadRemote(ref){
     setSync(); render();
   });
 }
+/* keep every open tab in step with the account: save right away when leaving, fetch the latest when coming back */
+document.addEventListener("visibilitychange", function(){
+  if(!cloud.ref) return;
+  if(document.visibilityState === "hidden"){ if(cloud.dirty){ clearTimeout(cloud.timer); pushCloud(); } }
+  else if(!cloud.dirty && !cloud.saving){ loadRemote(cloud.ref).catch(function(){}); }
+});
+window.addEventListener("pagehide", function(){ if(cloud.ref && cloud.dirty){ clearTimeout(cloud.timer); pushCloud(); } });
 /* Supabase: used when config.js holds a project URL and publishable key */
 var sb = null, sbUser = null, acctMsg = "";
 function attachSupabase(user){
