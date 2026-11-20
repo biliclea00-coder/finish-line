@@ -130,6 +130,20 @@ ul.plain{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:4px;f
 .fld input.right{border-color:var(--good);background:var(--good-bg)}
 .fld input.wrong{border-color:var(--warn);background:var(--warn-bg)}
 .fld .ans{grid-column:1/-1;font-size:13px;color:var(--warn)}
+.tbs{border:1px solid var(--line);border-radius:10px;overflow:hidden;font-variant-numeric:tabular-nums}
+.tbs .ti{background:var(--idle-bg);padding:6px 10px;font-weight:600;font-size:14px}
+.tbs .cols{display:grid;grid-template-columns:1fr 1fr}
+.tbs .col{padding:8px;display:flex;flex-direction:column;gap:8px;min-width:0}
+.tbs .col + .col{border-left:1px solid var(--line)}
+.tbs .h{font-size:11px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:var(--muted)}
+.tbs .tl{display:flex;flex-direction:column;gap:2px;font-size:13px;line-height:1.25}
+.tbs .tl input{width:100%;text-align:right;padding:6px 8px;font-variant-numeric:tabular-nums}
+.tbs .tl input.right{border-color:var(--good);background:var(--good-bg)}
+.tbs .tl input.wrong{border-color:var(--warn);background:var(--warn-bg)}
+.tbs .tl .ans{font-size:12px;color:var(--warn)}
+.tbs .sum{border-top:1px solid var(--line);padding-top:6px;font-weight:600;font-size:14px;display:flex;justify-content:space-between;margin-top:auto}
+.tbs .bal{padding:8px 10px;border-top:1px solid var(--line);font-size:14px}
+.tbs .bal.ok{background:var(--good-bg)}
 .fb{border-left:4px solid var(--good);padding:4px 0 4px 12px;display:flex;flex-direction:column;gap:8px}
 .fb.miss{border-color:var(--warn)}
 .fb b.v{font-family:var(--display)}
@@ -1510,6 +1524,19 @@ function sheetHtml(s){
   if(!s.right.length) return '<div class="sheet"><div class="ti">'+esc(s.title)+'</div><div class="cols"><div class="col">'+s.left.map(function(r){return '<span class="ln"><span>'+esc(r[0])+'</span><span>'+fmt(r[1])+'</span></span>';}).join("")+'</div></div></div>';
   return '<div class="sheet"><div class="ti">'+esc(s.title)+'</div><div class="cols">'+col("Assets", s.left)+col("Equity and liabilities", s.right)+'</div></div>';
 }
+/* the consolidated balance sheet as a real balance sheet: assets left, equity and liabilities right, live totals */
+function tbsOk(x){ return x.fields.some(function(f){ return f[0]==="tot"; }) && x.fields.every(function(f){ return /^(a|l)\d+$|^tot$/.test(f[0]); }); }
+function tbsSums(x){ var s = {a:0, l:0, fa:true, fl:true}; x.fields.forEach(function(f){ if(f[0]==="tot") return; var n = parseNum(x.values[f[0]]); var side = f[0].charAt(0); if(isNaN(n)){ if(String(x.values[f[0]]||"").trim()) s["f"+side] = false; return; } s[side] += n; }); s.a = cxR(s.a); s.l = cxR(s.l); return s; }
+function tbsBal(x){ var s = tbsSums(x); if(!s.a && !s.l) return '<div class="bal" id="tbs-bal">Fill in both sides. The totals update as you type.</div>';
+  var d = cxR(s.a - s.l); return '<div class="bal'+(d===0?' ok':'')+'" id="tbs-bal">'+(d===0?'Balances ✓ Assets '+fmt(s.a)+' = equity and liabilities '+fmt(s.l)+'.':'Doesn\'t balance yet: assets '+fmt(s.a)+', equity and liabilities '+fmt(s.l)+' (difference '+fmt(Math.abs(d))+').')+'</div>'; }
+function tbsHtml(x){
+  var cell = function(f){ var v = x.values[f[0]], cls = "", ans = "";
+    if(x.checked){ var okf = fieldOk(f, v); cls = okf ? "right" : "wrong"; if(!okf) ans = '<span class="ans">Correct: '+fmt(f[2])+'</span>'; }
+    return '<label class="tl" for="f-'+f[0]+'"><span>'+esc(f[1])+'</span><input class="'+cls+'" type="number" step="any" autocomplete="off" id="f-'+f[0]+'" data-field="'+f[0]+'" value="'+esc(v===undefined?"":v)+'"'+(x.checked?" disabled":"")+'>'+ans+'</label>'; };
+  var s = tbsSums(x), A = x.fields.filter(function(f){ return f[0].charAt(0)==="a"; }), L = x.fields.filter(function(f){ return f[0].charAt(0)==="l"; });
+  return '<div class="tbs"><div class="ti">Consolidated balance sheet ('+esc(x.P||"group")+' group)</div><div class="cols"><div class="col"><span class="h">Assets</span>'+A.map(cell).join("")+'<div class="sum"><span>Total</span><span id="tbs-a">'+fmt(s.a)+'</span></div></div>'+
+    '<div class="col"><span class="h">Equity and liabilities</span>'+L.map(cell).join("")+'<div class="sum"><span>Total</span><span id="tbs-l">'+fmt(s.l)+'</span></div></div></div>'+tbsBal(x)+'</div><p class="note">Some lines can be 0. A line that doesn\'t belong in the group balance sheet gets 0.</p>';
+}
 function guideHtml(x){
   var g = x.guide, gi = x.gi||0, h = '<div class="guide"><h2>Step by step, like slide 24</h2><p class="note">One step at a time. Then you fill in the whole balance sheet.</p><ol class="steps">';
   g.forEach(function(s, i){ if(i > gi) return;
@@ -1526,20 +1553,21 @@ function exHtml(x, label){
   }
   var h = '<section class="card"><div class="row"><span class="eyebrow">'+label+'</span><span class="pill todo">'+(TYPE_NAME[x.type]||"Case")+'</span></div>'+
     (x.caseTitle?'<h2>'+esc(x.caseTitle)+'</h2>':'')+'<p>'+esc(x.intro)+'</p>'+x.sheets.map(sheetHtml).join("")+(x.guide && !x.gskip ? '<details><summary>Your steps ✓</summary>'+guideHtml(x)+'</details>' : '')+
-    '<h2>'+(x.caseId==="c7"?"Enter the consolidated income statement":x.fields.some(function(f){ return f[0]==="tot"; })?"Fill in every line of the consolidated balance sheet (some answers can be 0)":(x.type==="e4"||x.type==="ppa")?"Enter the three figures (in €k)":"Prepare the consolidated balance sheet. Enter the key lines (in €k)")+'</h2><div class="fields">'+
+    '<h2>'+(x.caseId==="c7"?"Enter the consolidated income statement":x.fields.some(function(f){ return f[0]==="tot"; })?"Fill in every line of the consolidated balance sheet (some answers can be 0)":(x.type==="e4"||x.type==="ppa")?"Enter the three figures (in €k)":"Prepare the consolidated balance sheet. Enter the key lines (in €k)")+'</h2>'+(tbsOk(x) ? tbsHtml(x) : '<div class="fields">'+
     x.fields.map(function(f){ var v = x.values[f[0]], cls = "", ans = "";
       if(x.checked){ var okf = fieldOk(f, v); cls = okf ? " right" : " wrong"; if(!okf) ans = '<span class="ans">Correct: '+fmt(f[2])+'</span>'; }
-      return '<div class="fld"><label for="f-'+f[0]+'">'+f[1]+'</label><input class="'+cls.trim()+'" type="number" step="any" autocomplete="off" id="f-'+f[0]+'" data-field="'+f[0]+'" value="'+esc(v===undefined?"":v)+'"'+(x.checked?" disabled":"")+'>'+ans+'</div>'; }).join("")+'</div>';
+      return '<div class="fld"><label for="f-'+f[0]+'">'+f[1]+'</label><input class="'+cls.trim()+'" type="number" step="any" autocomplete="off" id="f-'+f[0]+'" data-field="'+f[0]+'" value="'+esc(v===undefined?"":v)+'"'+(x.checked?" disabled":"")+'>'+ans+'</div>'; }).join("")+'</div>');
   if(x.hint) h += '<p class="exam"><b>Hint.</b> '+esc(x.hintText)+'</p>';
   if(!x.checked){
     h += '<button class="btn" id="check">Check my answer</button>'+(x.hint?'':'<button class="btn ghost" id="hint">Show a hint (this attempt will not count as unaided)</button>');
   } else {
     h += '<div class="fb'+(x.ok?"":" miss")+'" role="status"><b class="v">'+(x.ok?(x.hint?"Correct, with a hint.":"Correct, unaided."):"Not yet.")+'</b><p>'+esc(x.msg||"")+'</p></div>'+
-      '<h3>Worked solution, in the order the slides use</h3><ol class="steps">'+x.sol.map(function(s){return "<li>"+esc(s)+"</li>";}).join("")+'</ol>';
+      (tbsOk(x) ? '<h3>The correct consolidated balance sheet</h3>'+sheetHtml({title:"Consolidated balance sheet", left:x.fields.filter(function(f){ return f[0].charAt(0)==="a" && f[2]; }).map(function(f){ return [f[1], f[2]]; }), right:x.fields.filter(function(f){ return f[0].charAt(0)==="l" && f[2]; }).map(function(f){ return [f[1], f[2]]; })}) : '')+'<h3>Worked solution, in the order the slides use</h3><ol class="steps">'+x.sol.map(function(s){return "<li>"+esc(s)+"</li>";}).join("")+'</ol>';
   }
   return h+'</section>';
 }
 function gradeEx(x){
+  if(tbsOk(x)) x.values.tot = String(tbsSums(x).a);
   x.checked = true;
   x.ok = x.fields.every(function(f){ return fieldOk(f, x.values[f[0]]); });
   var id = x.type, d = today();
@@ -1931,7 +1959,8 @@ app.addEventListener("click", function(e){
 app.addEventListener("input", function(e){
   if(e.target.dataset && e.target.dataset.solans){ S.ans = S.ans || {}; S.ans[e.target.dataset.solans] = e.target.value; saveLocal(); }
   var t = e.target, x = curEx();
-  if(t.dataset.field && x){ x.values[t.dataset.field] = t.value; save(); }
+  if(t.dataset.field && x){ x.values[t.dataset.field] = t.value; save();
+    if(tbsOk(x)){ var ss = tbsSums(x), ea = document.getElementById("tbs-a"), el = document.getElementById("tbs-l"), eb = document.getElementById("tbs-bal"); if(ea) ea.textContent = fmt(ss.a); if(el) el.textContent = fmt(ss.l); if(eb) eb.outerHTML = tbsBal(x); } }
   if(t.id==="feel" && S.check){ S.check.text = t.value; save(); }
 });
 app.addEventListener("change", function(e){
