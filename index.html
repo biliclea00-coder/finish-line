@@ -853,8 +853,67 @@ function genCaseRandom(type){
   return x;
 }
 
+/* Topics 3 to 5: the paper cases with numeric answers, as exercises (answers from the official solutions). A 4th field value is the allowed rounding. */
+var FIXCASES = [
+ {id:"t3c1a", step:"t3b", title:"Case 1 (A): Malaga's machine, cost and first depreciation", text:"Malaga receives an industrial machine on 1 October N, ready to use on 31 October N. Price USD 600,000 (1 USD = 0.9 EUR on the purchase date). Transport €26,000. Installation by its own workers €5,000. User training by the maker €10,000. Useful life 3 years, depreciated on units produced: N 50,000, N+1 150,000, N+2 200,000, N+3 100,000. Residual value €200,000.",
+  fields:[["c","Cost recognised on 31 Oct N (€)",571000],["d","Depreciation for year N (€)",37100],["b","Book value on 31 Dec N (€)",533900]],
+  hint:"Cost = everything needed to get the machine ready to work. Training is not part of it. Depreciate (cost − residual value) by the share of total units made in N.",
+  sol:["Cost: 600,000 × 0.9 = 540,000 + transport 26,000 + installation 5,000 = 571,000. Training (10,000) is an expense: it doesn't make the machine work, it trains people.","Depreciable amount: 571,000 − residual value 200,000 = 371,000. Total units: 500,000.","Depreciation N: 371,000 × 50,000 / 500,000 = 37,100.","Book value 31 Dec N: 571,000 − 37,100 = 533,900."]},
+ {id:"t3c1b", step:"t3b", title:"Case 1 (B): the machine after a €40,000 upgrade", text:"Same machine as Case 1 (A) (cost 571,000, residual value 200,000, units: N 50,000, N+1 150,000). In January N+2 Malaga spends €40,000 on modifications that increase capacity. It now plans 250,000 units in N+2 and 110,000 in N+3.",
+  fields:[["s","Carrying amount at the start of N+2, before the upgrade (€)",422600],["n","Carrying amount after adding the upgrade (€)",462600],["d","Depreciation for N+2 (€)",182360],["e","Carrying amount on 31 Dec N+2 (€)",280240]],
+  hint:"An upgrade that increases capacity is added to the asset. Then depreciate the new (carrying amount − residual value) over the remaining units: 250,000 + 110,000.",
+  sol:["Depreciation N+1: 371,000 × 150,000 / 500,000 = 111,300. Start of N+2: 571,000 − 37,100 − 111,300 = 422,600.","The upgrade increases capacity, so it is capitalised: 422,600 + 40,000 = 462,600.","Depreciation N+2: (462,600 − 200,000) × 250,000 / 360,000 = 182,360.","31 Dec N+2: 462,600 − 182,360 = 280,240."]},
+ {id:"t3c1c", step:"t3b", title:"Case 1 (C): a building with a roof component", text:"In January N Malaga buys an industrial building for €6,000,000, useful life 30 years. A new roof is planned after 15 years, estimated cost €1,000,000.",
+  fields:[["b","Yearly depreciation of the building without the roof (€)",166667,1],["r","Yearly depreciation of the roof component (€)",66667,1],["t","Total depreciation for year N (€)",233334,2]],
+  hint:"Component approach: split out the part that wears out at a different speed (the roof) and depreciate each part over its own life.",
+  sol:["Roof component: 1,000,000 over 15 years = 66,667 a year.","Rest of the building: 6,000,000 − 1,000,000 = 5,000,000 over 30 years = 166,667 a year.","Total for N: 233,334."]},
+ {id:"t3c2a", step:"t3a", title:"Case 2 (A): Malaga's patent, paid over 10 years", text:"In January N Malaga acquires a patent: an initial payment of €30,000, then a licence fee of €10,000 at the end of each year for 10 years. Discount rate 8% (annuity factor for 10 years at 8%: 6.71). Useful life 10 years.",
+  fields:[["c","Cost of the patent (€)",97100],["l","Liability recognised in January N (€)",67100],["a","Amortisation for year N (€)",9710],["i","Interest expense for year N (€)",5368],["e","Liability on 31 Dec N after the first fee (€)",62468]],
+  hint:"Cost = what you pay now + the present value of what you will pay. The future payments are a liability that earns interest.",
+  sol:["Present value of the fees: 10,000 × 6.71 = 67,100, a liability. Cost = 30,000 + 67,100 = 97,100.","Amortisation N: 97,100 / 10 = 9,710.","Interest N: 67,100 × 8% = 5,368.","The 10,000 payment covers 5,368 interest and repays 4,632, so the liability falls to 67,100 − 4,632 = 62,468."]},
+ {id:"t3c3", step:"t3c", title:"Case 3: Bilbao's airplane after a price crash", text:"In January N1 Bilbao buys an airplane for €250 million, depreciated straight-line over 25 years. On 31 December N5 airplane prices have collapsed: it could be sold for €180 million. No cash flow information is available. Enter amounts in € million.",
+  fields:[["c","Carrying amount on 31 Dec N5 before the test",200],["r","Recoverable amount",180],["i","Impairment loss",20],["d","Depreciation per year from N6",9],["b","Book value on 31 Dec N6",171]],
+  hint:"Five years of depreciation have passed. Recoverable amount = the higher of fair value less costs to sell and value in use; here only the fair value is known. After an impairment, depreciate the new amount over the remaining life.",
+  sol:["Depreciation is 250 / 25 = 10 a year. After 5 years: 250 − 50 = 200.","No value in use can be calculated, so the recoverable amount is the fair value: 180.","Impairment loss: 200 − 180 = 20, an expense in N5.","From N6, 180 over the remaining 20 years = 9 a year.","31 Dec N6: 180 − 9 = 171."]},
+ {id:"t3c4", step:"t3d", title:"Case 4: the goodwill of SEAT", text:"SEAT is a cash-generating unit in the VW group with net operating assets of 5,500 MU (including goodwill 500). BMW offers 5,100 MU for them; selling would cost 350 MU. Expected free cash flows: x2 750, x3 700, x4 650, x5 590, then 540 every year from x6 for ever. WACC 11%. Enter amounts in MU, rounded to one decimal.",
+  fields:[["f","Fair value less costs to sell",4750,0.5],["v","Value in use",5341.5,2],["r","Recoverable amount",5341.5,2],["i","Impairment loss",158.5,2],["g","Goodwill after the test",341.5,2]],
+  hint:"Value in use: discount x2 to x5 normally, then the perpetuity from x6: 540 / 0.11, valued at the end of x5, discounted 4 years. Recoverable amount = the higher of the two values. A CGU's loss hits goodwill first.",
+  sol:["Fair value less costs to sell: 5,100 − 350 = 4,750.","Value in use: 750/1.11 + 700/1.11² + 650/1.11³ + 590/1.11⁴ = 2,107.8, plus the perpetuity 540 / 0.11 = 4,909.1 discounted by 1.11⁴ = 3,233.8. Total 5,341.5.","Recoverable amount = higher of 4,750 and 5,341.5 = 5,341.5.","Impairment loss: 5,500 − 5,341.5 = 158.5.","It is taken from goodwill first: 500 − 158.5 = 341.5."]},
+ {id:"t3c5", step:"t3d", title:"Case 5: Porto's three CGUs", text:"Porto has three CGUs with goodwill. CGU A: building 400,000 (fair value less costs 600,000, value in use 800,000), machinery 2,000,000, goodwill 900,000; CGU value in use 2,500,000. CGU B: building 500,000 (value in use 450,000; property prices dropped), machinery 3,000,000, goodwill 200,000; CGU value in use 3,300,000. CGU C: building 700,000, machinery 1,000,000, goodwill 500,000; CGU value in use 1,640,000. Allocate the impairment losses.",
+  fields:[["ag","CGU A: goodwill after the test",100000],["bb","CGU B: building after the test",450000],["bm","CGU B: machinery after the test",2850000],["bg","CGU B: goodwill after the test",0],["cb","CGU C: building after the test",675295,2],["cm","CGU C: machinery after the test",964705,2],["cg","CGU C: goodwill after the test",0]],
+  hint:"Test an asset on its own first when you can (B's building). Then each CGU: loss = carrying amount − recoverable amount. Cut goodwill first, then the other assets in proportion to their carrying amounts, never below an asset's own recoverable amount.",
+  sol:["A: carrying 3,300,000 vs 2,500,000, so a loss of 800,000, all taken from goodwill: 900,000 → 100,000.","B: first the building alone: 500,000 → 450,000 (loss 50,000). The CGU is now 3,650,000 vs 3,300,000, a loss of 350,000. Goodwill takes 200,000 (→ 0). The other 150,000 goes to the machinery (the building is already at its recoverable amount): 3,000,000 → 2,850,000.","C: 2,200,000 vs 1,640,000, a loss of 560,000. Goodwill takes 500,000 (→ 0). The other 60,000 is split by carrying amount: building 60,000 × 700/1,700 = 24,705 (→ 675,295), machinery 35,295 (→ 964,705)."]},
+ {id:"t3c8", step:"t3f", title:"Case 8: RENT's office lease", text:"On 1 January N1 RENT leases an office building (useful life 40 years). Payments of €300,000 a year: the first on 1 January N1, then at the end of each year, the last on 31 December N12. Incremental borrowing rate 4.5% (annuity factor 12 years: 9.1186).",
+  fields:[["l","Lease liability on 1 Jan N1 (€)",2735574,300],["u","Right-of-use asset on 1 Jan N1 (€)",3035574,300],["d","Depreciation for N1 (€)",252964,30],["i","Interest expense for N1 (€)",123101,30],["e","Lease liability on 31 Dec N1 (€)",2558675,300]],
+  hint:"The liability is the present value of the FUTURE payments only (12 payments at the year ends). The payment made on day one goes into the right-of-use asset. Depreciate over the shorter of lease term (12) and useful life (40).",
+  sol:["Liability: 300,000 × 9.1186 = 2,735,574 (the 1 January payment is not a future payment).","Right-of-use asset: 2,735,574 + 300,000 paid on day one = 3,035,574.","Depreciation: 3,035,574 / 12 years = 252,964.","Interest N1: 2,735,574 × 4.5% = 123,101.","The 31 December payment of 300,000 covers interest 123,101 and repays 176,899: liability 2,735,574 − 176,899 = 2,558,675."]},
+ {id:"t3c9a", step:"t3f", title:"Case 9 (A): Burger Queen's scooters", text:"BQ leases delivery scooters for 5 years, €10,000 at the end of each year. Incremental borrowing rate 4% (annuity factor 5 years: 4.4518).",
+  fields:[["l","Lease liability = right-of-use asset at the start (€)",44518,5],["d","Depreciation for N1 (€)",8904,2],["i","Interest expense for N1 (€)",1781,2],["e","Lease liability on 31 Dec N1 (€)",36299,5]],
+  hint:"Present value of 5 payments at 4%. Each payment = interest on the opening liability + repayment.",
+  sol:["Liability and right-of-use asset: 10,000 × 4.4518 = 44,518.","Depreciation: 44,518 / 5 = 8,904.","Interest: 44,518 × 4% = 1,781.","Repayment 10,000 − 1,781 = 8,219, so the liability is 44,518 − 8,219 = 36,299."]},
+ {id:"t3c9b", step:"t3f", title:"Case 9 (B): Burger Queen's Paris building", text:"BQ leases a building for 10 years with an option to extend by 5, which it is not reasonably certain to use. €50,000 at the end of each year. Initial direct costs €20,000; the owner reimburses €5,000 of them as an incentive. Borrowing rate 5% (annuity factor 10 years: 7.7217).",
+  fields:[["t","Lease term (years)",10],["l","Lease liability at the start (€)",386087,5],["u","Right-of-use asset at the start (€)",401087,5],["d","Depreciation for N1 (€)",40109,2],["i","Interest expense for N1 (€)",19304,2]],
+  hint:"Count the option only if you are reasonably certain to use it. The right-of-use asset adds direct costs and deducts incentives received.",
+  sol:["Lease term: 10 years; the extension isn't reasonably certain.","Liability: 50,000 × 7.7217 = 386,087.","Right-of-use asset: 386,087 + 20,000 − 5,000 = 401,087.","Depreciation: 401,087 / 10 = 40,109.","Interest N1: 386,087 × 5% = 19,304."]},
+ {id:"t4e3", step:"t4e", title:"Exercise 3: Airbus's shares in 2023", text:"From Airbus's 2023 annual report: par value €1. In 2023, 2,254,426 new shares were issued for the employee share plan; capital stock rose by €2 million and share premium from €3,837 million to €3,983 million. Treasury shares went from 647,500 shares (€68 million) to 3,037,467 shares (€390 million). No treasury shares were sold or cancelled.",
+  fields:[["p","Average issue price of the new shares (€)",65.65,0.05],["n","Treasury shares bought in 2023 (net, number)",2389967],["a","Amount spent on them (€ million)",322],["b","Average buy-back price (€)",134.73,0.05]],
+  hint:"Issue price = (increase in capital + increase in share premium) / number of new shares. For treasury shares, use the change in the count and in the amount.",
+  sol:["Money raised: capital +2 + share premium +146 (3,983 − 3,837) = €148 million, for 2,254,426 shares: about €65.65 each, far below the 2023 market price (above €112): that discount is the employee incentive.","Treasury shares: 3,037,467 − 647,500 = 2,389,967 shares, for 390 − 68 = €322 million.","Average buy-back price: 322,000,000 / 2,389,967 = €134.73, close to the market price."]},
+ {id:"t5e2", step:"t5c", title:"Exercise 2: CleanMotors' ROCE", text:"CleanMotors (in €): operating profit N 21,500 (N-1 11,625); operational profit before non-recurring items N 28,900 (N-1 12,125); sales N 270,000 (N-1 250,000). Non-current assets N 229,300 (N-1 108,946), of which other non-current financial assets 25,300 (7,000). Working capital needs N 114,700 (N-1 46,054). Tax rate 20%. Enter percentages like 5.00 and the turnover with 2 decimals.",
+  fields:[["n","NOPAT year N",17200],["ce","Capital employed year N",344000],["r","ROCE year N (%)",5.0,0.05],["r1","ROCE year N-1 (%)",6.0,0.05],["m","NOPAT margin year N (%)",6.37,0.02],["t","Capital employed turnover year N",0.78,0.01],["rr","ROCE N with operational profit, before non-recurring items (%)",6.72,0.02],["rp","ROCE N as published: operational profit and without other financial assets (%)",7.25,0.02]],
+  hint:"NOPAT = operating profit × (1 − 20%). Capital employed = non-current assets + working capital needs. ROCE = NOPAT / capital employed = margin × turnover.",
+  sol:["NOPAT N: 21,500 × 0.8 = 17,200 (N-1: 9,300).","Capital employed N: 229,300 + 114,700 = 344,000 (N-1: 108,946 + 46,054 = 155,000).","ROCE N: 17,200 / 344,000 = 5.00%; N-1: 9,300 / 155,000 = 6.00%. It fell.","Why: margin rose (17,200 / 270,000 = 6.37% vs 3.72%) but turnover collapsed (270,000 / 344,000 = 0.78 vs 1.61) after heavy investment.","With operational profit: 28,900 × 0.8 = 23,120; 23,120 / 344,000 = 6.72%.","As published, also without other financial assets: capital employed 204,000 + 114,700 = 318,700; 23,120 / 318,700 = 7.25%. Both adjustments flatter ROCE, so a company should explain and reconcile them."]},
+ {id:"t5e4", step:"t5d", title:"Exercise 4: adjusting Lufthansa's depreciation", text:"Lufthansa depreciates aircraft over 20 years with 5% residual value (4.75% a year). Analysts prefer 25 years and 5% (3.8% a year). Aircraft cost 1 Jan 2022: €32,036 million; accumulated depreciation reported: 18,836; average age 12.38 years. 2022: operating profit 1,232, tax rate 25%, equity 8,474, borrowings 15,151, cash 1,790. Amounts in € million, one decimal; percentages like 4.23.",
+  fields:[["a","Accumulated depreciation at 3.8% on 1 Jan 2022",15069,2],["d","Lower depreciation expense for 2022",304.3,0.5],["r","ROCE as reported (%)",4.23,0.02],["ra","Adjusted ROCE (%)",4.63,0.02]],
+  hint:"Accumulated depreciation = rate × average age × cost. The yearly difference = (4.75% − 3.8%) × cost. Capital employed = equity + borrowings − cash; the adjustment adds the after-tax increase to equity.",
+  sol:["At 3.8%: 0.038 × 12.38 × 32,036 = 15,069, against 18,836 reported. PP&E is 3,767.8 higher, minus 25% deferred tax (941.9), so equity is 2,825.8 higher.","2022 depreciation is lower by (0.0475 − 0.038) × 32,036 = 304.3; after 25% tax, profit is 228.3 higher.","Reported: capital employed 8,474 + 15,151 − 1,790 = 21,835; ROCE 1,232 × 0.75 / 21,835 = 4.23%.","Adjusted: capital employed 21,835 + 3,054.1 = 24,889.1; EBIT 1,232 + 304.3 = 1,536.3; ROCE 1,536.3 × 0.75 / 24,889.1 = 4.63%."]}
+];
+
+var ALLCASES = T2CASES.concat(FIXCASES);
+function fieldOk(f, v){ var n = parseNum(v); if(isNaN(n)) return false; return Math.abs(n - f[2]) <= (f[3] || 0.001); }
+function fixX(d){ return {type:"case:"+d.id, caseId:d.id, caseTitle:d.title, P:"", T:"", hint:false, checked:false, values:{}, ok:null, intro:d.text, sheets:[], fields:d.fields.map(function(f){ return f.slice(); }), hintText:d.hint, sol:d.sol.slice()}; }
 function gen(type){
-  if(/^case:/.test(type)){ var cd = T2CASES.filter(function(d){ return d.id===type.slice(5); })[0]; if(cd) return caseX(JSON.parse(JSON.stringify(cd))); }
+  if(/^case:/.test(type)){ var cd = ALLCASES.filter(function(d){ return d.id===type.slice(5); })[0]; if(cd) return cd.fields ? fixX(cd) : caseX(JSON.parse(JSON.stringify(cd))); }
   if(/^e[1-4]$/.test(type)) return genCaseRandom(type);
   var pk = pick(PARENTS), P = CO[pk].name, T = CO[pk].target;
   var Es = pick([100,150,200]), Ls = pick([20,40,60]), As = Es + Ls;
@@ -1173,9 +1232,9 @@ function vGuided(n){
     }
     (STEPEXTRA[cur[0]]||[]).forEach(function(x){ h += tick(x[0], (++num)+'. '+x[1], x[2]); });
     if(t.playable && cur[0]==="e2") h += tick("ppa", (++num)+'. Drill the purchase price allocation (1 minute each, no drawing)', '<a class="btn small ghost" href="#practice" data-start="ppa">Quick PPA drill</a>');
-    if(t.playable && cur[0]!=="e0"){ var cs = T2CASES.filter(function(d){ return d.step===cur[0]; });
-      if(cs.length) h += tick("cases", (++num)+'. Do the same cases here, with live checking', cs.map(function(d){ return '<a class="btn small ghost" href="#practice" data-start="case:'+d.id+'">'+esc(d.title.split(":")[0])+'</a>'; }).join(" "));
-      h += tick("prac", (++num)+'. Practise this type with new numbers (same format as the cases)', '<a class="btn small ghost" href="#practice" data-start="'+cur[0]+'">New numbers</a>'); }
+    var cs = ALLCASES.filter(function(d){ return d.step===cur[0]; });
+    if(cs.length) h += tick("cases", (++num)+'. Do the same cases here, with live checking', cs.map(function(d){ return '<a class="btn small ghost" href="#practice" data-start="case:'+d.id+'">'+esc(d.title.split(":")[0])+'</a>'; }).join(" "));
+    if(t.playable && cur[0]!=="e0") h += tick("prac", (++num)+'. Practise this type with new numbers (same format as the cases)', '<a class="btn small ghost" href="#practice" data-start="'+cur[0]+'">New numbers</a>');
     h += '</div>';
     var books = (BOOKSTEP[cur[0]]||[]).map(function(b, bi){ return '<a class="btn small ghost" href="#doc/bk-'+b[0]+'/'+bookPage(b[0], b[1])+'/'+cur[0]+'-'+bi+'">'+esc(b[3])+' · pp. '+b[1]+(b[2]!==b[1]?'–'+b[2]:'')+'</a>'; });
     if(BOOK[cur[0]]) books.push('<a class="btn small ghost" href="#doc/harrison/'+BOOK[cur[0]][0]+'">Harrison '+BOOK[cur[0]][2].replace("Book ","")+'</a>');
@@ -1277,7 +1336,13 @@ var DECKQ = {
     ["The difference between issued and authorised shares can be explained by share buy-backs.",false,"Authorised minus issued is shares not issued yet. Buy-backs explain the gap between issued and outstanding shares."],
     ["A difference between the buy-back price and the resale price of treasury shares goes to share premium, not the income statement.",true,"Dealing in own shares never creates profit or loss."],
     ["Shares with mandatory annual dividends that holders can ask to be repaid are classified as debt.",true,"Both features are obligations to pay cash."],
-    ["Some instruments have an equity and a debt component, which are accounted for separately.",true,"Compound instruments such as convertible bonds use split accounting."]],
+    ["Some instruments have an equity and a debt component, which are accounted for separately.",true,"Compound instruments such as convertible bonds use split accounting."],
+    ["Company A's ordinary shares (no fixed return, they get what's left after all liabilities) are equity.", true, "No obligation to pay or repay: the classic equity instrument."],
+    ["Company B's preference shares (non-cumulative 5% dividend, never redeemable) are debt because they rank ahead of ordinary shares in a winding-up.", false, "There is no obligation to pay the dividend or to repay, so they are equity. Ranking ahead of ordinary shareholders doesn't create an obligation (Exercise 2, item 2)."],
+    ["Company C's preference shares (cumulative 5% dividend, redeemable whenever the holder asks) are debt.", true, "The company must pay the dividends and repay on request: a contractual obligation, so a financial liability."],
+    ["Company D's preference shares (cumulative 5% dividend, redeemable only if the company chooses) are debt simply because the dividend is cumulative.", false, "The company can't be forced to repay. Cumulative dividends alone don't make it debt (IAS 32 AG25); the solution calls it probably equity, depending on the other terms."],
+    ["Company E's obligation to deliver as many of its own shares as are worth €100,000 is a financial liability.", true, "The number of shares varies so the holder always gets €100,000: the holder bears no share price risk, so it works like debt."],
+    ["Company F's options that let XXL buy 100,000 shares at €1 each are a liability, because F must hand over shares.", false, "A fixed number of shares for a fixed amount of cash is equity (IAS 32.16). F never has to pay out cash."]],
  5:[["EBITDA is one of the most popular GAAP KPIs and is regulated by IAS 1.",false,"EBITDA is not defined by IFRS. It is a non-GAAP measure (under IFRS 18, a management-defined performance measure)."],
     ["EBITDA differs from operating cash flow because it is before working capital changes.",true,"Operating cash flow also adjusts for working capital (and taxes paid), which EBITDA ignores."],
     ["EBITDA helps compare companies with different financing, depreciation policies and tax rates.",true,"It removes interest, taxes, depreciation and amortisation, which is why analysts like it for comparisons."],
@@ -1420,11 +1485,11 @@ function sheetHtml(s){
   return '<div class="sheet"><div class="ti">'+esc(s.title)+'</div><div class="cols">'+col("Assets", s.left)+col("Equity and liabilities", s.right)+'</div></div>';
 }
 function exHtml(x, label){
-  var h = '<section class="card"><div class="row"><span class="eyebrow">'+label+'</span><span class="pill todo">'+TYPE_NAME[x.type]+'</span></div>'+
+  var h = '<section class="card"><div class="row"><span class="eyebrow">'+label+'</span><span class="pill todo">'+(TYPE_NAME[x.type]||"Case")+'</span></div>'+
     (x.caseTitle?'<h2>'+esc(x.caseTitle)+'</h2>':'')+'<p>'+esc(x.intro)+'</p>'+x.sheets.map(sheetHtml).join("")+
     '<h2>'+(x.caseId==="c7"?"Enter the consolidated income statement":x.fields.some(function(f){ return f[0]==="tot"; })?"Fill in every line of the consolidated balance sheet (some answers can be 0)":(x.type==="e4"||x.type==="ppa")?"Enter the three figures (in €k)":"Prepare the consolidated balance sheet. Enter the key lines (in €k)")+'</h2><div class="fields">'+
     x.fields.map(function(f){ var v = x.values[f[0]], cls = "", ans = "";
-      if(x.checked){ var okf = parseNum(v) === f[2]; cls = okf ? " right" : " wrong"; if(!okf) ans = '<span class="ans">Correct: '+fmt(f[2])+'</span>'; }
+      if(x.checked){ var okf = fieldOk(f, v); cls = okf ? " right" : " wrong"; if(!okf) ans = '<span class="ans">Correct: '+fmt(f[2])+'</span>'; }
       return '<div class="fld"><label for="f-'+f[0]+'">'+f[1]+'</label><input class="'+cls.trim()+'" type="text" inputmode="decimal" autocomplete="off" id="f-'+f[0]+'" data-field="'+f[0]+'" value="'+esc(v===undefined?"":v)+'"'+(x.checked?" disabled":"")+'>'+ans+'</div>'; }).join("")+'</div>';
   if(x.hint) h += '<p class="exam"><b>Hint.</b> '+esc(x.hintText)+'</p>';
   if(!x.checked){
@@ -1437,7 +1502,7 @@ function exHtml(x, label){
 }
 function gradeEx(x){
   x.checked = true;
-  x.ok = x.fields.every(function(f){ return parseNum(x.values[f[0]]) === f[2]; });
+  x.ok = x.fields.every(function(f){ return fieldOk(f, x.values[f[0]]); });
   var id = x.type, d = today();
   S.tries[id] = (S.tries[id]||0)+1;
   S.attemptsByDay[d] = (S.attemptsByDay[d]||0)+1;
@@ -1451,10 +1516,17 @@ function gradeEx(x){
 
 function keepEx(x){ if(!x) return; S.exHist = (S.exHist||[]).filter(function(h){ return h.ex !== x; }); S.exHist.unshift({at:new Date().toISOString().slice(0,16).replace("T"," "), ex:JSON.parse(JSON.stringify(x))}); S.exHist = S.exHist.slice(0,15); }
 function pastExHtml(){ var hs = S.exHist||[]; if(!hs.length) return "";
-  return '<details class="card"><summary>Past exercises ('+hs.length+')</summary><ul class="plain">'+hs.map(function(h,i){ return '<li><b>'+esc(h.at)+'</b> · '+esc(TYPE_NAME[h.ex.type]||h.ex.type)+' · '+esc(h.ex.P)+' and '+esc(h.ex.T)+(h.ex.ok===true?' ✓':h.ex.ok===false?' ✗':'')+' <button class="btn small ghost" data-reopen="'+i+'">Open again</button></li>'; }).join("")+'</ul></details>'; }
+  return '<details class="card"><summary>Past exercises ('+hs.length+')</summary><ul class="plain">'+hs.map(function(h,i){ return '<li><b>'+esc(h.at)+'</b> · '+esc(h.ex.caseTitle || ((TYPE_NAME[h.ex.type]||h.ex.type)+' · '+h.ex.P+' and '+h.ex.T))+(h.ex.ok===true?' ✓':h.ex.ok===false?' ✗':'')+' <button class="btn small ghost" data-reopen="'+i+'">Open again</button></li>'; }).join("")+'</ul></details>'; }
 function vPractice(){
   if(!S.ex) S.ex = gen(nextType()), save();
-  var x = S.ex, n = S.attemptsByDay[today()]||0;
+  var x = S.ex, n = S.attemptsByDay[today()]||0, cd = x.caseId ? ALLCASES.filter(function(d){ return d.id===x.caseId; })[0] : null, tnum = 2;
+  if(cd) TOPICS.forEach(function(tp){ tp.steps.forEach(function(s){ if(s[0]===cd.step) tnum = tp.n; }); });
+  if(cd){
+    var sib = ALLCASES.filter(function(d){ return d.step===cd.step; }), nx = sib[sib.indexOf(cd)+1];
+    var h = '<a class="back" href="#topic-'+tnum+'">← Topic '+tnum+'</a><div class="stack"><h1>'+esc(TOPICS[tnum-1].title)+': the cases</h1><p class="lead">The paper case, with live checking. Try it on paper first if you like, then enter your answers.</p></div>'+exHtml(x, "Case exercise");
+    if(x.checked) h += (nx ? '<a class="btn" href="#practice" data-start="case:'+nx.id+'">Next case: '+esc(nx.title.split(":")[0])+'</a>' : '')+'<a class="btn ghost" href="#topic-'+tnum+'">Back to the step</a>';
+    return h + pastExHtml();
+  }
   var h = '<a class="back" href="#topic-2">← Topic 2</a><div class="stack"><h1>Practice: business combinations</h1><p class="lead">'+whyThis(x.type)+'</p></div>'+
     exHtml(x, "Exercise "+(x.checked?n:n+1)+" today") + (x.type==="ppa" ? (x.checked ? '<a class="btn" href="#practice" data-start="ppa">Another PPA drill</a>' : '') : '<p><a class="btn small ghost" href="#practice" data-start="ppa">Quick PPA drill (1 minute)</a></p>');
   if(x.checked){
