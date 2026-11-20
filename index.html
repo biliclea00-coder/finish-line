@@ -1328,7 +1328,7 @@ function vContext(){
   }
   var q = CONTEXT2[c.i], ans = c.picked !== null;
   var h = '<a class="back" href="#topic-2">← Topic 2</a><section class="card"><div class="row"><span class="eyebrow">Context check · true or false</span><span class="note">'+(c.i+1)+' of '+CONTEXT2.length+'</span></div><h2>'+q[0]+'</h2><div class="opts">'+
-    [true,false].map(function(v){ var cls = ans ? (v===q[1]?" right":(v===c.picked?" wrong":"")) : ""; return '<button type="button" class="opt'+cls+'" data-tf="'+v+'"'+(ans?" disabled":"")+'>'+(v?"True":"False")+'</button>'; }).join("")+'</div>';
+    [true,false].map(function(v){ var cls = ans ? (v===q[1]?" right":(v===c.picked?" wrong":"")) : ""; return '<button type="button" class="opt'+cls+'" data-ctxtf="'+v+'"'+(ans?" disabled":"")+'>'+(v?"True":"False")+'</button>'; }).join("")+'</div>';
   if(ans){ h += '<div class="fb'+(c.picked===q[1]?"":" miss")+'" role="status"><b class="v">'+(c.picked===q[1]?"Correct.":"Not yet. It is "+(q[1]?"true":"false")+".")+'</b><p>'+q[2]+'</p></div><button class="btn" id="ctx-next">'+(c.i+1<CONTEXT2.length?"Next":"Finish")+'</button>'; }
   return h+'</section>';
 }
@@ -1569,7 +1569,7 @@ app.addEventListener("click", function(e){
   if(t.dataset.selfrate){ S.check.rating = t.dataset.selfrate; var f = document.getElementById("feel"); if(f) S.check.text = f.value; save(); render(); var b = document.getElementById("check-next"); if(b) b.scrollIntoView({block:"nearest"}); return; }
   if(t.id==="check-next"){ var f2 = document.getElementById("feel"); if(f2) S.check.text = f2.value; checkAdvance(); save(); render(); window.scrollTo(0,0); return; }
   if(t.id==="check-redo"){ S.check = null; save(); render(); return; }
-  if(t.dataset.tf !== undefined){ var c = S.ctx, v = t.dataset.tf === "true"; c.picked = v; if(v === CONTEXT2[c.i][1]) c.right++; save(); render(); return; }
+  if(t.dataset.ctxtf !== undefined){ var c = S.ctx, v = t.dataset.ctxtf === "true"; c.picked = v; if(v === CONTEXT2[c.i][1]) c.right++; save(); render(); return; }
   if(t.id==="ctx-next"){ S.ctx.i++; S.ctx.picked = null; if(S.ctx.i >= CONTEXT2.length) S.ctxDone = {right:S.ctx.right}; save(); render(); window.scrollTo(0,0); return; }
   if(t.id==="ctx-redo"){ S.ctx = null; save(); render(); return; }
   if(t.id==="ac-forgot"){ forgot(); return; }
