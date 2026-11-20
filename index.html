@@ -1496,7 +1496,32 @@ function vDoc(dr){
   if(/^t\d-slides$/.test(dr.id)){ var sh = (SLIDEHELP[tn]||{})[pg], sn = (SLIDENOTES[tn]||{})[pg];
     if(sh) h += '<section class="card"><div class="eyebrow">What this slide shows</div><p>'+esc(sh)+'</p>'+(pg>=8 && pg<=9 && tn===4 ? '<a class="btn small ghost" href="#doc/airbus-fs-2023/1">Open the Airbus 2023 statements</a>' : '')+'</section>';
     if(sn) h += '<details class="tg-more card"><summary>Teacher\'s notes on this slide</summary><p class="note">They can contain answers, so try any exercise on the slide first.</p><p>'+esc(sn)+'</p></details>'; }
+  h += qBox(dr.id, pg, tn);
   return h;
+}
+/* ---------- questions you note under a slide, collected per topic until you understand them ---------- */
+function qBox(doc, pg, tn){
+  var mine = (S.qs||[]).filter(function(q){ return q.doc===doc && q.pg===pg; });
+  var h = '<section class="card"><div class="eyebrow">Something unclear here?</div>';
+  mine.forEach(function(q){ h += qRow(q, false); });
+  h += '<label class="f">Write what you don\'t understand, in your own words<textarea id="dq-text" rows="3" placeholder="e.g. I thought the brand was price minus book value?"></textarea></label><button class="btn small" data-dqsave="'+doc+'|'+pg+'|'+(tn||0)+'">Save my question</button><p class="note">It goes on your Topic '+(tn||"")+' page under "My open questions" until you mark it understood.</p></section>';
+  return h;
+}
+function qRow(q, link){
+  return '<div class="pl-if'+(q.done?" on":"")+'"><p>'+(link?'<a href="#doc/'+q.doc+'/'+q.pg+'"><b>Slide '+q.pg+'</b></a> · ':'')+esc(q.text)+'</p><p class="note">'+esc(q.at)+(q.done?' · understood ✓':'')+'</p>'+
+    (q.done ? '<button class="btn small ghost" data-dqdone="'+q.id+'">Not clear after all</button>' : '<div class="two"><button class="btn small ghost" data-dqask="'+q.id+'">'+(askCopied==="q"+q.id?'Copied ✓ Paste into Claude':'Ask Claude')+'</button><button class="btn small" data-dqdone="'+q.id+'">I understand it now ✓</button></div>')+'</div>';
+}
+function openQsHtml(n){
+  var qs = (S.qs||[]).filter(function(q){ return q.tn===n; }); if(!qs.length) return "";
+  var open = qs.filter(function(q){ return !q.done; });
+  return '<details class="card"'+(open.length?' open':'')+'><summary>My open questions on Topic '+n+' ('+open.length+')</summary>'+open.map(function(q){ return qRow(q, true); }).join("")+
+    (qs.length>open.length ? '<details><summary>Understood ('+(qs.length-open.length)+')</summary>'+qs.filter(function(q){ return q.done; }).map(function(q){ return qRow(q, true); }).join("")+'</details>' : '')+'</details>';
+}
+function qPrompt(q){
+  var help = (SLIDEHELP[q.tn]||{})[q.pg], tnote = (SLIDENOTES[q.tn]||{})[q.pg], tp = TOPICS[q.tn-1];
+  return "I'm a master's student at ESCP preparing for my IFRS exam (CM01). I'm on Topic "+q.tn+(tp?" ("+tp.title+")":"")+", slide "+q.pg+".\n\n"+
+    (help?"What the slide shows (summary from my study app): "+help+"\n\n":"")+(tnote?"Teacher's note on the slide: "+tnote+"\n\n":"")+
+    "What I don't understand: "+q.text+"\n\nPlease: 1) find exactly where my thinking goes wrong, 2) explain it simply with one small numeric example, 3) give me one quick question to check I got it. If you need to see the slide, ask me for a screenshot.";
 }
 function drawDoc(pg){
   var cv = document.getElementById("dvc"); if(!cv || !DV.doc) return;
@@ -1530,7 +1555,7 @@ function render(){
   if(!dr && DV.err){ DV.err = ""; DV.id = ""; }
   if(dr){ openDoc(dr); if(DV.doc && DV.id===dr.id){ S.docPos[dr.id] = dr.page; saveLocal(); } }
   var isPlan = /^plan(\/|$)/.test(r) || r==="journal";
-  var v = isPlan ? (window.FLPlan ? window.FLPlan.view(r) : '<p class="lead">Loading the planner…</p>') : dr ? vDoc(dr) : m ? vTopic(+m[1]) : msol ? vSolution(msol[1]) : mcard ? vCards(mcard[1]) : ({map:vMap, universe:vUniverse, practice:vPractice, "level-check":vCheck, "context-check":vContext, reading:vReading, "dev-notes":vDev, account:vAccount}[r] || vMap)();
+  var v = isPlan ? (window.FLPlan ? window.FLPlan.view(r) : '<p class="lead">Loading the planner…</p>') : dr ? vDoc(dr) : m ? (vTopic(+m[1]) + openQsHtml(+m[1])) : msol ? vSolution(msol[1]) : mcard ? vCards(mcard[1]) : ({map:vMap, universe:vUniverse, practice:vPractice, "level-check":vCheck, "context-check":vContext, reading:vReading, "dev-notes":vDev, account:vAccount}[r] || vMap)();
   app.innerHTML = v;
   if(document.getElementById("city")) mountCity();
   if(isPlan && window.FLPlan) window.FLPlan.after(r);
@@ -1569,6 +1594,9 @@ app.addEventListener("click", function(e){
   if(dsg.soltimer){ var sq = SOL[dsg.soltimer]; solTimer = {q:dsg.soltimer, start:Date.now(), secs:sq.pts*60}; render(); return; }
   if(dsg.solshow){ S.solShown = S.solShown || {}; S.solShown[dsg.solshow] = true; save(); render(); return; }
   if(dsg.selfmark){ var smk = dsg.selfmark.split("|"); S.selfMark = S.selfMark || {}; S.selfMark[smk[0]] = smk[1]; save(); render(); return; }
+  if(dsg.dqsave){ var qa = dsg.dqsave.split("|"), qt = ((document.getElementById("dq-text")||{}).value||"").trim(); if(qt){ S.qs = S.qs || []; S.qs.push({id:Date.now().toString(36), doc:qa[0], pg:+qa[1], tn:+qa[2], text:qt.slice(0,800), at:new Date().toISOString().slice(0,16).replace("T"," "), done:false}); save(); render(); } return; }
+  if(dsg.dqdone){ (S.qs||[]).forEach(function(q){ if(q.id===dsg.dqdone) q.done = !q.done; }); save(); render(); return; }
+  if(dsg.dqask){ var qq = (S.qs||[]).filter(function(q){ return q.id===dsg.dqask; })[0]; if(qq){ var qtxt = qPrompt(qq), fin2 = function(){ askCopied = "q"+qq.id; render(); window.open("https://claude.ai/new", "_blank"); }; if(navigator.clipboard) navigator.clipboard.writeText(qtxt).then(fin2, fin2); else { window.prompt("Copy this and paste it in Claude:", qtxt); } } return; }
   if(dsg.askclaude){ var pq = dsg.askclaude, txt = claudePrompt(pq), done = function(){ askCopied = pq; render(); window.open("https://claude.ai/new", "_blank"); };
     if(navigator.clipboard) navigator.clipboard.writeText(txt).then(done, function(){ window.prompt("Copy this and paste it in Claude:", txt); });
     else window.prompt("Copy this and paste it in Claude:", txt); return; }
