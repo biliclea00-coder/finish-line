@@ -1490,7 +1490,7 @@ function exHtml(x, label){
     '<h2>'+(x.caseId==="c7"?"Enter the consolidated income statement":x.fields.some(function(f){ return f[0]==="tot"; })?"Fill in every line of the consolidated balance sheet (some answers can be 0)":(x.type==="e4"||x.type==="ppa")?"Enter the three figures (in €k)":"Prepare the consolidated balance sheet. Enter the key lines (in €k)")+'</h2><div class="fields">'+
     x.fields.map(function(f){ var v = x.values[f[0]], cls = "", ans = "";
       if(x.checked){ var okf = fieldOk(f, v); cls = okf ? " right" : " wrong"; if(!okf) ans = '<span class="ans">Correct: '+fmt(f[2])+'</span>'; }
-      return '<div class="fld"><label for="f-'+f[0]+'">'+f[1]+'</label><input class="'+cls.trim()+'" type="text" inputmode="decimal" autocomplete="off" id="f-'+f[0]+'" data-field="'+f[0]+'" value="'+esc(v===undefined?"":v)+'"'+(x.checked?" disabled":"")+'>'+ans+'</div>'; }).join("")+'</div>';
+      return '<div class="fld"><label for="f-'+f[0]+'">'+f[1]+'</label><input class="'+cls.trim()+'" type="text" inputmode="decimal" autocomplete="off" id="f-'+f[0]+'" data-field="'+f[0]+'" value="'+esc(v===undefined?"":v)+'"'+(x.checked?" disabled":"")+'>'+(x.checked?'':'<button type="button" class="btn small ghost" data-neg="'+f[0]+'" aria-label="Switch between plus and minus" style="min-width:44px;margin-left:6px">±</button>')+ans+'</div>'; }).join("")+'</div>';
   if(x.hint) h += '<p class="exam"><b>Hint.</b> '+esc(x.hintText)+'</p>';
   if(!x.checked){
     h += '<button class="btn" id="check">Check my answer</button>'+(x.hint?'':'<button class="btn ghost" id="hint">Show a hint (this attempt will not count as unaided)</button>');
@@ -1837,6 +1837,7 @@ app.addEventListener("click", function(e){
   if(dsg.tstep){ var ts = dsg.tstep.split("|"), gs = TG(+ts[0]); gs.stage = "step"; gs.cur = ts[1]; save(); render(); window.scrollTo(0,0); return; }
   if(dsg.rate1){ var r1 = dsg.rate1.split("|"), gr = TG(+r1[0]); S.rating[r1[1]] = r1[2]; if(r1[3]==="rate") gr.ri++; save(); render(); if(r1[3]==="rate") window.scrollTo(0,0); return; }
   var x = curEx();
+  if(t.dataset.neg && x){ var inp = document.getElementById("f-"+t.dataset.neg), cur0 = String(inp ? inp.value : (x.values[t.dataset.neg]||"")).trim(); x.values[t.dataset.neg] = cur0.charAt(0)==="-" ? cur0.slice(1) : "-"+cur0; save(); render(); var inp2 = document.getElementById("f-"+t.dataset.neg); if(inp2) inp2.focus(); return; }
   if(t.id==="hint" && x){ x.hint = true; save(); render(); return; }
   if(t.id==="check" && x){ gradeEx(x); save(); render(); if(x.ok && !x.hint) confetti(); var fb = app.querySelector(".fb"); if(fb) fb.scrollIntoView({block:"center"}); return; }
   if(t.id==="next-ex"){ keepEx(S.ex); S.ex = gen(nextType()); save(); render(); window.scrollTo(0,0); return; }
