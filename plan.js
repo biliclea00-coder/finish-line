@@ -198,7 +198,10 @@ function readRate(){ return Math.max(+FL.S.speed || 0, 1.5); }
 function bookReads(n){ return ((FL.BOOKMAP||{})[n]||[]).map(function(r, i){ return [r, i]; }).filter(function(x){ return x[0][0]==="melville"; }).map(function(x){ var pg = x[0][3]-x[0][2]+1;
   return {topic:n, id:"bm-"+n+"-"+x[1], name:"Read Melville "+x[0][1], slides:"pp. "+x[0][2]+"–"+x[0][3], mins:Math.round(pg*readRate()), read:true}; }); }
 /* work already done, from the stations you lit: [stepId, minutes, topic] per part */
-function doneMins(){ var p = P(), o = {}; Object.keys(p.log||{}).forEach(function(id){ if(!p.done[id]) return; ((p.log[id]||{}).parts||[]).forEach(function(x){ o[x[0]] = (o[x[0]]||0) + x[1]; }); }); return o; }
+function doneMins(){ var p = P(), o = {}; Object.keys(p.log||{}).forEach(function(id){ if(!p.done[id]) return; ((p.log[id]||{}).parts||[]).forEach(function(x){ o[x[0]] = (o[x[0]]||0) + x[1]; }); });
+  /* a step you worked through in the topic (slides ticked plus at least one more tick) counts as done, even without lighting a station */
+  var tg = (FL.S && FL.S.tg) || {}; Object.keys(tg).forEach(function(n){ var dn = (tg[n]||{}).done || {}; Object.keys(dn).forEach(function(sid){ var k = Object.keys(dn[sid]||{}).filter(function(x){ return dn[sid][x]; }); if(k.indexOf("slides") >= 0 && k.length >= 2) o[sid] = Math.max(o[sid]||0, 100000); }); });
+  return o; }
 function nowMin(){ var d = new Date(); return d.getHours()*60 + d.getMinutes(); }
 function plan(opts){
   opts = opts || {};

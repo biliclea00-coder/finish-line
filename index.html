@@ -718,7 +718,144 @@ function daysToExam(){ if(!S.examDate) return null; var d = new Date(S.examDate+
 /* ================= exercise generators (numbers by code, so every sheet balances) ================= */
 var TYPE_NAME = {ppa:"Purchase price allocation drill", e1:"100% ownership, no goodwill", e2:"100% ownership with goodwill", e3:"Non-controlling interest", e4:"Equity method"};
 function sheet(title, left, right){ return {title:title, left:left, right:right}; }
+/* ================= case engine: consolidates line-item balance sheets exactly like the course cases ================= */
+function cxSum(a){ return a.reduce(function(s,x){ return s + x[1]; }, 0); }
+function cxR(x){ return Math.round(x*100)/100; }
+function cxF(x){ return (Math.round(x*100)/100).toLocaleString("en-US"); }
+function cxIsInv(n){ return /^Investment in /.test(n); }
+function cxKey(n){ return n.toLowerCase().replace(/[^a-z]/g,""); }
+/* c: {P:{a,e,l}, S:{a,e,l}, Sacq:[equity lines at acquisition] (optional), pct, price, fv:[[line, delta]], method:"full"|"equity", pname, sname, later:bool} */
+function cxPoss(n){ return /s$/.test(n) ? n+"'" : n+"'s"; }
+function cxSolve(c){
+  var pct = c.pct, S = c.S, P = c.P, sacq = c.Sacq || S.e, bv = cxSum(sacq), vd = cxSum(c.fv||[]), fvNet = bv + vd;
+  var gw = cxR(c.price - pct*fvNet), sol = [], A = [], EL = [], add = function(arr, n, v, how){ var k = cxKey(n), f = arr.filter(function(x){ return cxKey(x[0])===k; })[0]; if(f){ f[1] = cxR(f[1]+v); f[2].push(how); } else arr.push([n, cxR(v), [how]]); };
+  /* purchase price allocation */
+  sol.push("Purchase price allocation. Book value of "+cxPoss(c.sname)+" equity at acquisition: "+sacq.map(function(x){ return x[0]+" "+cxF(x[1]); }).join(" + ")+" = "+cxF(bv)+"."+(pct<1?" "+c.pname+" bought "+Math.round(pct*100)+"%, so its share is "+cxF(pct*bv)+".":""));
+  if(vd) sol.push("Valuation differences (fair value − book value): "+c.fv.map(function(x){ return x[0]+" +"+cxF(x[1]); }).join(", ")+" = "+cxF(vd)+". Fair value of net assets = "+cxF(bv)+" + "+cxF(vd)+" = "+cxF(fvNet)+".");
+  sol.push("Goodwill = price "+cxF(c.price)+" − "+(pct<1?Math.round(pct*100)+"% × ":"")+"fair value of net assets "+cxF(fvNet)+" = "+cxF(gw)+(gw>0?". It goes on the consolidated balance sheet as an intangible asset.":gw<0?". Negative goodwill is a gain in the income statement.":". No goodwill."));
+  var sNow = cxSum(S.e), post = sNow - bv, sNI = (S.e.filter(function(x){ return /net income/i.test(x[0]); })[0]||[0,0])[1], sOCI = (S.e.filter(function(x){ return /comprehensive/i.test(x[0]); })[0]||[0,0])[1], aOCI = (sacq.filter(function(x){ return /comprehensive/i.test(x[0]); })[0]||[0,0])[1];
+  var postNI = c.later ? Math.min(sNI, post) : 0, postOCI = c.later ? sOCI - aOCI : 0, postRE = c.later ? post - postNI - postOCI : 0;
+  if(c.later) sol.push(cxPoss(c.sname)+" equity grew from "+cxF(bv)+" at acquisition to "+cxF(sNow)+" now: "+cxF(post)+" earned since "+c.pname+" bought it ("+(postNI?"this year's net income "+cxF(postNI):"")+(postRE?", retained earnings since then "+cxF(postRE):"")+(postOCI?", OCI "+cxF(postOCI):"")+"). The group keeps "+Math.round(pct*100)+"% of it"+(pct<1?", the rest belongs to non-controlling interest":"")+".");
+  if(c.method === "equity"){
+    var inv = cxR(c.price + pct*post);
+    P.a.forEach(function(x){ if(cxIsInv(x[0])) add(A, "Equity method investment", inv, c.later ? "price "+cxF(c.price)+" + "+Math.round(pct*100)+"% × "+cxF(post)+" earned since acquisition" : "the price paid, "+cxF(c.price)); else add(A, x[0], x[1], c.pname+" "+cxF(x[1])); });
+    P.e.forEach(function(x){ add(EL, x[0], x[1], c.pname+" "+cxF(x[1])); });
+    if(postNI) add(EL, "Net Income", cxR(pct*postNI), "+ "+Math.round(pct*100)+"% × "+cxF(postNI)+" (share of the associate's profit)");
+    if(postRE) add(EL, "Retained Earnings", cxR(pct*postRE), "+ "+Math.round(pct*100)+"% × "+cxF(postRE)+" (share of its retained profit since acquisition)");
+    if(postOCI) add(EL, "Other Comprehensive Income", cxR(pct*postOCI), "+ "+Math.round(pct*100)+"% × "+cxF(postOCI));
+    P.l.forEach(function(x){ add(EL, x[0], x[1], c.pname+" "+cxF(x[1])); });
+    sol.push("Equity method: nothing of "+c.sname+" is added line by line and nothing is cancelled. Only the investment line changes, to "+cxF(inv)+".");
+  } else {
+    P.a.forEach(function(x){ if(!cxIsInv(x[0])) add(A, x[0], x[1], c.pname+" "+cxF(x[1])); });
+    S.a.forEach(function(x){ add(A, x[0], x[1], c.sname+" "+cxF(x[1])); });
+    (c.fv||[]).forEach(function(x){ add(A, x[0], x[1], "fair value adjustment +"+cxF(x[1])); });
+    if(gw > 0) add(A, "Goodwill", gw, "from the purchase price allocation");
+    P.e.forEach(function(x){ add(EL, x[0], x[1], c.pname+" "+cxF(x[1])); });
+    if(postNI) add(EL, "Net Income", cxR(pct*postNI), "+ "+(pct<1?Math.round(pct*100)+"% × ":"")+cxF(postNI)+" ("+cxPoss(c.sname)+" profit this year)");
+    if(postRE) add(EL, "Retained Earnings", cxR(pct*postRE), "+ "+(pct<1?Math.round(pct*100)+"% × ":"")+cxF(postRE)+" ("+cxPoss(c.sname)+" retained profit since acquisition)");
+    if(postOCI) add(EL, "Other Comprehensive Income", cxR(pct*postOCI), "+ "+cxF(postOCI));
+    if(pct < 1) add(EL, "Non-controlling interest", cxR((1-pct)*(sNow+vd)), Math.round((1-pct)*100)+"% × "+cxPoss(c.sname)+" equity "+cxF(sNow+vd));
+    P.l.forEach(function(x){ add(EL, x[0], x[1], c.pname+" "+cxF(x[1])); });
+    S.l.forEach(function(x){ add(EL, x[0], x[1], c.sname+" "+cxF(x[1])); });
+    sol.push("Investment in "+c.sname+" ("+cxF(c.price)+") is cancelled against "+(pct<1?Math.round(pct*100)+"% of ":"")+cxPoss(c.sname)+" equity at acquisition"+(vd?" at fair value":"")+". So "+cxPoss(c.sname)+" own equity lines ("+S.e.map(function(x){ return x[0]; }).join(", ")+") disappear: only "+cxPoss(c.pname)+" equity stays"+(c.later?", plus the group's share of what "+c.sname+" earned since":"")+".");
+  }
+  var tA = cxR(cxSum(A)), tE = cxR(cxSum(EL));
+  A.forEach(function(x){ sol.push(x[0]+": "+x[2].map(function(p,i){ return i===0 ? p : (p.charAt(0)==="+" ? p : "+ "+p); }).join(" ")+" = "+cxF(x[1])+"."); });
+  EL.forEach(function(x){ sol.push(x[0]+": "+x[2].map(function(p,i){ return i===0 || p.charAt(0)==="+" ? p : "+ "+p; }).join(" ")+" = "+cxF(x[1])+"."); });
+  sol.push("Check: total assets "+cxF(tA)+" = total equity and liabilities "+cxF(tE)+".");
+  return {A:A, EL:EL, gw:gw, tA:tA, tE:tE, sol:sol, ok: Math.abs(tA-tE) < 0.01};
+}
+
+/* the Topic 2 paper cases, as interactive exercises (numbers from the course case sheet; checked against the official solutions) */
+var PC1 = {a:[["Equipment",240],["Investment in SA",160]],e:[["Capital",300],["Net Income",20]],l:[["Liabilities",80]]};
+var SA1 = {a:[["Equipment",200]],e:[["Capital",100],["Net Income",60]],l:[["Liabilities",40]]};
+var SA6 = {a:[["Equipment",230]],e:[["Capital",140],["Net Income",60]],l:[["Liabilities",30]]};
+var AC8 = {a:[["Equipment",200]],e:[["Capital",100],["Net Income",60]],l:[["Liabilities",40]]};
+var A9 = {a:[["Equipment",340]],e:[["Capital",130],["Other Comprehensive Income",40],["Net Income",80]],l:[["Liabilities",90]]};
+var PC1b = {a:[["Equipment",360],["Investment in SA",160],["Cash",80]],e:[["Capital",300],["Net Income",80]],l:[["Liabilities",220]]};
+var SA1b = {a:[["Equipment",210],["Inventory",80],["Cash",40]],e:[["Capital",100],["Retained Earnings",60],["Net Income",120]],l:[["Liabilities",50]]};
+var T2CASES = [
+ {id:"c1a", step:"e1", title:"Case 1 (1): PC buys 100% of SA, at the acquisition date", text:"On 31 December N-1, PC acquired 100% of SA's shares for 160. Prepare the consolidated balance sheet at the date of acquisition.",
+  c:{P:PC1, S:SA1, pct:1, price:160}},
+ {id:"c1b", step:"e1", title:"Case 1 (2): the same group one year later", text:"PC bought 100% of SA for 160 on 31 December N-1, when SA's equity was Capital 100 and Net Income 60. These are the balance sheets on 31 December N. Prepare the consolidated balance sheet as of 31 December N.",
+  c:{P:PC1b, S:SA1b, Sacq:SA1.e, pct:1, price:160, later:true}},
+ {id:"c2", step:"e1", title:"Case 2: 100% with a fair value difference on PP&E", text:"PC acquired 100% of SA's shares for 250. One reason it paid more than book value: SA's PP&E was worth 250 at fair value on the acquisition date (its book value is 200). Prepare the consolidated balance sheet at the date of acquisition.",
+  c:{P:{a:[["PP&E",1150],["Investment in SA",250],["Inventory",300],["Receivables",250],["Cash",150]],e:[["Common Stock",800],["Additional Paid-in Capital",600],["Retained Earnings",350]],l:[["Current Liabilities",130],["Long-Term Debt",220]]},S:{a:[["PP&E",200],["Inventory",200],["Receivables",100],["Cash",50]],e:[["Common Stock",50],["Additional Paid-in Capital",60],["Retained Earnings",90]],l:[["Current Liabilities",110],["Long-Term Debt",240]]},pct:1,price:250,fv:[["PP&E",50]]}},
+ {id:"c3a", step:"e2", title:"Case 3 (1): 100% with a brand and goodwill", text:"On 31 December N-1, PC acquired 100% of SA's shares for 450. SA has developed a brand name (not on its balance sheet) whose fair value is 260. Prepare the consolidated balance sheet at the date of acquisition.",
+  c:{P:{a:[["Equipment",240],["Investment in SA",450]],e:[["Capital",300],["Net Income",20]],l:[["Liabilities",370]]},S:SA1,pct:1,price:450,fv:[["Brand name",260]]}},
+ {id:"c3b", step:"e2", title:"Case 3 (2): the same group one year later", text:"PC bought 100% of SA for 450 on 31 December N-1, when SA's equity was Capital 100 and Net Income 60, and its brand was worth 260. No impairment since. These are the balance sheets on 31 December N. Prepare the consolidated balance sheet.",
+  c:{P:{a:[["Equipment",360],["Investment in SA",450],["Cash",80]],e:[["Capital",300],["Net Income",80]],l:[["Liabilities",510]]},S:SA1b,Sacq:SA1.e,pct:1,price:450,fv:[["Brand name",260]],later:true}},
+ {id:"c4", step:"e2", title:"Case 4: brand, PP&E revaluation and goodwill", text:"A parent buys all of a subsidiary's shares for 1,950 in cash. It values the subsidiary's brand (not on its balance sheet) at 300, and the PP&E is worth 500 more than its book value. Anything else is synergies. Prepare the consolidated balance sheet at the date of acquisition.",
+  c:{P:{a:[["Cash",429],["Receivables",640],["Inventory",970],["PP&E",4666],["Investment in SA",1950]],e:[["Common Stock",818],["Additional Paid-in Capital",607],["Retained Earnings",2512]],l:[["Current Liabilities",718],["Long-Term Debt",4000]]},S:{a:[["Cash",226],["Receivables",348],["Inventory",447],["PP&E",827]],e:[["Common Stock",100],["Additional Paid-in Capital",125],["Retained Earnings",775]],l:[["Current Liabilities",348],["Long-Term Debt",500]]},pct:1,price:1950,fv:[["Brand name",300],["PP&E",500]]}},
+ {id:"c5", step:"e2", title:"Case 5: brand, equipment revaluation and goodwill (no. 2)", text:"PC buys all of SA's shares for €5,000 in cash. It values SA's brand (not on SA's balance sheet) at €800, and SA's equipment is worth €600 more than its book value. Fill in the consolidated balance sheet at the acquisition date (some answers can be 0).",
+  c:{P:{a:[["Equipment",1160],["Investment in SA",5000]],e:[["Capital",1400],["Net Income",700]],l:[["Liabilities",4060]]},S:{a:[["Equipment",1200]],e:[["Capital",600],["Retained Earnings",200],["Net Income",120]],l:[["Liabilities",280]]},pct:1,price:5000,fv:[["Other intangible assets",800],["Equipment",600]]}},
+ {id:"c6a", step:"e3", title:"Case 6 (1): PC buys 80% of SA, at the acquisition date", text:"On 31 December N-1, PC acquired 80% of SA's shares for 160. Prepare the consolidated balance sheet at the date of acquisition.",
+  c:{P:PC1,S:SA6,pct:0.8,price:160}},
+ {id:"c6b", step:"e3", title:"Case 6 (2): the same group two years later", text:"PC bought 80% of SA for 160 on 31 December N-1, when SA's equity was Capital 140 and Net Income 60. These are the balance sheets on 31 December N+1. Prepare the consolidated balance sheet.",
+  c:{P:{a:[["Equipment",480],["Investment in SA",160],["Cash",110]],e:[["Capital",300],["Retained Earnings",50],["Net Income",110]],l:[["Liabilities",290]]},S:{a:[["Equipment",390],["Inventory",70],["Accounts Receivables",60],["Cash",140]],e:[["Capital",140],["Retained Earnings",190],["Net Income",150]],l:[["Liabilities",180]]},Sacq:SA6.e,pct:0.8,price:160,later:true}},
+ {id:"c7", step:"e3", title:"Case 7: consolidated income statement with 30% non-controlling interest", is:true, text:"PC bought 70% of SA five years ago at book value. Prepare the consolidated income statement for the current year (no transactions between the two). Enter costs as positive numbers."},
+ {id:"c8a", step:"e4", title:"Case 8 (a): equity method, at the acquisition date", text:"On 1 April N, PC acquired 25% of AC's shares for 40 and has significant influence. Prepare the consolidated balance sheet at the date of acquisition.",
+  c:{P:{a:[["Equipment",360],["Investment in AC",40]],e:[["Capital",300],["Net Income",20]],l:[["Liabilities",80]]},S:AC8,pct:0.25,price:40,method:"equity"}},
+ {id:"c8b", step:"e4", title:"Case 8 (b): the same, on 31 December N+1", text:"PC bought 25% of AC for 40 on 1 April N, when AC's equity was Capital 100 and Net Income 60. These are the balance sheets on 31 December N+1. Prepare the consolidated balance sheet.",
+  c:{P:{a:[["Equipment",480],["Investment in AC",40],["Cash",230]],e:[["Capital",300],["Retained Earnings",60],["Net Income",100]],l:[["Liabilities",290]]},S:{a:[["Equipment",350],["Inventory",70],["Accounts Receivables",60],["Cash",140]],e:[["Capital",100],["Retained Earnings",180],["Net Income",150]],l:[["Liabilities",190]]},Sacq:AC8.e,pct:0.25,price:40,later:true,method:"equity"}},
+ {id:"c9a", step:"e4", title:"Case 9 (a): equity method with OCI, at the acquisition date", text:"On 1 January N, PC acquired 40% of A for 100 and has significant influence. Prepare the consolidated balance sheet at the date of acquisition.",
+  c:{P:{a:[["Equipment",360],["Investment in A",100]],e:[["Capital",270],["Net Income",70]],l:[["Liabilities",120]]},S:A9,pct:0.4,price:100,method:"equity"}},
+ {id:"c9b", step:"e4", title:"Case 9 (b): the same, on 31 December N+1", text:"PC bought 40% of A for 100 on 1 January N, when A's equity was Capital 130, OCI 40 and Net Income 80. These are the balance sheets on 31 December N+1. Prepare the consolidated balance sheet.",
+  c:{P:{a:[["Equipment",500],["Investment in A",100],["Cash",150]],e:[["Capital",270],["Retained Earnings",50],["Net Income",140]],l:[["Liabilities",290]]},S:{a:[["Equipment",360],["Inventory",80],["Accounts Receivables",80],["Cash",150]],e:[["Capital",130],["Other Comprehensive Income",70],["Retained Earnings",200],["Net Income",110]],l:[["Liabilities",160]]},Sacq:A9.e,pct:0.4,price:100,later:true,method:"equity"}},
+ {id:"c9c", step:"e4", title:"Case 9 (c): the same, but PC paid 160 (with 60 more debt)", text:"Same as Case 9 (b), but PC paid 160 for its 40% of A, financed with 60 more liabilities. Prepare the consolidated balance sheet on 31 December N+1.",
+  c:{P:{a:[["Equipment",500],["Investment in A",160],["Cash",150]],e:[["Capital",270],["Retained Earnings",50],["Net Income",140]],l:[["Liabilities",350]]},S:{a:[["Equipment",360],["Inventory",80],["Accounts Receivables",80],["Cash",150]],e:[["Capital",130],["Other Comprehensive Income",70],["Retained Earnings",200],["Net Income",110]],l:[["Liabilities",160]]},Sacq:A9.e,pct:0.4,price:160,later:true,method:"equity"}}
+];
+function caseX(def, pname, sname){
+  var c = def.c, x = {type:def.step, caseId:def.id, caseTitle:def.title, P:pname||"PC", T:sname||(c && c.S ? (c.P.a.filter(function(a){ return cxIsInv(a[0]); })[0]||["Investment in SA"])[0].replace("Investment in ","") : "SA"), hint:false, checked:false, values:{}, ok:null};
+  if(def.is){
+    x.intro = def.text; x.T = "SA";
+    x.sheets = [sheet("PC income statement", [["Sales",7800000],["Cost of goods sold",-5900000],["Gross profit",1900000],["Operating expenses",-1650000],["Net income",250000]], []), sheet("SA income statement", [["Sales",1250000],["Cost of goods sold",-675000],["Gross profit",575000],["Operating expenses",-280000],["Net income",295000]], [])];
+    x.fields = [["s","Consolidated sales",9050000],["c","Cost of goods sold",6575000],["g","Gross profit",2475000],["o","Operating expenses",1930000],["n","Consolidated net income",545000],["nci","Net income attributable to non-controlling interests",88500],["grp","Net income attributable to the parent",456500]];
+    x.hintText = "Control means you add 100% of every line of SA. Only at the bottom do you split the net income between the parent (70%) and the outside owners (30%).";
+    x.sol = ["Add 100% of both companies line by line: sales 7,800,000 + 1,250,000 = 9,050,000; cost of goods sold 5,900,000 + 675,000 = 6,575,000; gross profit 2,475,000; operating expenses 1,650,000 + 280,000 = 1,930,000.","Consolidated net income = 2,475,000 − 1,930,000 = 545,000.","Non-controlling interests' share = 30% × SA's 295,000 = 88,500.","Parent's share = 545,000 − 88,500 = 456,500."];
+    return x;
+  }
+  c.pname = x.P; c.sname = x.T;
+  var r = cxSolve(c), sacq = c.Sacq || c.S.e;
+  x.intro = def.text + (c.later ? "" : "");
+  x.sheets = [sheet(x.P, c.P.a.map(function(a){ return [a[0],a[1]]; }), c.P.e.concat(c.P.l).map(function(a){ return [a[0],a[1]]; })), sheet(x.T, c.S.a.map(function(a){ return [a[0],a[1]]; }), c.S.e.concat(c.S.l).map(function(a){ return [a[0],a[1]]; }))];
+  /* fields: every line that appears anywhere, so the list doesn't give the answer away (some answers are 0) */
+  var aNames = [], eNames = [], push = function(arr, n){ if(!arr.some(function(y){ return cxKey(y)===cxKey(n); })) arr.push(n); };
+  c.P.a.forEach(function(a){ push(aNames, c.method==="equity" && cxIsInv(a[0]) ? "Equity method investment" : a[0]); }); c.S.a.forEach(function(a){ if(c.method!=="equity") push(aNames, a[0]); });
+  (c.fv||[]).forEach(function(f){ push(aNames, f[0]); }); if(c.method!=="equity") push(aNames, "Goodwill");
+  c.P.e.forEach(function(a){ push(eNames, a[0]); }); c.S.e.forEach(function(a){ push(eNames, a[0]); }); if(c.method!=="equity" && c.pct<1) push(eNames, "Non-controlling interest");
+  c.P.l.forEach(function(a){ push(eNames, a[0]); }); if(c.method!=="equity") c.S.l.forEach(function(a){ push(eNames, a[0]); });
+  var val = function(arr, n){ var f = arr.filter(function(y){ return cxKey(y[0])===cxKey(n); })[0]; return f ? f[1] : 0; };
+  x.fields = aNames.map(function(n,i){ return ["a"+i, n, val(r.A, n)]; }).concat(eNames.map(function(n,i){ return ["l"+i, n, val(r.EL, n)]; })).concat([["tot","Total assets",r.tA]]);
+  x.hintText = c.method==="equity" ? "Equity method: keep the parent's balance sheet. Only the investment line changes: price + your share of what the associate earned since you bought in. Your share of its profit also goes into your equity." : "Three moves: 1) purchase price allocation (price − book value of equity, split into fair value differences and goodwill), 2) add 100% of both balance sheets, with the fair value differences, 3) cancel the investment against "+cxPoss(x.T)+" equity at acquisition"+(c.pct<1?", and show the part you don't own as non-controlling interest":"")+".";
+  x.sol = r.sol;
+  return x;
+}
+/* new numbers in the same detailed format as the cases */
+function rr(a,b,st){ st = st||10; return a + st*Math.floor(Math.random()*((b-a)/st+1)); }
+function genCaseRandom(type){
+  var pk = pick(PARENTS), P = CO[pk].name, T = CO[pk].target;
+  var later = type==="e4" ? true : Math.random() < 0.4, pct = type==="e3" ? pick([0.6,0.7,0.8]) : type==="e4" ? pick([0.2,0.25,0.3,0.4]) : 1;
+  var sAcq = [["Common Stock",rr(50,200)],["Additional Paid-in Capital",rr(0,150)],["Retained Earnings",rr(40,250)]];
+  var bal = function(assets, eq, cl){ var A = assets.reduce(function(s,x){ return s+x[1]; },0), E = eq.reduce(function(s,x){ return s+x[1]; },0), ltd = A - E - cl; if(ltd < 40){ assets[0][1] += 40 - ltd + rr(0,100); ltd = assets.reduce(function(s,x){ return s+x[1]; },0) - E - cl; } return [["Current Liabilities",cl],["Long-Term Debt",ltd]]; };
+  var sEqNow = later ? [["Common Stock",sAcq[0][1]],["Additional Paid-in Capital",sAcq[1][1]],["Retained Earnings",sAcq[2][1]+rr(0,120)],["Net Income",rr(30,160)]] : sAcq.map(function(x){ return [x[0],x[1]]; });
+  var sA = [["PP&E",rr(200,900)],["Inventory",rr(60,300)],["Receivables",rr(40,250)],["Cash",rr(20,150)]], sL = bal(sA, sEqNow, rr(40,200));
+  var bv = sAcq.reduce(function(s,x){ return s+x[1]; },0), fv = [];
+  if(type==="e2"){ if(Math.random()<0.7) fv.push(["PP&E", rr(20,200)]); if(!fv.length || Math.random()<0.6) fv.push(["Brand name", rr(40,300)]); }
+  var vd = fv.reduce(function(s,x){ return s+x[1]; },0), gw = type==="e2" ? rr(0,200) : 0, price = Math.round(pct*(bv+vd)) + gw;
+  var pEq = [["Common Stock",rr(300,900)],["Additional Paid-in Capital",rr(0,500)],["Retained Earnings",rr(100,800)]]; if(later) pEq.push(["Net Income",rr(40,250)]);
+  var pA = [["PP&E",rr(600,2000)],["Investment in "+T,price],["Inventory",rr(100,600)],["Receivables",rr(80,500)],["Cash",rr(50,300)]], pL = bal(pA, pEq, rr(80,400));
+  var c = {P:{a:pA,e:pEq,l:pL}, S:{a:sA,e:sEqNow,l:sL}, Sacq:sAcq, pct:pct, price:price, fv:fv, later:later, method:type==="e4"?"equity":"full"};
+  var pc = Math.round(pct*100)+"%", txt = (later ? "On 31 December N-1, " : "")+P+" bought "+pc+" of "+T+" for €"+price+"k"+(type==="e4"?" and has significant influence (not control)":"")+"."+
+    (fv.length ? " At that date, "+fv.map(function(f){ return f[0]==="Brand name" ? cxPoss(T)+" own brand (not on its balance sheet) was worth €"+f[1]+"k" : cxPoss(T)+" PP&E was worth €"+f[1]+"k more than its book value"; }).join(", and ")+"." : "")+
+    (later ? " "+cxPoss(T)+" equity then was "+sAcq.map(function(x){ return x[0]+" "+x[1]; }).join(", ")+". Below are the balance sheets on 31 December N. Prepare the consolidated balance sheet." : " Below are the balance sheets on the acquisition date. Prepare the consolidated balance sheet.");
+  var x = caseX({id:"rnd", step:type, title:"New numbers, same format as the cases", text:txt, c:c}, P, T);
+  return x;
+}
+
 function gen(type){
+  if(/^case:/.test(type)){ var cd = T2CASES.filter(function(d){ return d.id===type.slice(5); })[0]; if(cd) return caseX(JSON.parse(JSON.stringify(cd))); }
+  if(/^e[1-4]$/.test(type)) return genCaseRandom(type);
   var pk = pick(PARENTS), P = CO[pk].name, T = CO[pk].target;
   var Es = pick([100,150,200]), Ls = pick([20,40,60]), As = Es + Ls;
   var Ep = pick([400,500,600]), Lp = pick([150,200,300]);
@@ -1029,14 +1166,16 @@ function vGuided(n){
     h += '<section class="card"><div class="row"><h2>The ladder</h2><span class="note">tap a step to switch</span></div>'+ladderStrip(t, g, true)+'</section>';
     h += '<section class="card pl-big"><div class="eyebrow">Step '+(ci+1)+' of '+t.steps.length+'</div><h2>'+esc(cur[1])+'</h2><div class="tg-list">';
     var num = 0;
-    if(cur[3]) h += tick("slides", (++num)+'. Read '+esc(p2.slides.toLowerCase()), '<a class="btn small ghost" href="#doc/t'+n+'-slides/'+cur[3]+'">Open slides '+cur[3]+'–'+cur[4]+'</a>');
+    if(cur[3]) h += tick("slides", (++num)+'. Read '+esc(p2.slides.toLowerCase()), '<a class="btn small ghost" href="#doc/t'+n+'-slides/'+cur[3]+'/s-'+cur[0]+'">Open slides '+cur[3]+'–'+cur[4]+'</a>');
     if(p2.cases){
       h += tick("case", (++num)+'. Try '+esc(p2.cases)+' on paper, without the solution', '<a class="btn small ghost" href="#doc/t'+n+'-cases/'+(S.docPos["t"+n+"-cases"]||1)+'">Open the '+(n>=4?"exercises":"cases")+'</a>');
       h += tick("sol", (++num)+'. Check yourself with the solution', dn.case ? '<a class="btn small ghost" href="#doc/t'+n+'-solutions/'+(S.docPos["t"+n+"-solutions"]||1)+'">Open the solutions</a>' : '<span class="note">Opens once you tick that you tried it.</span>');
     }
     (STEPEXTRA[cur[0]]||[]).forEach(function(x){ h += tick(x[0], (++num)+'. '+x[1], x[2]); });
     if(t.playable && cur[0]==="e2") h += tick("ppa", (++num)+'. Drill the purchase price allocation (1 minute each, no drawing)', '<a class="btn small ghost" href="#practice" data-start="ppa">Quick PPA drill</a>');
-    if(t.playable && cur[0]!=="e0") h += tick("prac", (++num)+'. Practise this type with new numbers', '<a class="btn small ghost" href="#practice" data-start="'+cur[0]+'">Practise this type</a>');
+    if(t.playable && cur[0]!=="e0"){ var cs = T2CASES.filter(function(d){ return d.step===cur[0]; });
+      if(cs.length) h += tick("cases", (++num)+'. Do the same cases here, with live checking', cs.map(function(d){ return '<a class="btn small ghost" href="#practice" data-start="case:'+d.id+'">'+esc(d.title.split(":")[0])+'</a>'; }).join(" "));
+      h += tick("prac", (++num)+'. Practise this type with new numbers (same format as the cases)', '<a class="btn small ghost" href="#practice" data-start="'+cur[0]+'">New numbers</a>'); }
     h += '</div>';
     var books = (BOOKSTEP[cur[0]]||[]).map(function(b, bi){ return '<a class="btn small ghost" href="#doc/bk-'+b[0]+'/'+bookPage(b[0], b[1])+'/'+cur[0]+'-'+bi+'">'+esc(b[3])+' · pp. '+b[1]+(b[2]!==b[1]?'–'+b[2]:'')+'</a>'; });
     if(BOOK[cur[0]]) books.push('<a class="btn small ghost" href="#doc/harrison/'+BOOK[cur[0]][0]+'">Harrison '+BOOK[cur[0]][2].replace("Book ","")+'</a>');
@@ -1235,7 +1374,7 @@ function vTopic(n){
     var ctl = (t.playable && s[0]!=="e0")
       ? '<div class="row" style="justify-content:flex-start"><a class="btn small ghost" href="#practice" data-start="'+s[0]+'">Practise this type</a></div>'
       : '<select aria-label="How well do you know this step?" data-rate="'+s[0]+'">'+RATINGS.map(function(r){return '<option value="'+r[0]+'"'+((S.rating[s[0]]||"")===r[0]?" selected":"")+'>'+r[1]+'</option>';}).join("")+'</select>';
-    var sl = s[3] ? '<a class="btn small ghost" href="#doc/t'+t.n+'-slides/'+s[3]+'">Open slides '+s[3]+(s[4]&&s[4]!==s[3]?'–'+s[4]:'')+'</a>' : '<a class="btn small ghost" href="#doc/t'+t.n+'-cases/1">Open the cases</a>';
+    var sl = s[3] ? '<a class="btn small ghost" href="#doc/t'+t.n+'-slides/'+s[3]+'/s-'+s[0]+'">Open slides '+s[3]+(s[4]&&s[4]!==s[3]?'–'+s[4]:'')+'</a>' : '<a class="btn small ghost" href="#doc/t'+t.n+'-cases/1">Open the cases</a>';
     (BOOKSTEP[s[0]]||[]).forEach(function(b, bi){ sl += '<a class="btn small ghost" href="#doc/bk-'+b[0]+'/'+bookPage(b[0], b[1])+'/'+s[0]+'-'+bi+'">'+esc(b[3].split(":")[0])+'</a>'; });
     if(BOOK[s[0]]) sl += '<a class="btn small ghost" href="#doc/harrison/'+BOOK[s[0]][0]+'">'+BOOK[s[0]][2]+'</a>';
     return '<li><span class="n'+(i===firstOpen?" here":"")+'">'+(i+1)+'</span><div class="body"><div class="row"><h3>'+s[1]+'</h3><span class="pill '+st[0]+'">'+st[1]+'</span></div><span class="note">'+s[2]+(i===firstOpen?" · you are here":"")+'</span><div class="row" style="justify-content:flex-start">'+sl+'</div>'+ctl+'</div></li>';
@@ -1277,15 +1416,16 @@ function vTopic(n){
 function sheetHtml(s){
   var tot = function(a){ return a.reduce(function(x,y){return x+y[1];},0); };
   var col = function(hd, rows){ return '<div class="col"><span class="h">'+hd+'</span>'+rows.map(function(r){return '<span class="ln"><span>'+esc(r[0])+'</span><span>'+fmt(r[1])+'</span></span>';}).join("")+'<span class="ln tot"><span>Total</span><span>'+fmt(tot(rows))+'</span></span></div>'; };
+  if(!s.right.length) return '<div class="sheet"><div class="ti">'+esc(s.title)+'</div><div class="cols"><div class="col">'+s.left.map(function(r){return '<span class="ln"><span>'+esc(r[0])+'</span><span>'+fmt(r[1])+'</span></span>';}).join("")+'</div></div></div>';
   return '<div class="sheet"><div class="ti">'+esc(s.title)+'</div><div class="cols">'+col("Assets", s.left)+col("Equity and liabilities", s.right)+'</div></div>';
 }
 function exHtml(x, label){
   var h = '<section class="card"><div class="row"><span class="eyebrow">'+label+'</span><span class="pill todo">'+TYPE_NAME[x.type]+'</span></div>'+
-    '<p>'+esc(x.intro)+'</p>'+x.sheets.map(sheetHtml).join("")+
-    '<h2>'+((x.type==="e4"||x.type==="ppa")?"Enter the three figures (in €k)":"Prepare the consolidated balance sheet. Enter the key lines (in €k)")+'</h2><div class="fields">'+
+    (x.caseTitle?'<h2>'+esc(x.caseTitle)+'</h2>':'')+'<p>'+esc(x.intro)+'</p>'+x.sheets.map(sheetHtml).join("")+
+    '<h2>'+(x.caseId==="c7"?"Enter the consolidated income statement":x.fields.some(function(f){ return f[0]==="tot"; })?"Fill in every line of the consolidated balance sheet (some answers can be 0)":(x.type==="e4"||x.type==="ppa")?"Enter the three figures (in €k)":"Prepare the consolidated balance sheet. Enter the key lines (in €k)")+'</h2><div class="fields">'+
     x.fields.map(function(f){ var v = x.values[f[0]], cls = "", ans = "";
       if(x.checked){ var okf = parseNum(v) === f[2]; cls = okf ? " right" : " wrong"; if(!okf) ans = '<span class="ans">Correct: '+fmt(f[2])+'</span>'; }
-      return '<div class="fld"><label for="f-'+f[0]+'">'+f[1]+'</label><input class="'+cls.trim()+'" type="text" inputmode="numeric" autocomplete="off" id="f-'+f[0]+'" data-field="'+f[0]+'" value="'+esc(v===undefined?"":v)+'"'+(x.checked?" disabled":"")+'>'+ans+'</div>'; }).join("")+'</div>';
+      return '<div class="fld"><label for="f-'+f[0]+'">'+f[1]+'</label><input class="'+cls.trim()+'" type="text" inputmode="decimal" autocomplete="off" id="f-'+f[0]+'" data-field="'+f[0]+'" value="'+esc(v===undefined?"":v)+'"'+(x.checked?" disabled":"")+'>'+ans+'</div>'; }).join("")+'</div>';
   if(x.hint) h += '<p class="exam"><b>Hint.</b> '+esc(x.hintText)+'</p>';
   if(!x.checked){
     h += '<button class="btn" id="check">Check my answer</button>'+(x.hint?'':'<button class="btn ghost" id="hint">Show a hint (this attempt will not count as unaided)</button>');
@@ -1488,17 +1628,27 @@ function vDoc(dr){
   if(!DV.doc || DV.id !== dr.id) return h+'<section class="card"><p class="lead">Opening '+esc(d.t)+' …</p><p class="note">'+d.p+' pages'+(d.p>200?'. Large report: this can take a little while on mobile data.':'.')+'</p></section>';
   var total = DV.doc.numPages, pg = Math.min(Math.max(1, dr.page), total);
   if(/-solutions$/.test(dr.id)) h += '<p class="exam"><b>Solutions.</b> Try the case on paper first. Reading a solution before trying does not train the step.</p>';
+  var lim = null;
   if(/-slides$/.test(dr.id)){
     var t = TOPICS[tn-1], cur = t.steps.filter(function(s){ return s[3] && pg>=s[3] && pg<=s[4]; })[0];
-    h += '<div class="mat" role="navigation" aria-label="Ladder steps">'+t.steps.filter(function(s){return s[3];}).map(function(s,i){ return '<a class="pill '+(cur&&cur[0]===s[0]?"prog":"todo")+'" href="#doc/'+dr.id+'/'+s[3]+'">'+(t.steps.indexOf(s)+1)+'. '+esc(s[1])+'</a>'; }).join("")+'</div>';
-    if(cur) h += '<p class="note">You are in step '+(t.steps.indexOf(cur)+1)+': '+esc(cur[1])+' (slides '+cur[3]+' to '+cur[4]+').</p>';
+    var sc = dr.ctx && /^s-/.test(dr.ctx) ? t.steps.filter(function(s){ return s[0]===dr.ctx.slice(2); })[0] : null;
+    if(sc && (pg < sc[3] || pg > sc[4])) sc = null;
+    if(sc){ lim = {from:sc[3], to:sc[4]};
+      h = back+'<div class="stack"><div class="eyebrow">Topic '+tn+' · step '+(t.steps.indexOf(sc)+1)+' of '+t.steps.length+'</div><h1>'+esc(sc[1])+'</h1><p class="lead">Slides '+sc[3]+'–'+sc[4]+' · this is slide '+(pg-sc[3]+1)+' of '+(sc[4]-sc[3]+1)+'</p></div>'; }
+    else {
+      h += '<div class="mat" role="navigation" aria-label="Ladder steps">'+t.steps.filter(function(s){return s[3];}).map(function(s,i){ return '<a class="pill '+(cur&&cur[0]===s[0]?"prog":"todo")+'" href="#doc/'+dr.id+'/'+s[3]+'/s-'+s[0]+'">'+(t.steps.indexOf(s)+1)+'. '+esc(s[1])+'</a>'; }).join("")+'</div>';
+      if(cur) h += '<p class="note">This slide belongs to step '+(t.steps.indexOf(cur)+1)+': '+esc(cur[1])+' (slides '+cur[3]+' to '+cur[4]+').</p>'; }
   }
   var bp = d.local ? pg-BOOKS[d.local].off : pg, sfx = dr.ctx ? '/'+dr.ctx : '';
   var where = cx ? (bp < cx.from ? ' · before your section' : bp > cx.to ? ' · past your section' : ' · '+(bp-cx.from+1)+' of '+(cx.to-cx.from+1)) : '';
   h += '<div class="readbar"><span class="pg">'+(d.local ? 'Book page '+bp+where : 'Page '+pg+' of '+total)+'</span><label class="pg">Go to <input type="number" min="1" max="'+total+'" inputmode="numeric" id="dv-go" value="'+bp+'" style="width:70px"></label></div>';
   if(d.local) h += '<p class="note">Textbook © its publisher. Shown here for personal study and the hackathon demo only, not for redistribution.</p>';
   h += '<div class="pdfwrap"><canvas id="dvc" aria-label="Page '+pg+'"></canvas></div>';
-  h += '<div class="two"><a class="btn ghost" href="#doc/'+dr.id+'/'+Math.max(1,pg-1)+sfx+'"'+(pg<=1?' aria-disabled="true"':'')+'>Previous</a><a class="btn" href="#doc/'+dr.id+'/'+Math.min(total,pg+1)+sfx+'"'+(pg>=total?' aria-disabled="true"':'')+'>Next</a></div>';
+  if(!lim && cx && cx.from){ var off0 = d.local ? BOOKS[d.local].off : 0; if(pg >= cx.from+off0 && pg <= cx.to+off0) lim = {from:cx.from+off0, to:cx.to+off0}; }
+  var lo = lim ? lim.from : 1, hi = lim ? lim.to : total;
+  h += '<div class="two">'+(pg<=lo ? '<span class="btn ghost" aria-disabled="true">Previous</span>' : '<a class="btn ghost" href="#doc/'+dr.id+'/'+(pg-1)+sfx+'">Previous</a>')+
+    (pg>=hi ? (lim ? '<a class="btn" href="#topic-'+tn+'">Done: back to the step ✓</a>' : '<span class="btn" aria-disabled="true">Next</span>') : '<a class="btn" href="#doc/'+dr.id+'/'+(pg+1)+sfx+'">Next</a>')+'</div>';
+  if(lim) h += '<p class="note">Only the '+(d.local?'pages':'slides')+' for this step. <a href="#doc/'+dr.id+'/'+pg+'">Show all '+(d.local?'pages':'slides')+'</a></p>';
   h += '<div class="two"><button class="btn ghost" id="dv-zout"'+(DV.zoom<=1?" disabled":"")+'>Zoom out</button><button class="btn ghost" id="dv-zin"'+(DV.zoom>=4?" disabled":"")+'>Zoom in'+(DV.zoom>1?' ('+DV.zoom+'×)':'')+'</button></div>';
   if(/^t\d-slides$/.test(dr.id)){ var sh = (SLIDEHELP[tn]||{})[pg], sn = (SLIDENOTES[tn]||{})[pg];
     if(sh) h += '<section class="card"><div class="eyebrow">What this slide shows</div><p>'+esc(sh)+'</p>'+(pg>=8 && pg<=9 && tn===4 ? '<a class="btn small ghost" href="#doc/airbus-fs-2023/1">Open the Airbus 2023 statements</a>' : '')+'</section>';
