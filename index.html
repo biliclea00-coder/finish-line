@@ -830,7 +830,29 @@ function caseX(def, pname, sname){
   x.fields = aNames.map(function(n,i){ return ["a"+i, n, val(r.A, n)]; }).concat(eNames.map(function(n,i){ return ["l"+i, n, val(r.EL, n)]; })).concat([["tot","Total assets",r.tA]]);
   x.hintText = c.method==="equity" ? "Equity method: keep the parent's balance sheet. Only the investment line changes: price + your share of what the associate earned since you bought in. Your share of its profit also goes into your equity." : "Three moves: 1) purchase price allocation (price − book value of equity, split into fair value differences and goodwill), 2) add 100% of both balance sheets, with the fair value differences, 3) cancel the investment against "+cxPoss(x.T)+" equity at acquisition"+(c.pct<1?", and show the part you don't own as non-controlling interest":"")+".";
   x.sol = r.sol;
+  x.guide = caseGuide(c, x.P, x.T, r);
   return x;
+}
+/* the consolidation steps from the slides (PPA, slide 24), one at a time, before the full balance sheet */
+function caseGuide(c, P, T, r){
+  var pct = c.pct, sacq = c.Sacq || c.S.e, bv = cxSum(sacq), vd = cxSum(c.fv||[]), fvNet = bv + vd, sNow = cxSum(c.S.e), post = cxR(sNow - bv), pc = Math.round(pct*100)+"%", g = [];
+  var eqList = sacq.map(function(x){ return x[0]+" "+cxF(x[1]); }).join(" + ");
+  g.push(["bv", "Book value of "+cxPoss(T)+" net assets (its equity) at the acquisition date", bv, "Net assets = assets − liabilities = equity. Add "+cxPoss(T)+" equity lines at acquisition: "+eqList+" = "+cxF(bv)+"."]);
+  if(c.method === "equity"){
+    if(c.later) g.push(["post", "How much "+cxPoss(T)+" equity grew since "+P+" bought in", post, "Equity now "+cxF(sNow)+" − at acquisition "+cxF(bv)+" = "+cxF(post)+". That is what "+T+" earned since the acquisition."]);
+    if(c.later) g.push(["share", P+"'s share of that ("+pc+")", cxR(pct*post), pc+" × "+cxF(post)+" = "+cxF(cxR(pct*post))+". This goes into the investment line and into "+P+"'s equity."]);
+    g.push(["inv", "Equity method investment on the consolidated balance sheet", cxR(c.price + pct*post), "Price paid "+cxF(c.price)+(c.later?" + "+P+"'s share "+cxF(cxR(pct*post)):"")+" = "+cxF(cxR(c.price+pct*post))+". Nothing of "+T+" is added line by line: with significant influence (not control) only this one line changes."]);
+    return g;
+  }
+  if(pct < 1) g.push(["sh", P+"'s share of that book value ("+pc+")", cxR(pct*bv), pc+" × "+cxF(bv)+" = "+cxF(cxR(pct*bv))+". "+P+" only paid for its "+pc+"."]);
+  g.push(["dif", "Difference: purchase price − book value"+(pct<1?" of "+P+"'s share":""), cxR(c.price - pct*bv), "Slide 24, first box: "+cxF(c.price)+" − "+cxF(cxR(pct*bv))+" = "+cxF(cxR(c.price-pct*bv))+(cxR(c.price-pct*bv) ? ". This is what "+P+" paid above book value. Next you find out what that extra pays for." : ". "+P+" paid exactly book value.")]);
+  g.push(["vd", "Valuation difference: fair value − book value of "+cxPoss(T)+" net assets", vd, vd ? "Slide 24, second box: "+(c.fv||[]).map(function(x){ return x[0]+" +"+cxF(x[1]); }).join(", ")+" = "+cxF(vd)+". These are identifiable: they go onto the consolidated balance sheet as their own lines ("+(c.fv||[]).map(function(x){ return x[0]; }).join(", ")+"), at 100% because "+P+" controls all of "+cxPoss(T)+" assets." : "The case gives no fair values above book value, so the valuation difference is 0. Fair value of net assets = book value."]);
+  g.push(["gw", "Goodwill: price − "+(pct<1?pc+" × ":"")+"fair value of net assets", r.gw, "Slide 24, last box: "+cxF(c.price)+" − "+(pct<1?pc+" × ":"")+cxF(fvNet)+" = "+cxF(r.gw)+". "+(r.gw>0?"Positive: an intangible asset on the consolidated balance sheet.":r.gw<0?"Negative (badwill): a gain in the income statement, not an asset.":"Zero: the price paid exactly the fair value.")]);
+  if(c.later) g.push(["post", cxPoss(T)+" equity earned since the acquisition (now − at acquisition)", post, "Now "+cxF(sNow)+" − at acquisition "+cxF(bv)+" = "+cxF(post)+". The group made this after buying "+T+", so "+(pct<1?pc+" of it":"it")+" stays in group equity (net income, retained earnings"+(cxR(cxSum(c.S.e.filter(function(x){ return /comprehensive/i.test(x[0]); })))?", OCI":"")+")."]);
+  if(pct < 1){ var nci = (r.EL.filter(function(y){ return /non-controlling/i.test(y[0]); })[0]||[0,0])[1];
+    g.push(["nci", "Non-controlling interest", nci, Math.round((1-pct)*100)+"% × "+cxPoss(T)+" equity at fair value "+cxF(sNow+vd)+" = "+cxF(nci)+". The outside owners' part, shown in equity."]); }
+  g.push(["inv", "Investment in "+T+" on the consolidated balance sheet", 0, "Eliminated: the investment "+cxF(c.price)+" is cancelled against "+(pct<1?pc+" of ":"")+cxPoss(T)+" equity at acquisition. "+cxPoss(T)+" own capital and reserves from before the acquisition disappear too. Instead you add 100% of its assets and liabilities line by line."]);
+  return g;
 }
 /* new numbers in the same detailed format as the cases */
 function rr(a,b,st){ st = st||10; return a + st*Math.floor(Math.random()*((b-a)/st+1)); }
@@ -1488,9 +1510,22 @@ function sheetHtml(s){
   if(!s.right.length) return '<div class="sheet"><div class="ti">'+esc(s.title)+'</div><div class="cols"><div class="col">'+s.left.map(function(r){return '<span class="ln"><span>'+esc(r[0])+'</span><span>'+fmt(r[1])+'</span></span>';}).join("")+'</div></div></div>';
   return '<div class="sheet"><div class="ti">'+esc(s.title)+'</div><div class="cols">'+col("Assets", s.left)+col("Equity and liabilities", s.right)+'</div></div>';
 }
+function guideHtml(x){
+  var g = x.guide, gi = x.gi||0, h = '<div class="guide"><h2>Step by step, like slide 24</h2><p class="note">One step at a time. Then you fill in the whole balance sheet.</p><ol class="steps">';
+  g.forEach(function(s, i){ if(i > gi) return;
+    if(i < gi){ h += '<li><b>'+esc(s[1])+': '+fmt(s[2])+' ✓</b><br><span class="note">'+esc(s[3])+'</span></li>'; return; }
+    var w = (x.gw||{})[s[0]]||0, v = (x.gv||{})[s[0]];
+    h += '<li><label for="g-'+s[0]+'"><b>'+esc(s[1])+'</b></label><input type="number" step="any" autocomplete="off" id="g-'+s[0]+'" value="'+esc(v===undefined?"":v)+'"'+(w?' class="wrong"':'')+'> <button type="button" class="btn small" data-gcheck="'+s[0]+'">Check</button>'+
+      (w===1?'<p class="note">Not yet. Look at the balance sheets above and try once more.</p>':'')+(w>=2?'<p class="note">The answer is '+fmt(s[2])+'. '+esc(s[3])+'</p><button type="button" class="btn small ghost" data-gnext="1">Got it, next step</button>':'')+'</li>'; });
+  h += '</ol>'+(gi < g.length ? '<button type="button" class="linkbtn" data-gskip="1">Skip the steps</button>' : '')+'</div>';
+  return h;
+}
 function exHtml(x, label){
+  if(x.guide && !x.checked && !x.gskip && (x.gi||0) < x.guide.length){
+    return '<section class="card"><div class="row"><span class="eyebrow">'+label+'</span><span class="pill todo">'+(TYPE_NAME[x.type]||"Case")+'</span></div>'+(x.caseTitle?'<h2>'+esc(x.caseTitle)+'</h2>':'')+'<p>'+esc(x.intro)+'</p>'+x.sheets.map(sheetHtml).join("")+guideHtml(x)+'</section>';
+  }
   var h = '<section class="card"><div class="row"><span class="eyebrow">'+label+'</span><span class="pill todo">'+(TYPE_NAME[x.type]||"Case")+'</span></div>'+
-    (x.caseTitle?'<h2>'+esc(x.caseTitle)+'</h2>':'')+'<p>'+esc(x.intro)+'</p>'+x.sheets.map(sheetHtml).join("")+
+    (x.caseTitle?'<h2>'+esc(x.caseTitle)+'</h2>':'')+'<p>'+esc(x.intro)+'</p>'+x.sheets.map(sheetHtml).join("")+(x.guide && !x.gskip ? '<details><summary>Your steps ✓</summary>'+guideHtml(x)+'</details>' : '')+
     '<h2>'+(x.caseId==="c7"?"Enter the consolidated income statement":x.fields.some(function(f){ return f[0]==="tot"; })?"Fill in every line of the consolidated balance sheet (some answers can be 0)":(x.type==="e4"||x.type==="ppa")?"Enter the three figures (in €k)":"Prepare the consolidated balance sheet. Enter the key lines (in €k)")+'</h2><div class="fields">'+
     x.fields.map(function(f){ var v = x.values[f[0]], cls = "", ans = "";
       if(x.checked){ var okf = fieldOk(f, v); cls = okf ? " right" : " wrong"; if(!okf) ans = '<span class="ans">Correct: '+fmt(f[2])+'</span>'; }
@@ -1842,10 +1877,16 @@ app.addEventListener("click", function(e){
   if(dsg.rate1){ var r1 = dsg.rate1.split("|"), gr = TG(+r1[0]); S.rating[r1[1]] = r1[2]; if(r1[3]==="rate") gr.ri++; save(); render(); if(r1[3]==="rate") window.scrollTo(0,0); return; }
   var x = curEx();
   if(t.dataset.neg && x){ var inp = document.getElementById("f-"+t.dataset.neg), cur0 = String(inp ? inp.value : (x.values[t.dataset.neg]||"")).trim(); x.values[t.dataset.neg] = cur0.charAt(0)==="-" ? cur0.slice(1) : "-"+cur0; save(); render(); var inp2 = document.getElementById("f-"+t.dataset.neg); if(inp2) inp2.focus(); return; }
+  if(t.dataset.gcheck && x && x.guide){ var gk = t.dataset.gcheck, gs = x.guide.filter(function(s){ return s[0]===gk; })[0], gin = document.getElementById("g-"+gk), gval = gin ? gin.value : "";
+    x.gv = x.gv||{}; x.gw = x.gw||{}; x.gv[gk] = gval;
+    if(gs && fieldOk([gk, "", gs[2], Math.max(0.5, Math.abs(gs[2])*0.005)], gval)){ x.gi = (x.gi||0) + 1; delete x.gw[gk]; } else x.gw[gk] = (x.gw[gk]||0) + 1;
+    save(); render(); var nx = app.querySelector(".guide input:not([disabled])") || document.getElementById("check"); if(nx){ nx.scrollIntoView({block:"center"}); } return; }
+  if(t.dataset.gnext && x && x.guide){ x.gi = (x.gi||0) + 1; save(); render(); var nx2 = app.querySelector(".guide input") || app.querySelector(".fields input"); if(nx2) nx2.scrollIntoView({block:"center"}); return; }
+  if(t.dataset.gskip && x){ x.gskip = true; save(); render(); return; }
   if(t.id==="hint" && x){ x.hint = true; save(); render(); return; }
   if(t.id==="check" && x){ gradeEx(x); save(); render(); if(x.ok && !x.hint) confetti(); var fb = app.querySelector(".fb"); if(fb) fb.scrollIntoView({block:"center"}); return; }
   if(t.id==="next-ex"){ keepEx(S.ex); S.ex = gen(nextType()); save(); render(); window.scrollTo(0,0); return; }
-  if(t.dataset.reopen){ var hx = (S.exHist||[])[+t.dataset.reopen]; if(hx){ keepEx(S.ex); S.ex = JSON.parse(JSON.stringify(hx.ex)); S.ex.checked = false; S.ex.values = {}; S.ex.ok = null; S.ex.hint = false; save(); location.hash = "#practice"; render(); window.scrollTo(0,0); } return; }
+  if(t.dataset.reopen){ var hx = (S.exHist||[])[+t.dataset.reopen]; if(hx){ keepEx(S.ex); S.ex = JSON.parse(JSON.stringify(hx.ex)); S.ex.checked = false; S.ex.values = {}; S.ex.ok = null; delete S.ex.gi; delete S.ex.gv; delete S.ex.gw; delete S.ex.gskip; S.ex.hint = false; save(); location.hash = "#practice"; render(); window.scrollTo(0,0); } return; }
   if(t.id==="check-start"){ S.check = {ex:gen("e2"), log:[], rating:null, text:"", done:false}; save(); render(); window.scrollTo(0,0); return; }
   if(t.dataset.selfrate){ S.check.rating = t.dataset.selfrate; var f = document.getElementById("feel"); if(f) S.check.text = f.value; save(); render(); var b = document.getElementById("check-next"); if(b) b.scrollIntoView({block:"nearest"}); return; }
   if(t.id==="check-next"){ var f2 = document.getElementById("feel"); if(f2) S.check.text = f2.value; checkAdvance(); save(); render(); window.scrollTo(0,0); return; }
