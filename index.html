@@ -844,29 +844,40 @@ function caseX(def, pname, sname){
   x.fields = aNames.map(function(n,i){ return ["a"+i, n, val(r.A, n)]; }).concat(eNames.map(function(n,i){ return ["l"+i, n, val(r.EL, n)]; })).concat([["tot","Total assets",r.tA]]);
   x.hintText = c.method==="equity" ? "Equity method: keep the parent's balance sheet. Only the investment line changes: price + your share of what the associate earned since you bought in. Your share of its profit also goes into your equity." : "Three moves: 1) purchase price allocation (price − book value of equity, split into fair value differences and goodwill), 2) add 100% of both balance sheets, with the fair value differences, 3) cancel the investment against "+cxPoss(x.T)+" equity at acquisition"+(c.pct<1?", and show the part you don't own as non-controlling interest":"")+".";
   x.sol = r.sol;
-  x.guide = caseGuide(c, x.P, x.T, r);
+  var cg = caseGuide(c, x.P, x.T, r); x.guide = cg.steps; x.gheads = cg.heads;
   return x;
 }
 /* the consolidation steps from the slides (PPA, slide 24), one at a time, before the full balance sheet */
 function caseGuide(c, P, T, r){
-  var pct = c.pct, sacq = c.Sacq || c.S.e, bv = cxSum(sacq), vd = cxSum(c.fv||[]), fvNet = bv + vd, sNow = cxSum(c.S.e), post = cxR(sNow - bv), pc = Math.round(pct*100)+"%", g = [];
-  var eqList = sacq.map(function(x){ return x[0]+" "+cxF(x[1]); }).join(" + ");
-  g.push(["bv", "Book value of "+cxPoss(T)+" net assets (its equity) at the acquisition date", bv, "Net assets = assets − liabilities = equity. Add "+cxPoss(T)+" equity lines at acquisition: "+eqList+" = "+cxF(bv)+"."]);
+  /* the four steps of full consolidation (slide 16), adapted to the case; the equity method follows slides 31–32 */
+  var pct = c.pct, sacq = c.Sacq || c.S.e, bv = cxSum(sacq), vd = cxSum(c.fv||[]), sNow = cxSum(c.S.e), post = cxR(sNow - bv), pc = Math.round(pct*100)+"%", g = [], H = {};
+  var dif = cxR(c.price - pct*bv), vdS = cxR(pct*vd), gw = cxR(dif - vdS), fvNames = (c.fv||[]).map(function(x){ return x[0]; }).join(" and ");
+  var sh = pct < 1 ? pc+" × " : "";
   if(c.method === "equity"){
-    if(c.later) g.push(["post", "How much "+cxPoss(T)+" equity grew since "+P+" bought in", post, "Equity now "+cxF(sNow)+" − at acquisition "+cxF(bv)+" = "+cxF(post)+". That is what "+T+" earned since the acquisition."]);
-    if(c.later) g.push(["share", P+"'s share of that ("+pc+")", cxR(pct*post), pc+" × "+cxF(post)+" = "+cxF(cxR(pct*post))+". This goes into the investment line and into "+P+"'s equity."]);
-    g.push(["inv", "Equity method investment on the consolidated balance sheet", cxR(c.price + pct*post), "Price paid "+cxF(c.price)+(c.later?" + "+P+"'s share "+cxF(cxR(pct*post)):"")+" = "+cxF(cxR(c.price+pct*post))+". Nothing of "+T+" is added line by line: with significant influence (not control) only this one line changes."]);
-    return g;
+    H.e1 = "1) Purchase price allocation. Equity method: "+T+"'s assets are not added, the investment is not eliminated, and there is no non-controlling interest.";
+    g.push(["dif", "Difference between the purchase price and "+P+"'s share of the book value of "+cxPoss(T)+" net assets", dif, cxF(c.price)+" − "+pc+" × "+cxF(bv)+" = "+cxF(dif), "e1"]);
+    if(vd) g.push(["vd", P+"'s share of the valuation difference", vdS, pc+" × "+cxF(vd)+" = "+cxF(vdS), "e1"]);
+    g.push(["gw", "Goodwill (the remainder). It stays inside the investment line", gw, vd ? cxF(dif)+" − "+cxF(vdS)+" = "+cxF(gw) : "No valuation difference, so goodwill = the difference: "+cxF(gw), "e1"]);
+    H.e2 = "2) Revalue the investment so it follows "+cxPoss(T)+" equity.";
+    if(c.later) g.push(["share", P+"'s share of what "+T+" earned since the acquisition", cxR(pct*post), pc+" × ("+cxF(sNow)+" − "+cxF(bv)+") = "+cxF(cxR(pct*post))+". It also goes into "+P+"'s equity.", "e2"]);
+    g.push(["inv", "Investment in "+T+" on the consolidated balance sheet (1 line)", cxR(c.price + pct*post), c.later ? cxF(c.price)+" + "+cxF(cxR(pct*post))+" = "+cxF(cxR(c.price+pct*post)) : "At the acquisition date it stays at the price paid: "+cxF(c.price), "e2"]);
+    return {steps:g, heads:H};
   }
-  if(pct < 1) g.push(["sh", P+"'s share of that book value ("+pc+")", cxR(pct*bv), pc+" × "+cxF(bv)+" = "+cxF(cxR(pct*bv))+". "+P+" only paid for its "+pc+"."]);
-  g.push(["dif", "Difference: purchase price − book value"+(pct<1?" of "+P+"'s share":""), cxR(c.price - pct*bv), "Slide 24, first box: "+cxF(c.price)+" − "+cxF(cxR(pct*bv))+" = "+cxF(cxR(c.price-pct*bv))+(cxR(c.price-pct*bv) ? ". This is what "+P+" paid above book value. Next you find out what that extra pays for." : ". "+P+" paid exactly book value.")]);
-  g.push(["vd", "Valuation difference: fair value − book value of "+cxPoss(T)+" net assets", vd, vd ? "Slide 24, second box: "+(c.fv||[]).map(function(x){ return x[0]+" +"+cxF(x[1]); }).join(", ")+" = "+cxF(vd)+". These are identifiable: they go onto the consolidated balance sheet as their own lines ("+(c.fv||[]).map(function(x){ return x[0]; }).join(", ")+"), at 100% because "+P+" controls all of "+cxPoss(T)+" assets." : "The case gives no fair values above book value, so the valuation difference is 0. Fair value of net assets = book value."]);
-  g.push(["gw", "Goodwill: price − "+(pct<1?pc+" × ":"")+"fair value of net assets", r.gw, "Slide 24, last box: "+cxF(c.price)+" − "+(pct<1?pc+" × ":"")+cxF(fvNet)+" = "+cxF(r.gw)+". "+(r.gw>0?"Positive: an intangible asset on the consolidated balance sheet.":r.gw<0?"Negative (badwill): a gain in the income statement, not an asset.":"Zero: the price paid exactly the fair value.")]);
-  if(c.later) g.push(["post", cxPoss(T)+" equity earned since the acquisition (now − at acquisition)", post, "Now "+cxF(sNow)+" − at acquisition "+cxF(bv)+" = "+cxF(post)+". The group made this after buying "+T+", so "+(pct<1?pc+" of it":"it")+" stays in group equity (net income, retained earnings"+(cxR(cxSum(c.S.e.filter(function(x){ return /comprehensive/i.test(x[0]); })))?", OCI":"")+")."]);
+  H.a = "a) Purchase price allocation";
+  g.push(["dif", "Difference between the purchase price and the book value of "+(pct<1?P+"'s "+pc+" of ":"")+cxPoss(T)+" net assets", dif, cxF(c.price)+" − "+sh+cxF(bv)+" = "+cxF(dif), "a"]);
+  g.push(["vd", "Valuation difference (fair value − book value of identifiable net assets)"+(pct<1?", "+P+"'s "+pc:""), vdS, vd ? (pct<1?pc+" × ":"")+(c.fv||[]).map(function(x){ return x[0]+" "+cxF(x[1]); }).join(" + ")+" = "+cxF(vdS) : "The case gives no fair value above book value: 0", "a"]);
+  g.push(["gw", "Goodwill (the remainder)", gw, cxF(dif)+" − "+cxF(vdS)+" = "+cxF(gw)+(gw>0?". An intangible asset.":gw<0?". Badwill: a gain in the income statement.":""), "a"]);
+  H.b = "b) Integration of 100% of "+T+(pct<1?", even though "+P+" owns "+pc:"");
+  g.push(["sa", "Total of "+cxPoss(T)+" assets added to the group"+(vd?", including "+fvNames:""), cxR(cxSum(c.S.a) + vd), (vd ? cxF(cxSum(c.S.a))+" + "+cxF(vd)+" = "+cxF(cxR(cxSum(c.S.a)+vd)) : "Every asset line of "+T+": "+cxF(cxSum(c.S.a)))+". All of it, not "+(pct<1?pc:"a share")+".", "b"]);
+  H.c = "c) Elimination of the investment and "+cxPoss(T)+" original equity";
+  g.push(["inv", "Investment in "+T+" on the consolidated balance sheet", 0, "0. It is cancelled against "+cxPoss(T)+" equity at acquisition.", "c"]);
+  g.push(["eq", cxPoss(T)+" equity at acquisition that disappears from the group balance sheet", bv, sacq.map(function(x){ return x[0]+" "+cxF(x[1]); }).join(" + ")+" = "+cxF(bv)+(pct<1?". "+P+"'s "+pc+" against the investment, the rest goes into the non-controlling interest.":"."), "c"]);
+  if(c.later) g.push(["post", P+"'s share of what "+T+" earned since the acquisition (stays in group equity)", cxR(pct*post), sh+"("+cxF(sNow)+" − "+cxF(bv)+") = "+cxF(cxR(pct*post)), "c"]);
   if(pct < 1){ var nci = (r.EL.filter(function(y){ return /non-controlling/i.test(y[0]); })[0]||[0,0])[1];
-    g.push(["nci", "Non-controlling interest", nci, Math.round((1-pct)*100)+"% × "+cxPoss(T)+" equity at fair value "+cxF(sNow+vd)+" = "+cxF(nci)+". The outside owners' part, shown in equity."]); }
-  g.push(["inv", "Investment in "+T+" on the consolidated balance sheet", 0, "Eliminated: the investment "+cxF(c.price)+" is cancelled against "+(pct<1?pc+" of ":"")+cxPoss(T)+" equity at acquisition. "+cxPoss(T)+" own capital and reserves from before the acquisition disappear too. Instead you add 100% of its assets and liabilities line by line."]);
-  return g;
+    H.d = "d) Non-controlling interest";
+    g.push(["nci", "Non-controlling interest", nci, Math.round((1-pct)*100)+"% × "+(vd?"("+cxF(sNow)+" + "+cxF(vd)+")":cxF(sNow))+" = "+cxF(nci)+". Shown in equity.", "d"]); }
+  else H.d = "d) Non-controlling interest: none, "+P+" owns 100%.";
+  return {steps:g, heads:H};
 }
 /* new numbers in the same detailed format as the cases */
 function rr(a,b,st){ st = st||10; return a + st*Math.floor(Math.random()*((b-a)/st+1)); }
@@ -1538,13 +1549,17 @@ function tbsHtml(x){
     '<div class="col"><span class="h">Equity and liabilities</span>'+L.map(cell).join("")+'<div class="sum"><span>Total</span><span id="tbs-l">'+fmt(s.l)+'</span></div></div></div>'+tbsBal(x)+'</div><p class="note">Some lines can be 0. A line that doesn\'t belong in the group balance sheet gets 0.</p>';
 }
 function guideHtml(x){
-  var g = x.guide, gi = x.gi||0, h = '<div class="guide"><h2>Step by step, like slide 24</h2><p class="note">One step at a time. Then you fill in the whole balance sheet.</p><ol class="steps">';
+  var g = x.guide, gi = x.gi||0, H = x.gheads||{}, last = "", h = '<div class="guide"><h2>Step by step</h2>';
+  var head = function(k){ if(k===last || !H[k]) return ""; last = k; return '<h3>'+esc(H[k])+'</h3>'; };
   g.forEach(function(s, i){ if(i > gi) return;
-    if(i < gi){ h += '<li><b>'+esc(s[1])+': '+fmt(s[2])+' ✓</b><br><span class="note">'+esc(s[3])+'</span></li>'; return; }
+    h += head(s[4]);
+    if(i < gi){ h += '<p><b>'+esc(s[1])+': '+fmt(s[2])+' ✓</b><br><span class="note">'+esc(s[3])+'</span></p>'; return; }
     var w = (x.gw||{})[s[0]]||0, v = (x.gv||{})[s[0]];
-    h += '<li><label for="g-'+s[0]+'"><b>'+esc(s[1])+'</b></label><input type="number" step="any" autocomplete="off" id="g-'+s[0]+'" value="'+esc(v===undefined?"":v)+'"'+(w?' class="wrong"':'')+'> <button type="button" class="btn small" data-gcheck="'+s[0]+'">Check</button>'+
-      (w===1?'<p class="note">Not yet. Look at the balance sheets above and try once more.</p>':'')+(w>=2?'<p class="note">The answer is '+fmt(s[2])+'. '+esc(s[3])+'</p><button type="button" class="btn small ghost" data-gnext="1">Got it, next step</button>':'')+'</li>'; });
-  h += '</ol>'+(gi < g.length ? '<button type="button" class="linkbtn" data-gskip="1">Skip the steps</button>' : '')+'</div>';
+    h += '<label class="f" for="g-'+s[0]+'">'+esc(s[1])+'<input type="number" step="any" autocomplete="off" id="g-'+s[0]+'" value="'+esc(v===undefined?"":v)+'"'+(w?' class="wrong"':'')+'></label><button type="button" class="btn small" data-gcheck="'+s[0]+'">Check</button>'+
+      (w===1?'<p class="note">Not yet. Try once more.</p>':'')+(w>=2?'<p class="note">The answer is '+fmt(s[2])+': '+esc(s[3])+'</p><button type="button" class="btn small ghost" data-gnext="1">Next step</button>':'');
+  });
+  if(gi >= g.length && H.d && !g.some(function(s){ return s[4]==="d"; })) h += head("d");
+  h += (gi < g.length ? '<p><button type="button" class="linkbtn" data-gskip="1">Skip the steps</button></p>' : '')+'</div>';
   return h;
 }
 function exHtml(x, label){
