@@ -721,6 +721,9 @@ function stepStatus(t, id){
   var r = S.rating[id]||"";
   return ({"":["todo","Not rated"], never:["gap","New to you"], seen:["gap","Seen, can't do yet"], notes:["prog","Can do with notes"], cold:["solid","Self-rated ready"]})[r];
 }
+/* a step counts as worked through once its slides are ticked plus at least one more tick (same rule as the planner) */
+function workedStep(n, id){ var dn = ((S.tg||{})[n]||{}).done || {}, k = Object.keys(dn[id]||{}).filter(function(x){ return dn[id][x]; }); return k.indexOf("slides") >= 0 && k.length >= 2; }
+function workedCount(t){ return t.steps.filter(function(s){ return workedStep(t.n, s[0]); }).length; }
 function totals(){
   var all = 0, proven = 0, self = 0;
   TOPICS.forEach(function(t){ t.steps.forEach(function(s){ all++; var st = stepStatus(t, s[0]); if(st[0]==="solid"){ if(t.playable) proven++; else self++; } }); });
@@ -1144,14 +1147,15 @@ function go(h){ if(location.hash === "#"+h){ render(); } else { location.hash = 
 function lane(){ return TOPICS.map(function(t){ var s = topicShare(t); return '<i class="'+(s>=1?"full":"")+'">'+(s>0&&s<1?'<b style="width:'+Math.round(s*100)+'%"></b>':'')+'</i>'; }).join("")+'<span class="end"></span>'; }
 
 function vMap(){
-  var tt = totals(), d = daysToExam(), ready = tt.proven + tt.self;
+  var tt = totals(), d = daysToExam(), ready = tt.proven + tt.self, wk = TOPICS.reduce(function(a,t){ return a + workedCount(t); }, 0), half = 0;
+  TOPICS.forEach(function(t){ if(t.playable) t.steps.forEach(function(s){ if(s[0]!=="e0" && creditDays(s[0])===1) half++; }); });
   var h = '<section class="city" id="citybox"><span class="hd">Your course city</span><canvas id="city" role="img" aria-label="Five towers, one per topic. Each floor is a step and lights up when the step is exam-ready."></canvas><p class="cap">Drag to turn. Tap a tower to open its topic.</p></section>'+
     '<div class="legend"><span><i style="background:#58D69A"></i>Exam-ready</span><span><i style="background:#7FA4F0"></i>In progress</span><span><i style="background:#F2B45A"></i>Gap found</span><span><i style="background:#8A9A92"></i>Not started</span></div>';
   h += '<section class="card finish"><div class="eyebrow">IFRS (CM01) · your finish line</div>'+
-    '<div class="row" style="align-items:flex-end"><div><div class="big">'+ready+'<span style="font-size:22px"> of '+tt.all+'</span></div><p>steps exam-ready</p></div>'+
+    '<div class="row" style="align-items:flex-end"><div><div class="big">'+wk+'<span style="font-size:22px"> of '+tt.all+'</span></div><p>steps worked through</p></div>'+
     '<label class="note" for="exam" style="display:flex;flex-direction:column;gap:4px">Exam date<input type="date" id="exam" value="'+esc(S.examDate)+'"></label></div>'+
     '<div class="lane" aria-hidden="true">'+lane()+'</div>'+
-    '<p class="note">'+tt.proven+' confirmed by practice, '+tt.self+' self-rated. '+(d===null?"":(d<0?"The exam date has passed. ":"Exam in "+d+" day"+(d===1?"":"s")+". "))+'One lane segment per topic.</p></section>';
+    '<p class="note"><b>'+ready+' exam-ready</b> so far: a step is exam-ready after two unaided correct answers on different days'+(half?' ('+half+' step'+(half>1?'s':'')+' already '+(half>1?'have':'has')+' the first one)':'')+'. '+(d===null?"":(d<0?"The exam date has passed. ":"Exam in "+d+" day"+(d===1?"":"s")+". "))+'One lane segment per topic.</p></section>';
   h += doneToday()
     ? '<section class="card"><h2>Done for today</h2><p class="lead">Two exercises finished. The second unaided answer for each type has to be on another day, so there is nothing more to gain now.</p></section>'
     : '<a class="btn" href="#practice">Today: 2 exercises on Topic 2 · about 20 min</a>';
@@ -1161,7 +1165,7 @@ function vMap(){
     var mats = ["slides","cases","solutions"], ticked = mats.filter(function(k){return S.have && S.have["t"+t.n+"-"+k];}).length;
     return '<a class="topic" href="#topic-'+t.n+'"><span class="num">'+t.n+'</span><span class="stack" style="gap:6px"><h3>'+t.title+'</h3>'+
       '<span class="dots" aria-label="Progress by step">'+t.steps.map(function(s){return '<i class="'+stepStatus(t,s[0])[0]+'"></i>';}).join("")+'</span>'+
-      '<span class="meta"><span class="note">'+t.exam+'</span>'+(t.playable?'<span class="pill solid">Playable</span>':'')+(ticked===3?'<span class="pill solid">Material ticked</span>':'<span class="pill todo">Material: '+ticked+' of 3 ticked</span>')+'</span></span></a>';
+      '<span class="meta"><span class="note">'+t.exam+'</span>'+(t.playable?'<span class="pill solid">Playable</span>':'')+'<span class="pill '+(workedCount(t)===t.steps.length?'solid':workedCount(t)?'prog':'todo')+'">'+workedCount(t)+' of '+t.steps.length+' steps worked through</span>'+'</span></span></a>';
   }).join('<hr style="border:0;border-top:1px solid var(--line);margin:0;width:100%">')+
   '<p class="note">Exam weights come from the Nov 2023 exam (75 points in 75 minutes). This year can differ.</p></section>';
   var ms = milestones(), got = ms.filter(function(m){return m[2];}).length;
