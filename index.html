@@ -293,6 +293,14 @@ input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-
 .cs tr.tot td{font-weight:700}
 .cs table.bs6 td,.cs table.bs6 th{text-align:right!important}.cs table.bs6 td:nth-child(1),.cs table.bs6 td:nth-child(4),.cs table.bs6 th:nth-child(1),.cs table.bs6 th:nth-child(4){text-align:left!important}
 .cs ol.tree{margin:0 0 4px;padding-left:18px}
+.cs .go{border:2px solid var(--ink);border-radius:8px;padding:5px 8px;margin:0 0 6px;font-size:13px;background:var(--good-bg)}
+.cs table.pair{margin:0 0 8px;font-size:12.5px;table-layout:fixed}
+.cs table.pair th{background:var(--idle-bg);font-size:12px}
+.cs table.pair th.e{background:var(--good-bg)}.cs table.pair th.h{background:var(--warn-bg)}
+.cs table.pair td:first-child,.cs table.pair th:first-child{width:22%;font-weight:600}
+.cs table.pair2{table-layout:fixed}.cs table.pair2 th.e{background:var(--good-bg)}.cs table.pair2 th.h{background:var(--warn-bg)}
+.cs .box.trap{border-color:var(--warn)}.cs .box.mcq{background:var(--good-bg)}
+.cs .small{font-size:11.5px}
 @media (min-width:900px){.cs .cs-cols{column-count:2;column-gap:10px}}
 @media print{
   @page{size:A4;margin:7mm}
@@ -305,13 +313,19 @@ input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-
   .cs .cs-page:last-child{break-after:auto;page-break-after:auto}
   .cs .cs-cols{column-count:2;column-gap:3.5mm}
   .cs .cs-h{font-size:10.5pt;margin-bottom:2mm}.cs .cs-h span{font-size:8pt}
-  .cs .box{font-size:8.2pt;line-height:1.24;padding:1.2mm 1.6mm;margin-bottom:1.6mm;border-color:#999}
+  .cs .box{font-size:7.7pt;line-height:1.22;padding:1.2mm 1.6mm;margin-bottom:1.6mm;border-color:#999}
   .cs h4{font-size:8.8pt;margin-bottom:.6mm}
   .cs p{margin-bottom:.6mm}
-  .cs table{font-size:7.9pt;margin:.4mm 0 .8mm}
+  .cs table{font-size:7.4pt;margin:.4mm 0 .8mm}
   .cs td,.cs th{padding:.3mm 1mm;border-color:#aaa}
   .cs .box.ex{background:#f1f1ec}
   .cs .t{color:#a03a00}
+  .cs .go{font-size:7.8pt;padding:1mm 2mm;margin-bottom:1.5mm;background:#e3f1e8}
+  .cs table.pair{font-size:7.3pt;margin-bottom:1.5mm}
+  .cs table.pair th{font-size:7.3pt;background:#e8e8e2}
+  .cs table.pair th.e,.cs table.pair2 th.e{background:#d9eedf}.cs table.pair th.h,.cs table.pair2 th.h{background:#f6e1cf}
+  .cs .box.mcq{background:#e8f3ec}.cs .box.trap{border-color:#c0703a}
+  .cs .small{font-size:7.2pt}
 }
 </style>
 </head>
@@ -325,218 +339,168 @@ input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-
   <main id="app" class="stack"></main>
 <template id="cheat-tpl">
 <div class="cs">
-<div class="cs-bar noprint"><h1>Cheat sheet · CM01 IFRS</h1><p class="note">4 A4 sides = your 2 sheets, back to back. Print, or save as PDF, at 100% with "background graphics" on, then cross out or add by hand. Built from both exams, the cases and the slides.</p><button type="button" class="btn" onclick="window.print()">Print / save as PDF</button></div>
+<div class="cs-bar noprint"><h1>Cheat sheet · CM01 IFRS</h1><p class="note">4 A4 sides = your 2 sheets, back to back. Every problem type has an <b>easy</b> and a <b>hard</b> example with the same steps side by side, so you can see what changes. Print or save as PDF at 100% with "background graphics" on.</p><button type="button" class="btn" onclick="window.print()">Print / save as PDF</button></div>
 
-<!-- ============ SIDE 1: CONSOLIDATION ============ -->
+<!-- ================= SIDE 1: CONSOLIDATION ================= -->
 <section class="cs-page">
 <header class="cs-h"><b>1 · CONSOLIDATION (Topic 2)</b><span>2023: 17 pts · 2025: 20 pts · points = minutes</span></header>
+<div class="go">FIRST LINE TO WRITE → <b>S's equity at acquisition = …</b> then <b>Difference = Price − % × S's equity</b>. Then the steps below, in order.</div>
+
+<table class="pair"><tr><th>Step</th><th class="e">EASY · Case 1: PC buys 100% of SA for 160</th><th class="h">HARD · 2025: AURORA buys 80% of VEGA for 3,200; VEGA's own patent FV 400; equipment +200</th></tr>
+<tr><td>0 Method</td><td>100% → control → full consolidation</td><td>80% → control → full consolidation <b>+ NCI</b></td></tr>
+<tr><td>1 S's equity at acq.</td><td>Capital 100 + NI 60 = <b>160</b></td><td>800 + 1,400 + 300 = <b>2,500</b></td></tr>
+<tr><td>2 Difference</td><td>160 − 160 = <b>0</b></td><td>3,200 − 80% × 2,500 = 3,200 − 2,000 = <b>1,200</b></td></tr>
+<tr><td>3 Valuation diff. (VD)</td><td>no fair values given → <b>0</b></td><td>80% × (400 + 200) = <b>480</b></td></tr>
+<tr><td>4 Goodwill = 2 − 3</td><td><b>0</b></td><td>1,200 − 480 = <b>720</b></td></tr>
+<tr><td>5 Add 100% line by line</td><td>Equipment 240 + 200 = 440; liabilities 80 + 40 = 120</td><td>Land 1,100; equipment 2,400 + 1,800 + <b>200</b> = 4,400; patent <b>400</b> (100%, not 80%); current assets 1,500; liabilities 2,900</td></tr>
+<tr><td>6 Eliminate</td><td>Investment 160 → <b>0</b>; SA's capital and NI → gone</td><td>Investment 3,200 → <b>0</b>; VEGA's 2,500 → gone</td></tr>
+<tr><td>7 NCI</td><td>none</td><td>20% × (2,500 + 600) = <b>620</b> (equity + 100% of the VD)</td></tr>
+<tr><td>8 Equity left</td><td>PC only: capital 300, NI 20</td><td>AURORA only: 1,200 / 3,000 / 400, + NCI 620</td></tr>
+<tr><td>9 Check</td><td>440 = 300 + 20 + 120 ✓</td><td>720 + 400 + 1,100 + 4,400 + 1,500 = <b>8,120</b> = 5,220 + 2,900 ✓</td></tr></table>
+
+<table class="pair"><tr><th>Step</th><th class="e">EASY · one year later, 100% (Case 1b)</th><th class="h">HARD · two years later, 80% (Case 6b, paid 160)</th></tr>
+<tr><td>1 Earned since acq.</td><td>SA's equity now 280 − at acq. 160 = <b>120</b></td><td>480 − 200 = <b>280</b></td></tr>
+<tr><td>2 Group's share</td><td>100% × 120 → group NI 80 + 120 = <b>200</b></td><td>80% × 280 = <b>224</b> into group equity</td></tr>
+<tr><td>3 NCI</td><td>none</td><td>20% × 480 = <b>96</b></td></tr>
+<tr><td>4 Rest as before</td><td colspan="2">Goodwill and VD stay (unless impaired; stepped-up PPE gets extra depreciation). Investment still 0. SA's equity <b>from before</b> the acquisition still gone.</td></tr></table>
+
+<table class="pair"><tr><th>Step</th><th class="e">EASY · associate: 40% bought for 60, NI 20</th><th class="h">HARD · Case 9c: 40% of A for 160, A's equity 250 → 510</th></tr>
+<tr><td>1 Method</td><td colspan="2">20–50% → significant influence → <b>equity method</b>: no adding lines, no elimination, no NCI. 1 BS line + 1 P&amp;L line.</td></tr>
+<tr><td>2 PPA</td><td>(not asked)</td><td>160 − 40% × 250 = 60 = goodwill, <b>stays inside the investment</b></td></tr>
+<tr><td>3 Share of growth</td><td>40% × 20 = <b>8</b> → P&amp;L "share of profit of associates"</td><td>40% × (510 − 250) = <b>104</b></td></tr>
+<tr><td>4 Investment</td><td>60 + 8 = <b>68</b></td><td>160 + 104 = <b>264</b> (− any dividends received: they are not income)</td></tr></table>
+
 <div class="cs-cols">
-<div class="box"><h4>Which method? (IFRS 10, IAS 28)</h4>
-<table><tr><td><b>Control</b> (usually &gt;50% of votes)</td><td>Full consolidation, 100% of lines + NCI</td></tr>
-<tr><td><b>Significant influence</b> (usually 20–50%)</td><td>Equity method, 1 line on the balance sheet, 1 line in the income statement</td></tr>
-<tr><td>Joint control (JV)</td><td>Equity method</td></tr><tr><td>&lt;20%, no influence</td><td>Financial asset</td></tr></table>
-<p class="t">Trap (2025 MCQ a): a 60% subsidiary wrongly on the equity method understates group debt by <b>100%</b> of its debt (800,000), not 60%.</p></div>
-
-<div class="box"><h4>The 4 steps (slide 16)</h4>
-<p><b>a) PPA (slide 24)</b> with S's equity at the acquisition date:</p>
-<table class="f"><tr><td>Difference</td><td>= Price − %×BV of S's net assets (= S's equity)</td></tr>
-<tr><td>Valuation diff. (VD)</td><td>= %×(FV − BV) of identifiable net assets: brand, patent, PP&amp;E/equipment uplift</td></tr>
-<tr><td><b>Goodwill</b></td><td>= Difference − VD = Price − %×FV of net assets</td></tr></table>
-<p>GW &gt; 0: intangible asset, <b>never amortised</b>, impairment test every year. GW &lt; 0 (badwill): re-check fair values, then a <b>gain in P&amp;L</b>.<br>Synergies are NOT recognised separately; they are inside goodwill. S's internally generated brand/patent <b>is</b> recognised in the PPA at FV (IFRS 3), even though IAS 38 kept it off S's own books.</p>
-<p><b>b) Integration of 100%</b> of S's assets and liabilities, line by line, plus 100% of the VD, even if P owns 80%.</p>
-<p><b>c) Elimination</b>: Investment in S → <b>0</b>. S's equity at acquisition → <b>disappears</b>. Only P's equity remains (+ P's share of what S earned since).</p>
-<p><b>d) NCI</b> (only if &lt;100%), proportionate method: <b>NCI = (1−%) × (S's equity now + VD)</b>, in equity, as its own line. No goodwill for the NCI.</p>
-<p class="t">Check: total assets = total equity &amp; liabilities. Always present both sides.</p></div>
-
-<div class="box ex"><h4>Example: AURORA buys 80% of VEGA for 3,200 (2025, 14 pts)</h4>
-<p>VEGA: equity 800 + 1,400 + 300 = <b>2,500</b>. Own patent FV 400. Equipment +200.</p>
-<table class="f"><tr><td>Difference</td><td>3,200 − 80%×2,500 = 3,200 − 2,000 = <b>1,200</b></td></tr>
-<tr><td>VD</td><td>80% × (400 + 200) = <b>480</b></td></tr>
-<tr><td>Goodwill</td><td>1,200 − 480 = <b>720</b> (= 3,200 − 80%×3,100)</td></tr>
-<tr><td>NCI</td><td>20% × (2,500 + 600) = <b>620</b></td></tr></table>
-<table class="bs"><tr><th>Assets</th><th></th><th>Equity &amp; liabilities</th><th></th></tr>
-<tr><td>Goodwill</td><td>720</td><td>Share capital (AURORA only)</td><td>1,200</td></tr>
-<tr><td>Patented technology</td><td>400</td><td>Retained earnings (AURORA)</td><td>3,000</td></tr>
-<tr><td>Land 600+500</td><td>1,100</td><td>Net income (AURORA)</td><td>400</td></tr>
-<tr><td>Equipment 2,400+1,800+200</td><td>4,400</td><td>NCI</td><td>620</td></tr>
-<tr><td>Current assets 800+700</td><td>1,500</td><td>Liabilities 2,400+500</td><td>2,900</td></tr>
-<tr><td>Investment in VEGA</td><td>0</td><td></td><td></td></tr>
-<tr class="tot"><td>Total</td><td>8,120</td><td>Total</td><td>8,120</td></tr></table>
-<p class="t">The VD uses 100% of the patent (400) and equipment (+200) in the balance sheet; only goodwill uses 80%.</p></div>
-
-<div class="box ex"><h4>Example: 100%, brand + building + synergies (2023, 16 pts)</h4>
-<p>Price 3,000. SA equity 200 + 825 + 175 = 1,200. Brand 600, building +400, "synergies 800" = ignore.<br>Difference 1,800 − VD 1,000 = <b>GW 800</b>. PP&amp;E 4,600 + 870 + 400 = 5,870. Total 10,660. Equity = PC's only (900 / 700 / 1,210).</p></div>
-
-<div class="box"><h4>One year (or more) later</h4>
-<p>S's equity earned since acquisition = S's equity now − S's equity at acquisition.<br>
-<b>Group equity</b> = P's equity + %×(earned since). <b>NCI</b> = (1−%) × (S's equity now + VD). Goodwill unchanged unless impaired. Investment still 0.</p>
-<p class="ex">Case 6: 80% for 160, S's equity 200 at acquisition, 480 now → group +80%×280 = <b>224</b>; NCI 20%×480 = <b>96</b>.</p>
-<p><b>Consolidated income statement</b>: 100% of every line (minus intra-group sales). NI → attributable to owners of the parent / to NCI = (1−%) × S's NI.</p></div>
-
-<div class="box"><h4>Equity method (associate, slides 31–32)</h4>
-<p>No integration, no elimination, no NCI. PPA still done, but <b>goodwill stays inside the investment</b>.<br>
-<b>Investment</b> = price + %×(change in associate's equity since acquisition) − dividends received.<br>
-<b>P&amp;L</b>: "Share of profit of associates" = %×associate's NI (also adds to P's equity).</p>
-<p class="ex">Case 9c: 40% for 160; equity 250 → GW inside 160 − 100 = 60. Equity 250 → 510: share 40%×260 = 104 → investment <b>264</b>.</p></div>
-
-<div class="box"><h4>Evidence questions (2 pts each)</h4>
-<p><b>Associates exist</b>: IS "share of profit of associates"; BS "investments in associates"; CF "share of profit of associates (net of dividends)".<br>
-<b>Not all subs 100%</b>: IS "NI attributable to NCI"; BS "NCI" in equity; CF "dividends paid to NCI".<br>
+<div class="box"><h4>Theory for these steps</h4>
+<table><tr><td>&lt;20%</td><td>financial asset (IFRS 9)</td></tr><tr><td>20–50% significant influence</td><td>equity method (IAS 28)</td></tr><tr><td>joint control</td><td>JV: equity method</td></tr><tr><td>&gt;50% control</td><td>full consolidation (IFRS 10 + 3). Control is also possible below 50% (contracts, board).</td></tr></table>
+<p>Goodwill: intangible asset, <b>never amortised</b>, impairment test every year, never reversed. Negative (badwill): re-check fair values, then a <b>gain in P&amp;L</b>.<br>
+VD goes to <b>identifiable</b> assets (can be sold separately or come from a legal right): brands, patents, customer lists, PP&amp;E uplift. S's own brand or patent <b>is</b> recognised here at fair value, even though it isn't in S's books. Synergies, staff know-how → part of goodwill, never a separate asset.<br>
+NCI = share not owned by the parent, shown in equity and in NI. Consolidated P&amp;L: 100% of every line, then NI split: owners of the parent / NCI = (1−%) × S's NI.</p></div>
+<div class="box trap"><h4>Traps</h4>
+<p>Investment left on the BS (must be 0) · S's pre-acquisition equity left in · adding only 80% of S's assets · patent/VD at 80% on the BS (it's 100%; only goodwill uses 80%) · NCI on book value only (add the VD) · synergies booked as an asset · forgetting both sides of the BS.</p></div>
+<div class="box mcq"><h4>MCQ and short answers</h4>
+<p>60% subsidiary wrongly on the equity method → group debt understated by <b>100%</b> of its debt (800,000), not 60%.<br>
+No goodwill amortisation? IFRS 3/IAS 36: indefinite life, tested yearly instead.<br>
+<b>Associates exist</b>: "share of profit of associates" (P&amp;L), "investments in associates" (BS), same line in the CF.<br>
+<b>Not all subsidiaries 100%</b>: NI attributable to NCI, NCI in equity, dividends paid to NCI.<br>
 <b>Consolidated</b>: NCI, "attributable to owners of the parent", goodwill, associates.</p></div>
 </div></section>
 
-<!-- ============ SIDE 2: NON-CURRENT ASSETS, IMPAIRMENT ============ -->
+<!-- ================= SIDE 2: IMPAIRMENT ================= -->
 <section class="cs-page">
-<header class="cs-h"><b>2 · NON-CURRENT ASSETS &amp; IMPAIRMENT (Topic 3)</b><span>2023: 30 pts (incl. 18 pts machine) · 2025: 24 pts with leases</span></header>
+<header class="cs-h"><b>2 · IMPAIRMENT &amp; NON-CURRENT ASSETS (Topic 3)</b><span>2023: 18 pts machine + 5 · 2025: 10 pts CGU</span></header>
+<div class="go">FIRST LINE TO WRITE → <b>Is there an indication? (what happened)</b> then <b>BV at the test date</b> then <b>RA = higher of (FV − costs to sell) and value in use</b>.</div>
+
+<table class="pair"><tr><th>Step</th><th class="e">EASY · Bilbao: plane 250, 25 years, after 5 years FV 180</th><th class="h">HARD · 2023: BUILD machine 300,000, 10 years, law in N3, reprieve in N4</th></tr>
+<tr><td>1 Indication?</td><td>Plane prices dropped → yes</td><td>N1–N2: none → <b>no test</b>, just 30,000/yr (270,000, 240,000). N3: new law → yes. N4: reprieve → indication of <b>reversal</b></td></tr>
+<tr><td>2 BV at test date</td><td>250 × 20/25 = <b>200</b></td><td>N3: <b>review useful life first</b> (use ends N7 → 5 years left): 240,000 / 5 = 48,000 → <b>192,000</b></td></tr>
+<tr><td>3 RA = max(FVLCS, VIU)</td><td>No VIU given → FV <b>180</b></td><td>max(170,000 − 18,000 = 152,000; VIU 175,000) = <b>175,000</b></td></tr>
+<tr><td>4 Loss = BV − RA</td><td>200 − 180 = <b>20</b> → P&amp;L expense</td><td>192,000 − 175,000 = <b>17,000</b> → P&amp;L expense</td></tr>
+<tr><td>5 Depreciation after</td><td>180 / 20 years left = <b>9</b>/yr</td><td>N4: life back to N10 → 7 years: 175,000 / 7 = 25,000 → 150,000</td></tr>
+<tr><td>6 Reversal</td><td>—</td><td>RA max(185,000; 190,000) = 190,000, but <b>cap</b> = BV without impairment: 192,000 − 192,000/7 = 164,571 → reversal <b>14,571</b> (gain)</td></tr>
+<tr><td colspan="3" class="t">Other accepted BUILD reading (keep 10 years): N3 BV 210,000 → loss 35,000; N4 150,000, cap 180,000 → reversal 30,000. <b>Write which reading you use.</b></td></tr></table>
+
+<table class="pair"><tr><th>Step</th><th class="e">EASY · Kohlbuy/Pritt CGU: BV 2,400k incl. goodwill 900k, RA 1,900k</th><th class="h">HARD · 2025 OMEGA CGU Y: land 400k, building 900k, machinery 2,200k, GW 500k; VIU 3,600k, FVLCS 3,200k</th></tr>
+<tr><td>1 RA of the CGU</td><td><b>1,900k</b></td><td>max(3,600k; 3,200k) = <b>3,600k</b></td></tr>
+<tr><td>2 Total loss</td><td>2,400k − 1,900k = <b>500k</b></td><td>4,000k − 3,600k = <b>400k</b></td></tr>
+<tr><td>3 Assets with their own RA first</td><td>none</td><td>Land: max(500k, 450k) &gt; 400k → nothing (no write-up). Building: max(750k, 700k) = 750k → <b>−150k</b></td></tr>
+<tr><td>4 Rest → goodwill first</td><td>500k &lt; 900k → GW 900k → <b>400k</b></td><td>400k − 150k = 250k → GW 500k → <b>250k</b></td></tr>
+<tr><td>5 Still left? pro rata</td><td colspan="2">Only if goodwill is used up: spread over the other assets pro rata to BV, none below max(FVLCS, VIU, 0). Not needed here.</td></tr>
+<tr><td>6 Result</td><td>Loss 500k in P&amp;L. GW never reversed.</td><td>Y after = 3,600k. CGU X (same steps): building −100k, GW 800k → 300k, loss 600k. <b>NI −1,000,000</b></td></tr></table>
+
 <div class="cs-cols">
-<div class="box"><h4>Intangibles (IAS 38)</h4>
-<p><b>Research</b> → always an expense. <b>Development</b> → capitalise once ALL 6 are shown: technically feasible · intention to complete · able to use or sell · future economic benefits · resources to finish · cost measurable reliably.<br>
-Internally generated <b>brands, mastheads, customer lists</b> → never recognised. Acquired (alone or in a business combination) → at cost / fair value.</p></div>
-
-<div class="box"><h4>Cost and depreciation (IAS 16)</h4>
-<p><b>Cost</b> = price (FX at the purchase date) + everything needed to get it working: transport, installation (own staff too). NOT training, admin, start-up losses.<br>
-Depreciable amount = cost − residual value, over useful life (straight-line or units of production). Upgrade that adds capacity → add to the carrying amount, spread over remaining life.</p>
-<p class="ex">Malaga: 600,000 USD × 0.9 = 540,000 + 26,000 + 5,000 = <b>571,000</b> (training 10,000 = expense). Units: (571,000 − 200,000) × 50k/500k = 37,100.</p></div>
-
-<div class="box"><h4>Impairment of a single asset (IAS 36)</h4>
-<p><b>When</b>: PPE/finite intangibles only if an <b>indication</b> (external: market value drop, new law/technology/market, interest rates; internal: damage, obsolescence, worse performance). Goodwill + indefinite-life intangibles: test <b>every year</b>.<br>
-<b>Recoverable amount (RA)</b> = HIGHER of FV less costs to sell and value in use (PV of future cash flows). If one is already above BV → no impairment.<br>
-<b>Loss</b> = BV − RA → expense in P&amp;L. Then depreciate the new BV over the <b>remaining</b> life (review the life first if the indication changes it).<br>
-<b>Reversal</b> (indication improves): up to RA, but <b>capped</b> at the BV the asset would have had without the impairment (cost − normal depreciation) → gain in P&amp;L. <b>Goodwill impairment never reversed.</b></p>
-<p class="ex">Bilbao: plane 250 / 25 years, after 5 years BV 200, FV 180 → loss <b>20</b>, BV 180, new depreciation 180/20 = <b>9</b>.</p></div>
-
-<div class="box ex"><h4>Example: BUILD machine with reversal (2023, 18 pts)</h4>
-<p>Cost 300,000, 10 years straight-line, cost model.</p>
-<table class="f"><tr><td>N1, N2</td><td>No indication, no test: 30,000/yr → 270,000, 240,000</td></tr>
-<tr><td>N3 (law: stop in N8)</td><td>Indication. Life review: 5 years left → depreciation 240,000/5 = 48,000 → 192,000. RA = max(170,000 − 18,000 = 152,000; VIU 175,000) = 175,000 → loss <b>17,000</b>. BV 175,000</td></tr>
-<tr><td>N4 (allowed till N11)</td><td>Indication of reversal. 7 years left → depreciation 175,000/7 = 25,000 → 150,000. RA = max(185,000; 190,000) = 190,000. Cap without impairment = 192,000 − 192,000/7 = 164,571 → reversal <b>14,571</b></td></tr></table>
-<p class="t">Other accepted reading (keep 10 years): N3 BV 210,000, loss 35,000; N4 150,000, cap 180,000, reversal 30,000. <b>Write which reading you use</b>: the reasoning gets most of the points.</p></div>
-
-<div class="box"><h4>Group of assets / CGU with goodwill</h4>
-<p><b>Step 1</b>: each asset with its own RA (building, land): test alone, impair to max(VIU, FVLCS).<br>
-<b>Step 2</b>: CGU loss = BV of the CGU (after step 1) − RA of the CGU. Take it off <b>goodwill first</b>, then the other assets <b>pro rata to BV</b>, but no asset below its own max(FVLCS, VIU, 0).<br>
-Total impairment = CGU BV before − RA. All of it is an expense in P&amp;L.</p></div>
-
-<div class="box ex"><h4>Example: OMEGA, 2 CGUs (2025, 10 pts) · in €000</h4>
-<table class="bs bs6"><tr><th>CGU X</th><th>before</th><th>after</th><th>CGU Y</th><th>before</th><th>after</th></tr>
-<tr><td>Building</td><td>700</td><td>600</td><td>Land</td><td>400</td><td>400</td></tr>
-<tr><td>Machinery</td><td>1,500</td><td>1,500</td><td>Building</td><td>900</td><td>750</td></tr>
-<tr><td>Goodwill</td><td>800</td><td>300</td><td>Machinery</td><td>2,200</td><td>2,200</td></tr>
-<tr><td></td><td></td><td></td><td>Goodwill</td><td>500</td><td>250</td></tr>
-<tr class="tot"><td>Total</td><td>3,000</td><td>2,400</td><td>Total</td><td>4,000</td><td>3,600</td></tr></table>
-<p>X: RA = VIU 2,400,000 → loss 600,000. Building alone: max(600,000; 550,000) → −100,000; rest 500,000 → goodwill.<br>
-Y: RA = max(3,600,000; 3,200,000) → loss 400,000. Land 500,000 &gt; 400,000: no loss, no write-up. Building max(750,000; 700,000) → −150,000; rest 250,000 → goodwill.<br>
-<b>Net income −1,000,000.</b></p></div>
-
-<div class="box"><h4>Discretion in the test (SEAT case)</h4>
-<p>Room to avoid a loss: cash flow forecasts (growth, terminal value), discount rate (WACC), how the CGU is defined, FV less costs to sell. Easiest to justify changing: <b>the growth/forecast assumptions</b>, they are the most uncertain. Stricter assumptions than last year (higher discount rate, worse fuel price) → more likely to impair.</p></div>
+<div class="box"><h4>Theory for these steps (IAS 36)</h4>
+<p><b>When to test</b>: PP&amp;E and finite-life intangibles only with an indication: external (market value drop, adverse law/technology/market, interest rates up) or internal (damage, obsolescence, change of use, worse performance). Goodwill and indefinite-life intangibles: <b>every year</b>.<br>
+<b>VIU</b> = PV of future cash flows from use (forecasts ≤ 5 years, no financing or tax flows, pre-tax rate / WACC). Annuity PV = CF × [1 − (1+r)<sup>−n</sup>] / r. Ex 3.1: 40,000 × 3.993 ≈ 160,000 &gt; FV 150,000 → RA 160,000, BV 200,000 → loss 40,000, then 160,000/5 = 32,000/yr.<br>
+<b>CGU</b> = smallest group with independent cash inflows (a store, a plant). Goodwill is always tested in a CGU.<br>
+<b>Discretion</b> (SEAT): forecasts and growth, discount rate, CGU definition. Easiest to justify changing: the growth/forecast assumptions. Stricter than last year (higher rate) → more impairment.</p></div>
+<div class="box"><h4>Before impairment: intangibles and cost</h4>
+<p><b>IAS 38</b>: research → always expense. Development → capitalise once all are shown: feasible, intention, ability to use/sell, future benefits, resources, reliable cost. Internally generated <b>brands, mastheads, customer lists</b> → never. Acquired ones → asset.<br>
+<b>IAS 16 cost</b> = price (FX on the purchase date) + transport + installation (own staff too); NOT training. Malaga: 540,000 + 26,000 + 5,000 = 571,000. Depreciate cost − residual value (straight-line or units).</p></div>
+<div class="box trap"><h4>Traps</h4>
+<p>Skipping the useful-life review · FV instead of FV <b>less costs to sell</b> · taking the lower of the two (it's the <b>higher</b>) · reversal above the cap · reversing goodwill · writing land up · forgetting depreciation in the test year before comparing.</p></div>
+<div class="box mcq"><h4>MCQ</h4>
+<p>IAS 38 correct statement: <b>research expensed; development capitalised if the criteria are met</b>. Internally generated brands can't be recognised, even with a reliable FV (2025 e).</p></div>
 </div></section>
 
-<!-- ============ SIDE 3: LEASES + DEBT & EQUITY ============ -->
+<!-- ================= SIDE 3: LEASES + DEBT/EQUITY ================= -->
 <section class="cs-page">
-<header class="cs-h"><b>3 · LEASES (Topic 3) · DEBT &amp; EQUITY (Topic 4)</b><span>2023: lease 3 pts + Topic 4 13 pts · 2025: lease 12 pts + Topic 4 2 pts</span></header>
+<header class="cs-h"><b>3 · LEASES (Topic 3) · DEBT &amp; EQUITY (Topic 4)</b><span>2023: 3 + 13 pts · 2025: 12 + 2 pts</span></header>
+<div class="go">FIRST LINE TO WRITE → <b>Test 1: identified asset? Can the supplier swap it, and would it gain from doing so?</b> If it's a lease: <b>Liability = payment × annuity factor</b>.</div>
+
+<table class="pair"><tr><th>Test</th><th class="e">EASY · Ex 3.4: ship for 5 years, customer decides cargo, ports, timing → LEASE</th><th class="h">HARD · Case 7: SAUSAGE hot dog stall, space can be moved any time → SERVICE</th></tr>
+<tr><td>1 Identified asset? (no substantive substitution right)</td><td>Ship named in the contract, no substitution ✓</td><td>Only an amount of space; operator can move it anywhere, any time, without approval, at minimal cost (stall is mobile), and <b>gains</b> from using its space best → substantive right ✗ → <b>stop: service</b></td></tr>
+<tr><td>2 Substantially all the benefits?</td><td>Exclusive use for 5 years ✓</td><td>✓ (but test 1 already failed)</td></tr>
+<tr><td>3 Directs how and for what purpose?</td><td>Decides cargo, ports, timing ✓ (safety rules only protect; supplier crewing the ship doesn't matter)</td><td>✓ (controls its own kiosk)</td></tr>
+<tr><td>Result</td><td><b>Lease</b> → on the BS</td><td><b>Service contract</b> → payments expensed</td></tr>
+<tr><td colspan="3" class="small">Also: <b>Ex 3.3</b> ship for one trip with cargo and dates fixed in the contract → test 3 ✗ → service. <b>Case 6 BRAND</b>: owner may relocate but must give an equal unit and pay the costs, and only gains if a big tenant arrives (unlikely) → not substantive → identified; BRAND decides goods, prices, stock → <b>lease</b>. Cleaning, security, advertising are separate services.</td></tr></table>
+
+<table class="pair"><tr><th>Step</th><th class="e">EASY · 2025 NEPTUNE: 80,000 at each year end, 8 years, life 30, 5%, factor 6.4632</th><th class="h">HARD · Ex 3.5 Adams: 9,968 on 1/1/N1 + 4 × 9,968 at year ends, 4 years, life 6, 10%</th></tr>
+<tr><td>1 Lease term</td><td>8 years</td><td>4 years (non-cancellable + options reasonably certain)</td></tr>
+<tr><td>2 Liability = PV of <b>future</b> payments</td><td>80,000 × 6.4632 = <b>517,056</b></td><td>9,968 × 3.169865 = <b>31,597</b> (the one paid today is not in it)</td></tr>
+<tr><td>3 ROU asset</td><td>= liability = <b>517,056</b></td><td>31,597 + 9,968 paid at the start = <b>41,565</b> (+ direct costs − incentives)</td></tr>
+<tr><td>4 Depreciation ÷ shorter of term and life</td><td>517,056 / 8 = <b>64,632</b> (not 30)</td><td>41,565 / 4 = <b>10,391</b> (not 6)</td></tr>
+<tr><td>5 Interest = rate × opening liability</td><td>5% × 517,056 = <b>25,853</b></td><td>10% × 31,597 = <b>3,160</b></td></tr>
+<tr><td>6 Liability at year end</td><td>517,056 − (80,000 − 25,853) = <b>462,909</b></td><td>31,597 − (9,968 − 3,160) = <b>24,789</b></td></tr>
+<tr><td>7 Current / non-current</td><td>next repayment 80,000 − 23,145 = <b>56,855</b> / 406,054</td><td>9,968 − 2,479 = <b>7,489</b> / 17,300</td></tr>
+<tr><td>8 P&amp;L</td><td>64,632 + 25,853 = <b>90,485</b></td><td>10,391 + 3,160 = <b>13,551</b></td></tr>
+<tr><td>9 BS check</td><td>ROU 452,424 − cash 80,000 = 372,424 = liability 462,909 − equity 90,485 ✓</td><td>ROU 31,174; liability 24,789; equity −13,551; cash −19,936 → 11,238 = 11,238 ✓</td></tr></table>
+
 <div class="cs-cols">
-<div class="box"><h4>Lease or service contract? (IFRS 16)</h4>
-<ol class="tree"><li><b>Identified asset?</b> Named in the contract (or implied). NO if the supplier has a <b>substantive right to substitute</b>: it can swap the asset at any time AND it benefits economically from doing so. → no: <b>service contract</b>.</li>
-<li><b>Customer gets substantially all the economic benefits</b> from using it over the period (exclusive use)? → no: service.</li>
-<li><b>Customer directs how and for what purpose</b> it is used (decides what, when, how much)? → no: service.</li></ol>
-<p>All 3 yes → <b>LEASE</b> → on the balance sheet. Services in the same contract (cleaning, security, maintenance) are separate and expensed.<br>
-Optional exemptions, expensed straight-line: <b>short-term</b> (≤ 12 months) and <b>low-value</b> assets. Also expensed: variable payments not linked to an index/rate (e.g. % of sales). That is why IFRS companies still show "rent and charges" (2023 Q1c).</p></div>
+<div class="box"><h4>Theory for leases (IFRS 16)</h4>
+<p>Lessee, optional exemptions: <b>short-term</b> (≤ 12 months) and <b>low-value</b> (≈ USD 5,000 new) → expense straight-line. Variable payments not tied to an index, and service parts, are also expensed → why IFRS companies still show "rent and charges" (2023 Q1c).<br>
+Expense is front-loaded (interest is high early); <b>EBITDA rises</b>, debt rises. Interest → financial, depreciation → operating.<br>
+<b>CFO "leasing keeps debt off the BS"</b>: wrong. IFRS 16 puts the ROU asset and lease liability on the BS, so gearing rises almost like a bank loan. Lessor accounting is basically unchanged.</p>
+<p class="t">The 2025 key's lease BS puts cash on the liabilities side and forgets equity → doesn't balance. Do it like step 9.</p></div>
+<div class="box mcq"><h4>MCQ</h4><p>Lease if the customer <b>has the right to use an identified asset and controls its use</b> for the term (2025 b). Not "legal ownership", not "&gt;75% of useful life".</p></div>
+</div>
 
-<div class="box ex"><h4>Example A: BRAND, Retail Unit A (Case 6) → LEASE</h4>
-<p>1. Owner may relocate BRAND, but must give a similar unit and pay the costs; it only benefits if a big new tenant comes, unlikely at the start → right not substantive → asset identified (Unit A).<br>
-2. Exclusive use for 5 years → all the benefits.<br>
-3. BRAND decides the mix of goods, prices, stock, access → directs use. Cleaning, security and advertising are the owner's services and don't direct use.<br>→ <b>Lease</b> (services split off).</p></div>
-<div class="box ex"><h4>Example B: SAUSAGE hot dog stall (Case 7) → SERVICE</h4>
-<p>1. Contract states only the amount of space; the operator can move the stall anywhere, any time, without approval, at minimal cost (stall is mobile), and gains from using its space best → <b>substantive substitution right → no identified asset</b>.<br>
-2 and 3 would be met (SAUSAGE controls its kiosk), but test 1 fails → <b>service contract</b>, payments expensed.</p></div>
+<div class="go">FIRST LINE TO WRITE (Topic 4) → <b>Does the issuer have a contractual obligation to pay cash?</b> Yes → liability. No → equity.</div>
+<table class="pair"><tr><th>Step</th><th class="e">EASY · shares: issue 1,000 at 15 (par 5), costs 300; treasury shares (2023, 4 pts)</th><th class="h">HARD · 2023 bond: 5,000 × nominal 100, issued at 90, coupon 6%, effective 7%</th></tr>
+<tr><td>1 Start</td><td>Cash +15,000 = capital 5,000 + premium 10,000; costs → premium −300 (never P&amp;L)</td><td>Liability = cash received = <b>450,000</b> (issue costs would reduce it)</td></tr>
+<tr><td>2 Next move</td><td>Buy-back 40,000 at 45 → equity −1,800,000 (treasury shares, at cost)</td><td>N1 interest = 7% × 450,000 = <b>31,500</b> (P&amp;L); cash coupon = 6% × 500,000 = <b>30,000</b></td></tr>
+<tr><td>3 Then</td><td>Resell 1,000 at 40: cash +40,000, treasury +45,000 (cost), <b>premium −5,000</b>. Never P&amp;L or OCI.</td><td>End N1 = 450,000 + 31,500 − 30,000 = <b>451,500</b>; N2: 31,605 → <b>453,105</b> (→ 500,000 at maturity)</td></tr></table>
+</section>
 
-<div class="box"><h4>Lessee accounting (template)</h4>
-<table class="f"><tr><td>Lease term</td><td>non-cancellable period + options <b>reasonably certain</b> to be used</td></tr>
-<tr><td>Lease liability</td><td>PV of payments at the rate implicit in the lease, else <b>incremental borrowing rate</b>. Annual payment × annuity factor. Payment at the start: that one is not discounted.</td></tr>
-<tr><td>Right-of-use (ROU)</td><td>= liability + initial direct costs + payments made at/before start − incentives received (+ restoration costs)</td></tr>
-<tr><td>Each year</td><td>Interest = rate × opening liability (finance cost). Repayment = payment − interest. Depreciation = ROU / <b>shorter of lease term and useful life</b> (useful life only if ownership passes).</td></tr>
-<tr><td>Year end</td><td>Liability split: <b>current</b> = next year's repayment (payment − next year's interest); rest non-current.</td></tr></table></div>
-
-<div class="box ex"><h4>Example: NEPTUNE warehouse (2025, 10 pts)</h4>
-<p>80,000 at each year end, 8 years, life 30, 5%, factor 6.4632.</p>
-<table class="f"><tr><td>Liability = ROU (1.1.N)</td><td>80,000 × 6.4632 = <b>517,056</b></td></tr>
-<tr><td>Depreciation</td><td>517,056 / <b>8</b> (not 30) = 64,632 → ROU <b>452,424</b></td></tr>
-<tr><td>Interest</td><td>5% × 517,056 = 25,853; repayment 54,147 → liability <b>462,909</b></td></tr>
-<tr><td>Split</td><td>N+1 interest 23,145 → current <b>56,855</b>, non-current <b>406,054</b></td></tr>
-<tr><td>P&amp;L</td><td>depreciation 64,632 (operating) + interest 25,853 (financial) = <b>90,485</b></td></tr></table>
-<table class="bs"><tr><th>Assets</th><th></th><th>Equity &amp; liabilities</th><th></th></tr>
-<tr><td>ROU asset</td><td>452,424</td><td>Equity (NI)</td><td>−90,485</td></tr>
-<tr><td>Cash</td><td>−80,000</td><td>Lease liability</td><td>462,909</td></tr>
-<tr class="tot"><td>Total</td><td>372,424</td><td>Total</td><td>372,424</td></tr></table>
-<p class="t">The official key puts cash on the right side and forgets equity: it doesn't balance. Do it like this.<br>
-<b>CFO "leases are off balance sheet"</b>: wrong under IFRS 16. ROU asset + lease liability → debt and gearing rise, like a bank loan; EBITDA rises (rent becomes depreciation + interest).</p></div>
-
-<div class="box"><h4>Debt or equity? (IAS 32)</h4>
-<p><b>Liability</b> if there is a <b>contractual obligation</b> to pay cash (or another financial asset), or to exchange under unfavourable conditions. <b>Equity</b> if the issuer can always avoid paying. The legal name doesn't matter.<br>
-Redeemable preference shares (mandatory, or the holder can demand) → liability. Perpetual bond, interest at the issuer's discretion → <b>equity</b> (2025 MCQ c). Paid in own shares: fixed number for a fixed amount → equity; variable number → liability.<br>
-<b>Compound (convertible) bond</b>: liability = PV of coupons + principal at the market rate for similar debt without conversion; <b>equity = proceeds − liability</b>.</p></div>
-
-<div class="box ex"><h4>Bond at amortised cost, effective interest (2023, 9 pts)</h4>
-<p>5,000 bonds, nominal 100, issued at 90, coupon 6%, effective 7%. Liability at start = 450,000 (issue costs reduce it).</p>
-<table class="bs"><tr><th></th><th>Start</th><th>Interest 7%</th><th>Coupon 6% (cash)</th><th>End</th></tr>
-<tr><td>N1</td><td>450,000</td><td>31,500</td><td>30,000</td><td>451,500</td></tr>
-<tr><td>N2</td><td>451,500</td><td>31,605</td><td>30,000</td><td>453,105</td></tr></table>
-<p>Expense = effective rate × carrying amount; cash = coupon × nominal; the difference adds to the liability, which reaches 500,000 at maturity.</p></div>
-
-<div class="box"><h4>Shares and treasury shares</h4>
-<p><b>Issue</b>: capital = number × par; share premium = (price − par) × number; issue costs reduce equity (premium), not P&amp;L.<br>
-<b>Buy-back</b>: treasury shares deducted from equity at cost; cash out. <b>Resale</b>: difference vs cost → share premium/reserves, <b>never P&amp;L or OCI</b>. <b>Cancellation</b>: capital − par, rest from premium/reserves.</p>
-<p class="ex">2023 Q5a: bought at 45, 1,000 resold at 40 → cash +40,000, treasury shares +45,000 (less negative), share premium <b>−5,000</b>.</p></div>
-</div></section>
-
-<!-- ============ SIDE 4: KPIs + FINANCIAL STATEMENTS ============ -->
+<!-- ================= SIDE 4: KPIs + STATEMENTS ================= -->
 <section class="cs-page">
-<header class="cs-h"><b>4 · KPIs (Topic 5) · FINANCIAL STATEMENTS (Topic 1)</b><span>2023: 11 + 4 pts · 2025: 10 + 4 pts</span></header>
+<header class="cs-h"><b>4 · KPIs (Topic 5) · STATEMENTS (Topic 1) · debt/equity table (Topic 4)</b><span>2023: 11 + 4 pts · 2025: 10 + 4 pts</span></header>
+<div class="go">FIRST LINE TO WRITE → <b>NOPAT = operating profit (EBIT) × (1 − tax)</b>, then <b>CE = equity incl. NCI + financial debt incl. leases − cash</b>.</div>
+
+<table class="pair"><tr><th>Step</th><th class="e">EASY · 2023 MCQ: EBIT 1,848, tax 25%, WACC 6.5%, CE given 32,780</th><th class="h">HARD · 2025 HORIZON: build CE from the balance sheet, WACC 7%</th></tr>
+<tr><td>1 NOPAT</td><td>1,848 × 0.75 = <b>1,386</b></td><td>1,670 × 0.75 = <b>1,252.5</b></td></tr>
+<tr><td>2 Capital employed</td><td>given: 32,780</td><td>Equity 500 + 1,800 + 4,200 + <b>NCI 350</b> = 6,850; debt 3,200 + 800 + <b>leases 720 + 230</b> = 4,950; − cash 1,070 → <b>10,730</b></td></tr>
+<tr><td>3 ROCE = NOPAT / CE</td><td>1,386 / 32,780 = 4.2%</td><td>1,252.5 / 10,730 = <b>11.67%</b></td></tr>
+<tr><td>4 Du Pont</td><td>—</td><td>margin 1,252.5 / 12,500 = 10.02% × turnover 12,500 / 10,730 = 1.165 = 11.67%</td></tr>
+<tr><td>5 EVA = NOPAT − WACC × CE</td><td>1,386 − 2,130.7 = <b>−744.7</b> → destroys value</td><td>1,252.5 − 751.1 = <b>501.4</b> → creates value (key: 501.1, rounding)</td></tr></table>
+<p class="t small">HORIZON's BS doesn't balance (13,400 vs 12,700), so the asset approach gives 10,030. Use the approach the question names. EVA traps: −949.7 uses profit after tax (interest counted twice); 2,043 starts from EBITDA.</p>
+
 <div class="cs-cols">
+<div class="box"><h4>Debt or equity (IAS 32): quick table</h4>
+<table><tr><td>Must repay / holder can demand repayment (put)</td><td>liability</td></tr><tr><td>Coupon only if a condition outside your control (rates, CO₂ target)</td><td>liability</td></tr><tr><td>Perpetual, interest/dividend at issuer's discretion</td><td><b>equity</b> (2025 c)</td></tr><tr><td>Redeemable only at the entity's option</td><td>equity</td></tr><tr><td>Preferred with guaranteed cumulative dividend + put</td><td>liability (worsens D/E)</td></tr><tr><td>Paid in own shares: fixed number for fixed amount / variable number</td><td>equity / liability</td></tr></table>
+<p>Name and label (bond, share, dividend) don't matter. <b>Convertible bond</b>: liability = PV of coupons + principal at the market rate without conversion; equity = proceeds − liability (e.g. 100 → liability 95, equity 5).</p></div>
 <div class="box"><h4>Formulas</h4>
-<table class="f"><tr><td>EBITDA</td><td>EBIT + depreciation, amortisation (and impairment). Not defined by IFRS (a management measure).</td></tr>
-<tr><td>NOPAT</td><td>EBIT (operating profit) × (1 − tax rate). <b>Not</b> profit after tax (that is after interest).</td></tr>
-<tr><td>Capital employed, capital approach</td><td>Equity <b>incl. NCI</b> + financial debt (borrowings <b>+ lease liabilities</b>) − cash</td></tr>
-<tr><td>CE, asset approach</td><td>Non-current operating assets + working capital (inventories + receivables − payables)</td></tr>
-<tr><td><b>ROCE</b></td><td>NOPAT / CE (after tax). Pre-tax: EBIT / CE</td></tr>
-<tr><td>Du Pont</td><td>ROCE = <b>NOPAT margin</b> (NOPAT / revenue) × <b>CE turnover</b> (revenue / CE)</td></tr>
-<tr><td><b>EVA</b></td><td>NOPAT − WACC × CE = (ROCE − WACC) × CE. &gt; 0 creates value</td></tr>
-<tr><td>Free cash flow</td><td>Operating cash flow + investing cash flow (negative)</td></tr></table>
-<p><b>EBITDA moves with</b>: revenue, purchase prices, staff and other operating costs. <b>Not</b> with depreciation or useful life, interest, tax, collecting receivables (cash only). IFRS 16 raises it.<br>
-ROCE: return on all capital (debt + equity), not only shareholders'; not mandatory under IFRS; listed companies do publish it.</p></div>
+<table><tr><td>EBITDA</td><td>operating profit + depreciation, amortisation (impairment). Non-GAAP, not defined in IAS 1.</td></tr>
+<tr><td>P&amp;L cascade</td><td>Sales − cost of sales = gross margin → EBITDA → − D&amp;A = recurrent op. profit → ± non-recurrent = EBIT → − interest = EBT → − tax = NI</td></tr>
+<tr><td>CE, asset approach</td><td>non-current operating assets + inventories + receivables − payables</td></tr>
+<tr><td>ROCE pre-tax</td><td>EBIT / CE</td></tr>
+<tr><td>EVA alt.</td><td>(ROCE − WACC) × CE</td></tr>
+<tr><td>Free cash flow</td><td>operating CF + investing CF. 2023: 5,168 − 2,286 = 2,882 (2021: −720). Comment: helped by a one-off working-capital inflow (+1,694) → lower quality.</td></tr></table></div>
+<div class="box mcq"><h4>MCQ</h4>
+<p>Turn a negative EBITDA around: <b>lower purchase prices</b> (not longer useful lives, not faster collection: depreciation and cash aren't in EBITDA) (2025 d).<br>
+ROCE = <b>EBIT × (1 − t) / CE</b>, or operating profit / CE (2025 f, 2023 b). Not "for shareholders", not mandatory under IFRS, not EBITDA / total assets.</p></div>
 
-<div class="box ex"><h4>Example: HORIZON ROCE and EVA (2025, 6 pts)</h4>
-<table class="f"><tr><td>NOPAT</td><td>1,670 × 0.75 = <b>1,252.5</b></td></tr>
-<tr><td>Equity</td><td>500 + 1,800 + 4,200 + NCI 350 = 6,850</td></tr>
-<tr><td>Financial debt</td><td>3,200 + 800 + lease 720 + 230 = 4,950</td></tr>
-<tr><td>CE</td><td>6,850 + 4,950 − cash 1,070 = <b>10,730</b></td></tr>
-<tr><td>ROCE</td><td>1,252.5 / 10,730 = <b>11.67%</b> = 10.02% × 1.165</td></tr>
-<tr><td>EVA (WACC 7%)</td><td>1,252.5 − 751.1 = <b>501.4</b> → creates value</td></tr></table>
-<p class="t">That balance sheet doesn't balance (13,400 against 12,700), so the asset approach gives a different CE (10,030). Use the approach the question names.</p></div>
-
-<div class="box ex"><h4>Example: EVA multiple choice (2023, 3 pts)</h4>
-<p>EBIT 1,848, tax 25%, WACC 6.5%, CE 32,780. NOPAT 1,386 − 2,130.7 = <b>−744.7</b>.<br>
-Traps: −949.7 uses profit after tax (interest counted twice); 2,043 starts from EBITDA.</p></div>
-
-<div class="box ex"><h4>Example: free cash flow (2023, 6 pts)</h4>
-<p>2022: 5,168 − 2,286 = 2,882; 2021: 399 − 1,119 = −720. Comment: 2021 loss-driven and financed by debt/equity; 2022 helped by a one-off working-capital inflow (+1,694), so lower quality.</p></div>
-
-<div class="box"><h4>IFRS basics (Topic 1)</h4>
-<p><b>EU</b>: IFRS mandatory for the <b>consolidated</b> statements of <b>listed</b> companies since 2005 (IAS Regulation 1606/2002); countries may extend it. The Conceptual Framework is not a standard: a standard wins where they conflict.<br>
-<b>5 parts</b>: statement of financial position · P&amp;L and OCI · changes in equity · cash flows · notes.<br>
-<b>Current</b> if realised/settled within 12 months <b>or the normal operating cycle</b> (receivables in the cycle are current even beyond 12 months), held for trading, or cash.<br>
-<b>OCI</b>: gains not in P&amp;L (revaluation surplus, translation of foreign subsidiaries, some financial assets, actuarial gains). Total comprehensive income = NI + OCI.</p></div>
-
-<div class="box"><h4>By nature or by function?</h4>
-<p><b>By function</b>: cost of sales, gross profit, selling/SG&amp;A, R&amp;D. <b>By nature</b>: raw materials, staff costs, depreciation, other external charges. IAS 1 allows both.<br>
-By function → <b>staff costs and depreciation are not visible</b>, they're inside the functions → disclosed in the notes (2025 Q5.1–5.2: HORIZON is by function).</p>
-<p><b>Prove it's IFRS</b>: "statement of financial position", OCI, ROU assets / lease liabilities, "attributable to owners of the parent / NCI", notes say "IFRS as adopted by the EU". <b>Prove it's consolidated</b>: NCI, goodwill, share of associates.<br>
-<b>Goodwill</b> is not amortised (IFRS 3 / IAS 36): tested at least yearly instead.<br>
-<b>IFRS 18</b> (from 2027): defined operating profit; operating / investing / financing categories; management performance measures disclosed in the notes.</p></div>
-
-<div class="box"><h4>Exam routine</h4>
-<p>Points = minutes. Write the formula, then the numbers. State any assumption in one line. Draw both sides of every balance sheet and check that they balance. Multiple choice: rule out the traps (profit after tax, EBITDA, 60% instead of 100%, 30 years instead of 8).</p></div>
+<div class="box"><h4>Topic 1 · by nature or by function?</h4>
+<table class="pair2"><tr><th class="e">EASY · read it</th><th class="h">HARD · what follows</th></tr>
+<tr><td>Cost of sales, gross profit, SG&amp;A, R&amp;D → <b>by function</b>. Raw materials, staff costs, depreciation, external charges → <b>by nature</b>. IAS 1 allows both.</td><td>By function → <b>staff costs and depreciation can't be read</b>: they're inside the functions, disclosed in the notes (2025 Q5.1–5.2).</td></tr></table></div>
+<div class="box"><h4>Topic 1 · basics and "prove it" questions</h4>
+<p><b>EU</b>: IFRS mandatory for the <b>consolidated</b> FS of <b>listed</b> companies since 2005; individual FS usually local GAAP; ≈150 jurisdictions use IFRS. A standard overrides the Framework.<br>
+<b>5 parts</b>: financial position · P&amp;L + OCI · changes in equity · cash flows · notes.<br>
+<b>Current</b>: within 12 months <b>or the operating cycle</b>, trading, cash (receivables in the cycle are current even beyond 12 months).<br>
+<b>OCI</b>: revaluation surplus, FX translation of foreign subs, FVOCI investments, actuarial gains, cash-flow hedges. Total comprehensive income = NI + OCI. Operating profit not defined under IAS 1 → <b>IFRS 18</b> (2027): operating/investing/financing categories, defined subtotals, MPMs in the notes.<br>
+<b>Prove it's IFRS</b>: "statement of financial position", OCI, ROU assets and lease liabilities, notes say "IFRS as adopted by the EU". <b>Prove it's consolidated</b>: NCI, "attributable to owners of the parent", goodwill, associates.</p></div>
+<div class="box"><h4>If you freeze</h4>
+<p>Write the FIRST LINE of that side, then the step numbers 1, 2, 3… down the margin. Fill in the easy column's logic with the exam's numbers. Points = minutes. State any assumption in one line. Draw both sides of every BS and check they balance.</p></div>
 </div></section>
 </div>
 </template>
