@@ -301,6 +301,14 @@ input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-
 .cs table.pair2{table-layout:fixed}.cs table.pair2 th.e{background:var(--good-bg)}.cs table.pair2 th.h{background:var(--warn-bg)}
 .cs .box.trap{border-color:var(--warn)}.cs .box.mcq{background:var(--good-bg)}
 .cs .small{font-size:11.5px}
+.cs .duo{display:grid;grid-template-columns:1fr;gap:8px;margin-bottom:8px}
+@media (min-width:900px){.cs .duo{grid-template-columns:1fr 1.35fr}}
+.cs .duo .col{border:1px solid var(--line);border-radius:8px;padding:6px 8px;font-size:12.5px}
+.cs .duo .lab{font-weight:700;padding:2px 6px;border-radius:5px;margin-bottom:4px}
+.cs .lab.e{background:var(--good-bg)}.cs .lab.h{background:var(--warn-bg)}
+.cs .prob{background:var(--idle-bg);border-radius:5px;padding:3px 6px}
+.cs tr.prob td{background:var(--idle-bg);font-style:italic}
+.cs .duo table.bs{margin:3px 0}
 @media (min-width:900px){.cs .cs-cols{column-count:2;column-gap:10px}}
 @media print{
   @page{size:A4;margin:7mm}
@@ -326,6 +334,11 @@ input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-
   .cs table.pair th.e,.cs table.pair2 th.e{background:#d9eedf}.cs table.pair th.h,.cs table.pair2 th.h{background:#f6e1cf}
   .cs .box.mcq{background:#e8f3ec}.cs .box.trap{border-color:#c0703a}
   .cs .small{font-size:7.2pt}
+  .cs .duo{grid-template-columns:1fr 1.35fr;gap:2.5mm;margin-bottom:2mm}
+  .cs .duo .col{font-size:7.4pt;padding:1.2mm 1.8mm;border-color:#999}
+  .cs .duo .lab{padding:.4mm 1.5mm;margin-bottom:1mm}.cs .lab.e{background:#d9eedf}.cs .lab.h{background:#f6e1cf}
+  .cs .prob,.cs tr.prob td{background:#efefe9;font-size:6.7pt;line-height:1.18}
+  .cs .duo table.bs{font-size:7pt;margin:.6mm 0}
 }
 </style>
 </head>
@@ -346,25 +359,15 @@ input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-
 <header class="cs-h"><b>1 · CONSOLIDATION (Topic 2)</b><span>2023: 17 pts · 2025: 20 pts · points = minutes</span></header>
 <div class="go">FIRST LINE TO WRITE → <b>S's equity at acquisition = …</b> then <b>Difference = Price − % × S's equity</b>. Then the steps below, in order.</div>
 
-<table class="pair"><tr><th>Step</th><th class="e">EASY · Case 1: PC buys 100% of SA for 160</th><th class="h">HARD · 2025: AURORA buys 80% of VEGA for 3,200; VEGA's own patent FV 400; equipment +200</th></tr>
-<tr><td>0 Method</td><td>100% → control → full consolidation</td><td>80% → control → full consolidation <b>+ NCI</b></td></tr>
-<tr><td>1 S's equity at acq.</td><td>Capital 100 + NI 60 = <b>160</b></td><td>800 + 1,400 + 300 = <b>2,500</b></td></tr>
-<tr><td>2 Difference</td><td>160 − 160 = <b>0</b></td><td>3,200 − 80% × 2,500 = 3,200 − 2,000 = <b>1,200</b></td></tr>
-<tr><td>3 Valuation diff. (VD)</td><td>no fair values given → <b>0</b></td><td>80% × (400 + 200) = <b>480</b></td></tr>
-<tr><td>4 Goodwill = 2 − 3</td><td><b>0</b></td><td>1,200 − 480 = <b>720</b></td></tr>
-<tr><td>5 Add 100% line by line</td><td>Equipment 240 + 200 = 440; liabilities 80 + 40 = 120</td><td>Land 1,100; equipment 2,400 + 1,800 + <b>200</b> = 4,400; patent <b>400</b> (100%, not 80%); current assets 1,500; liabilities 2,900</td></tr>
-<tr><td>6 Eliminate</td><td>Investment 160 → <b>0</b>; SA's capital and NI → gone</td><td>Investment 3,200 → <b>0</b>; VEGA's 2,500 → gone</td></tr>
-<tr><td>7 NCI</td><td>none</td><td>20% × (2,500 + 600) = <b>620</b> (equity + 100% of the VD)</td></tr>
-<tr><td>8 Equity left</td><td>PC only: capital 300, NI 20</td><td>AURORA only: 1,200 / 3,000 / 400, + NCI 620</td></tr>
-<tr><td>9 Check</td><td>440 = 300 + 20 + 120 ✓</td><td>720 + 400 + 1,100 + 4,400 + 1,500 = <b>8,120</b> = 5,220 + 2,900 ✓</td></tr></table>
+<div class="duo"><div class="col"><div class="lab e">EASY · Case 1 (100%, no goodwill)</div><p class="prob"><b>Problem.</b> On 31 December N-1, PC acquired 100% of SA's shares for 160. Prepare the consolidated balance sheet at the date of acquisition.</p><table class="bs"><tr><th colspan="4">PC (parent)</th></tr><tr><td>Equipment</td><td>240</td><td>Capital</td><td>300</td></tr><tr><td>Investment in SA</td><td>160</td><td>Net income</td><td>20</td></tr><tr><td></td><td></td><td>Liabilities</td><td>80</td></tr><tr class="tot"><td>Total</td><td>400</td><td>Total</td><td>400</td></tr></table><table class="bs"><tr><th colspan="4">SA (subsidiary)</th></tr><tr><td>Equipment</td><td>200</td><td>Capital</td><td>100</td></tr><tr><td></td><td></td><td>Net income</td><td>60</td></tr><tr><td></td><td></td><td>Liabilities</td><td>40</td></tr><tr class="tot"><td>Total</td><td>200</td><td>Total</td><td>200</td></tr></table><p><b>a) PPA</b>: SA's equity at acquisition 100 + 60 = <b>160</b>. Difference 160 − 160 = <b>0</b>. No fair values given → VD 0 → <b>goodwill 0</b>.<br><b>b) Add 100%</b> of SA's lines. <b>c) Eliminate</b>: investment 160 → 0; SA's capital and NI → gone. <b>d) NCI</b>: none (100%).</p><table class="bs"><tr><th colspan="4">Consolidated (PC group)</th></tr><tr><td>Equipment (240 + 200)</td><td>440</td><td>Capital (PC only)</td><td>300</td></tr><tr><td>Investment in SA</td><td>0</td><td>Net income (PC only)</td><td>20</td></tr><tr><td></td><td></td><td>Liabilities (80 + 40)</td><td>120</td></tr><tr class="tot"><td>Total</td><td>440</td><td>Total</td><td>440</td></tr></table><p class="small" style="margin-top:3px"><b>Hard adds:</b> % &lt; 100 → % in difference and VD + NCI step · fair values → VD lines at 100% · goodwill = remainder.</p></div><div class="col"><div class="lab h">HARD · 2025 exam, Part 1 (80%, VD, goodwill, NCI) · 14 pts</div><p class="prob"><b>Problem.</b> On 1 January N, AURORA acquired 80% of VEGA's shares for 3,200 K€ (cash). VEGA has internally developed a patented technology whose fair value is 400. VEGA's equipment is worth 200 more than its book value; all other assets and liabilities are at carrying value. 1. PPA: calculate goodwill. 2. Prepare the consolidated balance sheet at the acquisition date.</p><table class="bs"><tr><th colspan="4">AURORA (after the acquisition)</th></tr><tr><td>Land</td><td>600</td><td>Share capital</td><td>1,200</td></tr><tr><td>Equipment</td><td>2,400</td><td>Retained earnings</td><td>3,000</td></tr><tr><td>Investment in VEGA</td><td>3,200</td><td>Net income</td><td>400</td></tr><tr><td>Current assets</td><td>800</td><td>Liabilities</td><td>2,400</td></tr><tr class="tot"><td>Total</td><td>7,000</td><td>Total</td><td>7,000</td></tr></table><table class="bs"><tr><th colspan="4">VEGA (acquisition date)</th></tr><tr><td>Land</td><td>500</td><td>Share capital</td><td>800</td></tr><tr><td>Equipment</td><td>1,800</td><td>Retained earnings</td><td>1,400</td></tr><tr><td>Current assets</td><td>700</td><td>Net income</td><td>300</td></tr><tr><td></td><td></td><td>Liabilities</td><td>500</td></tr><tr class="tot"><td>Total</td><td>3,000</td><td>Total</td><td>3,000</td></tr></table><p><b>a) PPA</b>: VEGA's equity 800 + 1,400 + 300 = <b>2,500</b>. Difference 3,200 − 80% × 2,500 = <b>1,200</b>. VD 80% × (400 + 200) = <b>480</b>. Goodwill = 1,200 − 480 = <b>720</b>.<br><b>b) Add 100%</b> of VEGA's lines + 100% of the VD (patent 400, equipment +200). <b>c) Eliminate</b>: investment 3,200 → 0; VEGA's 2,500 → gone. <b>d) NCI</b> = 20% × (2,500 + 600) = <b>620</b>.</p><table class="bs"><tr><th colspan="4">Consolidated (AURORA group)</th></tr><tr><td>Goodwill</td><td>720</td><td>Share capital (AURORA)</td><td>1,200</td></tr><tr><td>Patented technology</td><td>400</td><td>Retained earnings (AURORA)</td><td>3,000</td></tr><tr><td>Land (600 + 500)</td><td>1,100</td><td>Net income (AURORA)</td><td>400</td></tr><tr><td>Equipment (2,400 + 1,800 + 200)</td><td>4,400</td><td>NCI</td><td>620</td></tr><tr><td>Current assets (800 + 700)</td><td>1,500</td><td>Liabilities (2,400 + 500)</td><td>2,900</td></tr><tr><td>Investment in VEGA</td><td>0</td><td></td><td></td></tr><tr class="tot"><td>Total</td><td>8,120</td><td>Total</td><td>8,120</td></tr></table></div></div>
 
-<table class="pair"><tr><th>Step</th><th class="e">EASY · one year later, 100% (Case 1b)</th><th class="h">HARD · two years later, 80% (Case 6b, paid 160)</th></tr>
+<table class="pair"><tr><th>Step</th><th class="e">EASY · one year later, 100% (Case 1b)</th><th class="h">HARD · two years later, 80% (Case 6b, paid 160)</th></tr><tr class="prob"><td>Problem</td><td>PC bought 100% of SA for 160 on 31 Dec N-1, when SA's equity was capital 100 + NI 60. On 31 Dec N, SA's equity is capital 100, retained earnings 60, NI 120 (PC: capital 300, NI 80). Prepare the consolidated balance sheet at 31 Dec N.</td><td>PC bought 80% of SA for 160 when SA's equity was 200. Two years later SA's equity is 480. Prepare the consolidated balance sheet: what goes to the group, what to the NCI?</td></tr>
 <tr><td>1 Earned since acq.</td><td>SA's equity now 280 − at acq. 160 = <b>120</b></td><td>480 − 200 = <b>280</b></td></tr>
 <tr><td>2 Group's share</td><td>100% × 120 → group NI 80 + 120 = <b>200</b></td><td>80% × 280 = <b>224</b> into group equity</td></tr>
 <tr><td>3 NCI</td><td>none</td><td>20% × 480 = <b>96</b></td></tr>
 <tr><td>4 Rest as before</td><td colspan="2">Goodwill and VD stay (unless impaired; stepped-up PPE gets extra depreciation). Investment still 0. SA's equity <b>from before</b> the acquisition still gone.</td></tr></table>
 
-<table class="pair"><tr><th>Step</th><th class="e">EASY · associate: 40% bought for 60, NI 20</th><th class="h">HARD · Case 9c: 40% of A for 160, A's equity 250 → 510</th></tr>
+<table class="pair"><tr><th>Step</th><th class="e">EASY · associate: 40% bought for 60, NI 20</th><th class="h">HARD · Case 9c: 40% of A for 160, A's equity 250 → 510</th></tr><tr class="prob"><td>Problem</td><td>PC buys 40% of A for 60 and has significant influence. A makes a net income of 20 in the year and pays no dividend. What is the investment worth at year end, and what shows in PC's P&amp;L?</td><td>PC paid 160 for 40% of A when A's equity was 250. A's equity is now 510. Investment in A on the consolidated balance sheet?</td></tr>
 <tr><td>1 Method</td><td colspan="2">20–50% → significant influence → <b>equity method</b>: no adding lines, no elimination, no NCI. 1 BS line + 1 P&amp;L line.</td></tr>
 <tr><td>2 PPA</td><td>(not asked)</td><td>160 − 40% × 250 = 60 = goodwill, <b>stays inside the investment</b></td></tr>
 <tr><td>3 Share of growth</td><td>40% × 20 = <b>8</b> → P&amp;L "share of profit of associates"</td><td>40% × (510 − 250) = <b>104</b></td></tr>
@@ -372,18 +375,12 @@ input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-
 
 <div class="cs-cols">
 <div class="box"><h4>Theory for these steps</h4>
-<table><tr><td>&lt;20%</td><td>financial asset (IFRS 9)</td></tr><tr><td>20–50% significant influence</td><td>equity method (IAS 28)</td></tr><tr><td>joint control</td><td>JV: equity method</td></tr><tr><td>&gt;50% control</td><td>full consolidation (IFRS 10 + 3). Control is also possible below 50% (contracts, board).</td></tr></table>
-<p>Goodwill: intangible asset, <b>never amortised</b>, impairment test every year, never reversed. Negative (badwill): re-check fair values, then a <b>gain in P&amp;L</b>.<br>
-VD goes to <b>identifiable</b> assets (can be sold separately or come from a legal right): brands, patents, customer lists, PP&amp;E uplift. S's own brand or patent <b>is</b> recognised here at fair value, even though it isn't in S's books. Synergies, staff know-how → part of goodwill, never a separate asset.<br>
-NCI = share not owned by the parent, shown in equity and in NI. Consolidated P&amp;L: 100% of every line, then NI split: owners of the parent / NCI = (1−%) × S's NI.</p></div>
+<p><b>Method</b>: &lt;20% financial asset · 20–50% significant influence → equity method · joint control → equity method · &gt;50% control → full consolidation (control possible below 50% via contracts/board).<br>
+Goodwill: asset, <b>never amortised</b>, tested yearly, never reversed. Badwill: re-check FVs, then a <b>gain in P&amp;L</b>. VD → <b>identifiable</b> assets (separable or legal right): brand, patent, customer list, PP&amp;E uplift; S's own brand/patent <b>is</b> recognised here. Synergies, know-how → inside goodwill.<br>
+NCI shown in equity and NI. Consolidated P&amp;L: 100% of every line; NI to NCI = (1−%) × S's NI.</p></div>
 <div class="box trap"><h4>Traps</h4>
 <p>Investment left on the BS (must be 0) · S's pre-acquisition equity left in · adding only 80% of S's assets · patent/VD at 80% on the BS (it's 100%; only goodwill uses 80%) · NCI on book value only (add the VD) · synergies booked as an asset · forgetting both sides of the BS.</p></div>
-<div class="box mcq"><h4>MCQ and short answers</h4>
-<p>60% subsidiary wrongly on the equity method → group debt understated by <b>100%</b> of its debt (800,000), not 60%.<br>
-No goodwill amortisation? IFRS 3/IAS 36: indefinite life, tested yearly instead.<br>
-<b>Associates exist</b>: "share of profit of associates" (P&amp;L), "investments in associates" (BS), same line in the CF.<br>
-<b>Not all subsidiaries 100%</b>: NI attributable to NCI, NCI in equity, dividends paid to NCI.<br>
-<b>Consolidated</b>: NCI, "attributable to owners of the parent", goodwill, associates.</p></div>
+
 </div></section>
 
 <!-- ================= SIDE 2: IMPAIRMENT ================= -->
@@ -391,7 +388,7 @@ No goodwill amortisation? IFRS 3/IAS 36: indefinite life, tested yearly instead.
 <header class="cs-h"><b>2 · IMPAIRMENT &amp; NON-CURRENT ASSETS (Topic 3)</b><span>2023: 18 pts machine + 5 · 2025: 10 pts CGU</span></header>
 <div class="go">FIRST LINE TO WRITE → <b>Is there an indication? (what happened)</b> then <b>BV at the test date</b> then <b>RA = higher of (FV − costs to sell) and value in use</b>.</div>
 
-<table class="pair"><tr><th>Step</th><th class="e">EASY · Bilbao: plane 250, 25 years, after 5 years FV 180</th><th class="h">HARD · 2023: BUILD machine 300,000, 10 years, law in N3, reprieve in N4</th></tr>
+<table class="pair"><tr><th>Step</th><th class="e">EASY · Bilbao: plane 250, 25 years, after 5 years FV 180</th><th class="h">HARD · 2023: BUILD machine 300,000, 10 years, law in N3, reprieve in N4</th></tr><tr class="prob"><td>Problem</td><td>In January N1 Bilbao buys an airplane for €250m, depreciated straight-line over 25 years (cost model). By 31 Dec N5 airplane prices have dropped: the plane's net selling price is €180m. No information on cash flows. What value appears on the balance sheet at 31 Dec N5? Depreciation in N6?</td><td>BUILD buys a machine on 1.1.N1 for 300,000 €, its only use is concrete production, held 10 years, cost model, straight-line. FV / cost to sell / VIU: N1 265,000/20,000/260,000; N2 245,000/20,000/230,000; N3 170,000/18,000/175,000; N4 200,000/15,000/190,000. N3: a law will prohibit concrete production in the region from N8. N4: a transition rule allows existing plants to continue until N11. Reasoning and impacts N1–N4.</td></tr>
 <tr><td>1 Indication?</td><td>Plane prices dropped → yes</td><td>N1–N2: none → <b>no test</b>, just 30,000/yr (270,000, 240,000). N3: new law → yes. N4: reprieve → indication of <b>reversal</b></td></tr>
 <tr><td>2 BV at test date</td><td>250 × 20/25 = <b>200</b></td><td>N3: <b>review useful life first</b> (use ends N7 → 5 years left): 240,000 / 5 = 48,000 → <b>192,000</b></td></tr>
 <tr><td>3 RA = max(FVLCS, VIU)</td><td>No VIU given → FV <b>180</b></td><td>max(170,000 − 18,000 = 152,000; VIU 175,000) = <b>175,000</b></td></tr>
@@ -400,7 +397,7 @@ No goodwill amortisation? IFRS 3/IAS 36: indefinite life, tested yearly instead.
 <tr><td>6 Reversal</td><td>—</td><td>RA max(185,000; 190,000) = 190,000, but <b>cap</b> = BV without impairment: 192,000 − 192,000/7 = 164,571 → reversal <b>14,571</b> (gain)</td></tr>
 <tr><td colspan="3" class="t">Other accepted BUILD reading (keep 10 years): N3 BV 210,000 → loss 35,000; N4 150,000, cap 180,000 → reversal 30,000. <b>Write which reading you use.</b></td></tr></table>
 
-<table class="pair"><tr><th>Step</th><th class="e">EASY · Kohlbuy/Pritt CGU: BV 2,400k incl. goodwill 900k, RA 1,900k</th><th class="h">HARD · 2025 OMEGA CGU Y: land 400k, building 900k, machinery 2,200k, GW 500k; VIU 3,600k, FVLCS 3,200k</th></tr>
+<table class="pair"><tr><th>Step</th><th class="e">EASY · Kohlbuy/Pritt CGU: BV 2,400k incl. goodwill 900k, RA 1,900k</th><th class="h">HARD · 2025 OMEGA CGU Y: land 400k, building 900k, machinery 2,200k, GW 500k; VIU 3,600k, FVLCS 3,200k</th></tr><tr class="prob"><td>Problem</td><td>Kohlbuy bought the division Pritt (a CGU) four years ago. Pritt has had operating losses. Its net assets, including goodwill of $900,000, are carried at $2,400,000. The recoverable amount (value in use) is $1,900,000. Impairment test?</td><td>OMEGA, CGU Y, 31 Dec N, after a real-estate downturn. Land BV 400,000 (VIU 500,000, FVLCS 450,000); building 900,000 (VIU 750,000, FVLCS 700,000); machinery 2,200,000 and goodwill 500,000 (not measurable alone). CGU: BV 4,000,000, VIU 3,600,000, FVLCS 3,200,000. Determine and allocate the impairment loss.</td></tr>
 <tr><td>1 RA of the CGU</td><td><b>1,900k</b></td><td>max(3,600k; 3,200k) = <b>3,600k</b></td></tr>
 <tr><td>2 Total loss</td><td>2,400k − 1,900k = <b>500k</b></td><td>4,000k − 3,600k = <b>400k</b></td></tr>
 <tr><td>3 Assets with their own RA first</td><td>none</td><td>Land: max(500k, 450k) &gt; 400k → nothing (no write-up). Building: max(750k, 700k) = 750k → <b>−150k</b></td></tr>
@@ -428,14 +425,14 @@ No goodwill amortisation? IFRS 3/IAS 36: indefinite life, tested yearly instead.
 <header class="cs-h"><b>3 · LEASES (Topic 3) · DEBT &amp; EQUITY (Topic 4)</b><span>2023: 3 + 13 pts · 2025: 12 + 2 pts</span></header>
 <div class="go">FIRST LINE TO WRITE → <b>Test 1: identified asset? Can the supplier swap it, and would it gain from doing so?</b> If it's a lease: <b>Liability = payment × annuity factor</b>.</div>
 
-<table class="pair"><tr><th>Test</th><th class="e">EASY · Ex 3.4: ship for 5 years, customer decides cargo, ports, timing → LEASE</th><th class="h">HARD · Case 7: SAUSAGE hot dog stall, space can be moved any time → SERVICE</th></tr>
+<table class="pair"><tr><th>Test</th><th class="e">EASY · Ex 3.4: ship for 5 years, customer decides cargo, ports, timing → LEASE</th><th class="h">HARD · Case 7: SAUSAGE hot dog stall, space can be moved any time → SERVICE</th></tr><tr class="prob"><td>Problem</td><td>Customer contracts for a specified ship for 5 years; no substitution rights. Customer decides what cargo, whether, when and to which ports the ship sails, within restrictions (no piracy waters, no hazardous cargo). Supplier operates and maintains the ship. Lease or service contract?</td><td>SAUSAGE rents space in a building for 3 years. The contract states the amount of space; it may be anywhere in several areas. The operator can move it at any time without approval, at minimal cost (the stall is mobile), and gains from using its space best. Many suitable areas exist. Lease or service contract?</td></tr>
 <tr><td>1 Identified asset? (no substantive substitution right)</td><td>Ship named in the contract, no substitution ✓</td><td>Only an amount of space; operator can move it anywhere, any time, without approval, at minimal cost (stall is mobile), and <b>gains</b> from using its space best → substantive right ✗ → <b>stop: service</b></td></tr>
 <tr><td>2 Substantially all the benefits?</td><td>Exclusive use for 5 years ✓</td><td>✓ (but test 1 already failed)</td></tr>
 <tr><td>3 Directs how and for what purpose?</td><td>Decides cargo, ports, timing ✓ (safety rules only protect; supplier crewing the ship doesn't matter)</td><td>✓ (controls its own kiosk)</td></tr>
 <tr><td>Result</td><td><b>Lease</b> → on the BS</td><td><b>Service contract</b> → payments expensed</td></tr>
 <tr><td colspan="3" class="small">Also: <b>Ex 3.3</b> ship for one trip with cargo and dates fixed in the contract → test 3 ✗ → service. <b>Case 6 BRAND</b>: owner may relocate but must give an equal unit and pay the costs, and only gains if a big tenant arrives (unlikely) → not substantive → identified; BRAND decides goods, prices, stock → <b>lease</b>. Cleaning, security, advertising are separate services.</td></tr></table>
 
-<table class="pair"><tr><th>Step</th><th class="e">EASY · 2025 NEPTUNE: 80,000 at each year end, 8 years, life 30, 5%, factor 6.4632</th><th class="h">HARD · Ex 3.5 Adams: 9,968 on 1/1/N1 + 4 × 9,968 at year ends, 4 years, life 6, 10%</th></tr>
+<table class="pair"><tr><th>Step</th><th class="e">EASY · 2025 NEPTUNE: 80,000 at each year end, 8 years, life 30, 5%, factor 6.4632</th><th class="h">HARD · Ex 3.5 Adams: 9,968 on 1/1/N1 + 4 × 9,968 at year ends, 4 years, life 6, 10%</th></tr><tr class="prob"><td>Problem</td><td>1 Jan N: NEPTUNE leases warehouse space for 8 years (no renewal option). 80,000 € paid at the end of each year (first on 31/12/N). Useful life of the warehouse 30 years. Incremental borrowing rate 5%, annuity factor (5%, 8 years) 6.4632. ROU asset and lease liability at the start; BS and P&amp;L impact at 31 Dec N.</td><td>1 Jan N1: Adams signs a 4-year non-cancellable lease for a specific machine. It pays $9,968 at the beginning of N1 and four more payments of $9,968 at the end of N1, N2, N3, N4. Useful life 6 years, straight-line, interest rate 10% (annuity factor 4 years 3.169865). Initial recognition and N1 impact.</td></tr>
 <tr><td>1 Lease term</td><td>8 years</td><td>4 years (non-cancellable + options reasonably certain)</td></tr>
 <tr><td>2 Liability = PV of <b>future</b> payments</td><td>80,000 × 6.4632 = <b>517,056</b></td><td>9,968 × 3.169865 = <b>31,597</b> (the one paid today is not in it)</td></tr>
 <tr><td>3 ROU asset</td><td>= liability = <b>517,056</b></td><td>31,597 + 9,968 paid at the start = <b>41,565</b> (+ direct costs − incentives)</td></tr>
@@ -448,15 +445,13 @@ No goodwill amortisation? IFRS 3/IAS 36: indefinite life, tested yearly instead.
 
 <div class="cs-cols">
 <div class="box"><h4>Theory for leases (IFRS 16)</h4>
-<p>Lessee, optional exemptions: <b>short-term</b> (≤ 12 months) and <b>low-value</b> (≈ USD 5,000 new) → expense straight-line. Variable payments not tied to an index, and service parts, are also expensed → why IFRS companies still show "rent and charges" (2023 Q1c).<br>
-Expense is front-loaded (interest is high early); <b>EBITDA rises</b>, debt rises. Interest → financial, depreciation → operating.<br>
-<b>CFO "leasing keeps debt off the BS"</b>: wrong. IFRS 16 puts the ROU asset and lease liability on the BS, so gearing rises almost like a bank loan. Lessor accounting is basically unchanged.</p>
-<p class="t">The 2025 key's lease BS puts cash on the liabilities side and forgets equity → doesn't balance. Do it like step 9.</p></div>
-<div class="box mcq"><h4>MCQ</h4><p>Lease if the customer <b>has the right to use an identified asset and controls its use</b> for the term (2025 b). Not "legal ownership", not "&gt;75% of useful life".</p></div>
+<p>Optional exemptions: <b>short-term</b> (≤ 12 months), <b>low-value</b> (≈ USD 5,000 new) → expense. Variable payments not tied to an index and service parts are expensed too → why IFRS companies still show "rent and charges" (2023 Q1c). Expense front-loaded; <b>EBITDA and debt rise</b>.<br>
+<b>CFO "leasing keeps debt off the BS"</b>: wrong. ROU asset + lease liability go on the BS → gearing rises like a bank loan. <span class="t">2025 key's lease BS doesn't balance: do it like step 9.</span></p></div>
+
 </div>
 
 <div class="go">FIRST LINE TO WRITE (Topic 4) → <b>Does the issuer have a contractual obligation to pay cash?</b> Yes → liability. No → equity.</div>
-<table class="pair"><tr><th>Step</th><th class="e">EASY · shares: issue 1,000 at 15 (par 5), costs 300; treasury shares (2023, 4 pts)</th><th class="h">HARD · 2023 bond: 5,000 × nominal 100, issued at 90, coupon 6%, effective 7%</th></tr>
+<table class="pair"><tr><th>Step</th><th class="e">EASY · shares: issue 1,000 at 15 (par 5), costs 300; treasury shares (2023, 4 pts)</th><th class="h">HARD · 2023 bond: 5,000 × nominal 100, issued at 90, coupon 6%, effective 7%</th></tr><tr class="prob"><td>Problem</td><td>A company issues 1,000 shares (par €5) at €15, paying €300 issue costs. Separately: in N-1 it bought back 40,000 own shares (par €30) at €45; in N it sells 1,000 of them back at €40. Effect on equity?</td><td>Company B issues 5,000 bonds (nominal €100) on 1 Jan N1 at €90 each. Coupon 6% paid at year end, effective interest rate 7%, redeemed at nominal at the end of N10. Financial statement impacts in N1 and N2 at amortised cost?</td></tr>
 <tr><td>1 Start</td><td>Cash +15,000 = capital 5,000 + premium 10,000; costs → premium −300 (never P&amp;L)</td><td>Liability = cash received = <b>450,000</b> (issue costs would reduce it)</td></tr>
 <tr><td>2 Next move</td><td>Buy-back 40,000 at 45 → equity −1,800,000 (treasury shares, at cost)</td><td>N1 interest = 7% × 450,000 = <b>31,500</b> (P&amp;L); cash coupon = 6% × 500,000 = <b>30,000</b></td></tr>
 <tr><td>3 Then</td><td>Resell 1,000 at 40: cash +40,000, treasury +45,000 (cost), <b>premium −5,000</b>. Never P&amp;L or OCI.</td><td>End N1 = 450,000 + 31,500 − 30,000 = <b>451,500</b>; N2: 31,605 → <b>453,105</b> (→ 500,000 at maturity)</td></tr></table>
@@ -467,7 +462,7 @@ Expense is front-loaded (interest is high early); <b>EBITDA rises</b>, debt rise
 <header class="cs-h"><b>4 · KPIs (Topic 5) · STATEMENTS (Topic 1) · debt/equity table (Topic 4)</b><span>2023: 11 + 4 pts · 2025: 10 + 4 pts</span></header>
 <div class="go">FIRST LINE TO WRITE → <b>NOPAT = operating profit (EBIT) × (1 − tax)</b>, then <b>CE = equity incl. NCI + financial debt incl. leases − cash</b>.</div>
 
-<table class="pair"><tr><th>Step</th><th class="e">EASY · 2023 MCQ: EBIT 1,848, tax 25%, WACC 6.5%, CE given 32,780</th><th class="h">HARD · 2025 HORIZON: build CE from the balance sheet, WACC 7%</th></tr>
+<table class="pair"><tr><th>Step</th><th class="e">EASY · 2023 MCQ: EBIT 1,848, tax 25%, WACC 6.5%, CE given 32,780</th><th class="h">HARD · 2025 HORIZON: build CE from the balance sheet, WACC 7%</th></tr><tr class="prob"><td>Problem</td><td>Company ABC (m€): sales 49,155; EBITDA 5,565; EBIT 1,848; profit before tax 1,575; tax rate 25%; profit after tax 1,181; WACC 6.5%; capital employed 32,780. The EVA is: 2,043 / −282.7 / −744.7 / −949.7?</td><td>HORIZON (€m): revenue 12,500; operating profit 1,670; equity: capital 500, premium 1,800, retained earnings 4,200, NCI 350; borrowings 3,200 NC + 800 current; lease liabilities 720 NC + 230 current; cash 1,070. Tax 25%. ROCE after tax with CE = equity + financial debt − cash; decompose into NOPAT margin × CE turnover. WACC 7%: EVA?</td></tr>
 <tr><td>1 NOPAT</td><td>1,848 × 0.75 = <b>1,386</b></td><td>1,670 × 0.75 = <b>1,252.5</b></td></tr>
 <tr><td>2 Capital employed</td><td>given: 32,780</td><td>Equity 500 + 1,800 + 4,200 + <b>NCI 350</b> = 6,850; debt 3,200 + 800 + <b>leases 720 + 230</b> = 4,950; − cash 1,070 → <b>10,730</b></td></tr>
 <tr><td>3 ROCE = NOPAT / CE</td><td>1,386 / 32,780 = 4.2%</td><td>1,252.5 / 10,730 = <b>11.67%</b></td></tr>
@@ -499,6 +494,13 @@ ROCE = <b>EBIT × (1 − t) / CE</b>, or operating profit / CE (2025 f, 2023 b).
 <b>Current</b>: within 12 months <b>or the operating cycle</b>, trading, cash (receivables in the cycle are current even beyond 12 months).<br>
 <b>OCI</b>: revaluation surplus, FX translation of foreign subs, FVOCI investments, actuarial gains, cash-flow hedges. Total comprehensive income = NI + OCI. Operating profit not defined under IAS 1 → <b>IFRS 18</b> (2027): operating/investing/financing categories, defined subtotals, MPMs in the notes.<br>
 <b>Prove it's IFRS</b>: "statement of financial position", OCI, ROU assets and lease liabilities, notes say "IFRS as adopted by the EU". <b>Prove it's consolidated</b>: NCI, "attributable to owners of the parent", goodwill, associates.</p></div>
+<div class="box mcq"><h4>Topic 2 · MCQ and short answers</h4>
+<p>60% subsidiary wrongly on the equity method → group debt understated by <b>100%</b> of its debt (800,000), not 60%.<br>
+No goodwill amortisation? IFRS 3/IAS 36: indefinite life, tested yearly instead.<br>
+<b>Associates exist</b>: "share of profit of associates" (P&amp;L), "investments in associates" (BS), same line in the CF.<br>
+<b>Not all subsidiaries 100%</b>: NI attributable to NCI, NCI in equity, dividends paid to NCI.<br>
+<b>Consolidated</b>: NCI, "attributable to owners of the parent", goodwill, associates.</p></div>
+<div class="box mcq"><h4>Topic 3 leases · MCQ</h4><p>Lease if the customer <b>has the right to use an identified asset and controls its use</b> for the term (2025 b). Not "legal ownership", not "&gt;75% of useful life".</p></div>
 <div class="box"><h4>If you freeze</h4>
 <p>Write the FIRST LINE of that side, then the step numbers 1, 2, 3… down the margin. Fill in the easy column's logic with the exam's numbers. Points = minutes. State any assumption in one line. Draw both sides of every BS and check they balance.</p></div>
 </div></section>
