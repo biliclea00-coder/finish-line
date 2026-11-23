@@ -275,6 +275,8 @@ table.sol{width:100%;border-collapse:collapse;font-size:15px;margin:6px 0}table.
 .pl-if.on{border-color:var(--good);background:var(--good-bg)}
 .pl-pin.home span{border-color:var(--deep)}
 input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}input[type=number]{-moz-appearance:textfield}
+/* iPhone zooms into any field with text under 16px: keep every field at 16px on touch screens */
+@media (pointer:coarse){input,select,textarea{font-size:16px!important}}
 </style>
 </head>
 <body>
