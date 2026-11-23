@@ -1463,12 +1463,67 @@ var READONLY = {
 };
 var openTerm = "";
 var STEPEXTRA = {
+ t3a:[["int","Slide 10 with your companies: 17 scenarios, asset or expense? (about 10 minutes)",'<a class="btn small ghost" href="#intang-t3">Start the slide 10 scenarios</a>']],
  t4a:[["slx","Practice exercises from slides 15–16: debt or equity? (6 instruments, about 6 minutes)",'<a class="btn small ghost" href="#slidex-t4">Start the slide 15–16 exercises</a>']],
  e0:[["ctx","Do the context check: 7 true-or-false statements, about 4 minutes",'<a class="btn small ghost" href="#context-check">Start the context check</a>']],
  t4f:[["read","Read Elliott 14.3.4, pp. 345–347. It is in the required reading for Topic 4 (pp. 342–347) but not on the slides. Melville pp. 180–182 explains the same more simply",'<a class="btn small ghost" href="#doc/bk-elliott/380/t4f-1">Open Elliott p. 345</a><a class="btn small ghost" href="#doc/bk-melville/193/t4f-0">Open Melville p. 180</a>'],
       ["try","Try 2023 exam question 4 on paper, about 9 minutes",'<a class="btn small ghost" href="#doc/exam-2023/8">Open the question</a>'],
       ["sol","Check yourself with the worked solution",'<a class="btn small ghost" href="#solution/4">Open the worked solution</a>']]
 };
+/* Topic 3, slide 10: every box as a story from Lea's company universe (fictional companies, like the ones she follows) */
+var INT10 = [
+ {c:"sep", co:"Synapse AI", t:"Buys software", s:"Synapse AI (AI agents that automate office work) pays €180,000 for a 5-year licence to a ready-made project-management platform it will run its whole team on.", a:"A",
+  why:"Separately acquired software → intangible asset at cost, amortised over the 5 years. Bought from outside, so the IAS 38 criteria are assumed to be met (slide 9)."},
+ {c:"sep", co:"Terra Properties", t:"Buys a franchise", s:"Terra Properties (real estate) pays €400,000 to a well-known co-working chain for the right to run co-working floors under that chain's name in its Berlin buildings for 10 years.", a:"A",
+  why:"Franchise bought separately → intangible asset, amortised over the 10-year term."},
+ {c:"sep", co:"Apex Vault", t:"Buys a licence", s:"Apex Vault (pole vault poles) pays a Japanese carbon-fibre maker €250,000 for the right to use its patented fibre-layering technique in Apex poles for 8 years.", a:"A",
+  why:"Licensing agreement bought separately → asset, amortised over 8 years. Apex controls the right by contract."},
+ {c:"sep", co:"Verdant Capital", t:"Buys artistic rights", s:"Verdant Capital (sustainable VC fund) buys the rights to a climate documentary, for €90,000, to show at its investor events and online for 4 years.", a:"A",
+  why:"Artistic rights bought separately → asset, amortised over 4 years."},
+ {c:"sep", co:"Synapse AI", t:"Exception: staff training", s:"Synapse AI pays €60,000 for its 12 engineers to take a certified machine-learning course. Management says: \"our people are our biggest asset\".", a:"E",
+  why:"Exception in the 'separate acquisition' box: human capital is not an asset. Synapse doesn't control the engineers (they can resign tomorrow), so training is an expense, however valuable it is.", trap:"\"It creates future benefits, so it's an asset.\" Control is missing."},
+ {c:"bc", co:"Synapse AI buys FlowDesk", t:"Trademark", s:"Synapse AI buys 100% of the startup FlowDesk. FlowDesk built its own brand \"FlowDesk\" and never had it on its balance sheet. An expert values the brand at €2m.", a:"A",
+  why:"In a business combination the acquiree's trademark is identifiable and separable from goodwill → recognised at fair value (€2m) in the group's balance sheet, even though FlowDesk could never book it itself. Same logic as VEGA's patent in the 2025 exam.", trap:"\"Internally generated brands are never assets.\" True for FlowDesk's own books, not for Synapse's group after buying it."},
+ {c:"bc", co:"Synapse AI buys FlowDesk", t:"Customer list", s:"FlowDesk has a list of 3,000 paying business customers with contact details and usage data, valued at €500,000.", a:"A",
+  why:"Customer list acquired in a business combination → separate intangible asset at fair value, not part of goodwill."},
+ {c:"bc", co:"Synapse AI buys FlowDesk", t:"Domain name", s:"FlowDesk owns the domain flowdesk.ai, valued at €80,000.", a:"A",
+  why:"Internet domain names acquired in a business combination → separate intangible asset at fair value."},
+ {c:"bc", co:"Apex Vault buys a Croatian pole maker", t:"Non-contractual customer relationships", s:"Apex Vault buys 100% of a small Split-based pole maker. Many athletics clubs reorder from it every season out of habit, without any contract. The relationship is valued at €150,000.", a:"A",
+  why:"Non-contractual customer relationships acquired in a business combination → separate intangible asset (they can be separated, e.g. sold), not goodwill."},
+ {c:"bc", co:"Apex Vault buys a Croatian pole maker", t:"Goodwill: what's left", s:"Apex pays €1.2m. The fair value of the identifiable net assets (machines, stock, brand, the club relationships) is €900,000. Apex also mentions the skilled workforce and expected synergies with its own factory.", a:"A",
+  why:"Goodwill = 1.2m − 0.9m = €300,000 → asset, never amortised, tested yearly. The workforce and synergies are NOT separate assets: they're part of the goodwill."},
+ {c:"int", co:"Apex Vault", t:"Own trademark", s:"Apex Vault spends €300,000 sponsoring athletes and on ads to build its \"Apex\" brand. The brand is now worth far more.", a:"E",
+  why:"Internally generated trademarks (and mastheads, publishing titles, customer lists) are never assets: their cost can't be separated from building the business as a whole. Expense. (2025 MCQ e.)"},
+ {c:"int", co:"Verdant Capital", t:"Own goodwill", s:"Verdant Capital's reputation in climate investing means founders choose it over other funds. Verdant estimates this reputation is worth €5m.", a:"E",
+  why:"Internally generated goodwill is never recognised. Only goodwill bought in an acquisition is an asset."},
+ {c:"int", co:"Terra Properties", t:"Own customer list", s:"Terra Properties has built up a database of 8,000 tenants and interested buyers over 10 years of marketing.", a:"E",
+  why:"An internally generated customer list → expense (IAS 38 lists it with brands and mastheads). Compare: FlowDesk's list bought by Synapse is an asset."},
+ {c:"int", co:"Apex Vault", t:"Research", s:"Jan–Apr N: Apex Vault's lab tests whether a plant-based resin could replace fibreglass in poles. €120,000 of lab time and materials. Nobody knows yet if it will work.", a:"E",
+  why:"Research = gaining new knowledge (slide 12: lab work aimed at discovery). Always an expense, as incurred."},
+ {c:"int", co:"Apex Vault", t:"Exception: development", s:"1 May N: the resin works and Apex can show all the criteria (technically feasible, it intends to finish and sell the poles, clubs want them, it has the money, costs are tracked). May–Sep it designs and builds prototype poles and a pilot line: €300,000. Sales start in October.", a:"A",
+  why:"Development (applying the knowledge: prototypes, pilot plant) once all criteria are met → capitalise €300,000. Amortise from October, when the poles go on sale. The €120,000 from Jan–Apr stays an expense and is never added back later.", trap:"Capitalising the research months too, or not capitalising development once the criteria are met (it's required, not optional)."},
+ {c:"int", co:"Synapse AI", t:"Exception: own software", s:"Synapse AI builds its own AI-agent platform. Months 1–3: exploring which AI models could work (€200,000). From month 4 the design is proven feasible and the team codes and tests the product it will sell (€700,000).", a:"A",
+  why:"Internally developed software follows the research/development split: months 1–3 = research → expense €200,000; from month 4 = development → asset €700,000, amortised once it's in use or on sale. This is why the slide lists software as an exception."},
+ {c:"int", co:"Apex Vault", t:"Exception: patent", s:"Apex Vault registers a patent on its new resin pole. Lawyers and registration fees cost €40,000, on top of the qualifying development costs.", a:"A",
+  why:"A patent arising from qualifying development → asset (development costs that met the criteria + registration and legal fees). The research behind it stays an expense."}
+];
+var INTCOL = {sep:["Bought separately","Assets (exception: staff training, human capital)"], bc:["Bought in a business combination","Separable intangibles at fair value + goodwill"], int:["Generated internally","Expense (exceptions: development, software, patents)"]};
+function vIntang(){
+  S.int10 = S.int10 || {}; var done = INT10.filter(function(x, i){ return S.int10[i]; }).length, right = INT10.filter(function(x, i){ return S.int10[i]===x.a; }).length;
+  var h = '<a class="back" href="#topic-3">← Topic 3</a><div class="stack"><div class="eyebrow">Topic 3 · step 1 · slide 10</div><h1>Slide 10 with your companies</h1>'+
+    '<p class="lead">Every box on slide 10 as a story. Fictional companies, like the ones you follow. Decide asset or expense, then read why.</p>'+
+    '<p class="pl-calm"><b>Slide 10 in one line:</b> bought separately → asset (except training) · bought with a company → its brand, customer list, domain, customer relationships at fair value, plus goodwill · made yourself → expense (except development, software, patents once the criteria are met).</p>'+
+    '<p class="note">'+done+' of '+INT10.length+' answered'+(done?', '+right+' right':'')+'. <a href="#doc/t3-slides/10">Open slide 10</a> · <a href="#doc/t3-slides/12">slide 12 (research vs development)</a></p></div>';
+  var last = "";
+  INT10.forEach(function(x, i){ var p = S.int10[i], ok = p===x.a;
+    if(x.c!==last){ last = x.c; h += '<h2 style="margin-top:6px">'+esc(INTCOL[x.c][0])+'</h2><p class="note">Slide 10: '+esc(INTCOL[x.c][1])+'</p>'; }
+    h += '<section class="card"><div class="row"><span class="eyebrow">'+esc(x.co)+' · '+esc(x.t)+'</span>'+(p?'<span class="pill '+(ok?"solid":"gap")+'">'+(ok?"Right":"Not quite")+'</span>':'')+'</div><p>'+esc(x.s)+'</p>'+
+      '<div class="two"><button type="button" class="opt" data-int="'+i+'|A" aria-pressed="'+(p==="A")+'">Asset</button><button type="button" class="opt" data-int="'+i+'|E" aria-pressed="'+(p==="E")+'">Expense</button></div>';
+    if(p) h += '<p><b>'+(x.a==="A"?"Asset.":"Expense.")+'</b> '+esc(x.why)+'</p>'+(x.trap?'<p class="note"><b>Trap:</b> '+esc(x.trap)+'</p>':'');
+    h += '</section>'; });
+  if(done===INT10.length) h += '<section class="card"><h2>The pairs to remember</h2><table class="sol"><tr><td>Apex\'s own brand</td><td>expense</td><td>FlowDesk\'s brand bought by Synapse</td><td>asset</td></tr><tr><td>Terra\'s own tenant list</td><td>expense</td><td>FlowDesk\'s customer list bought</td><td>asset</td></tr><tr><td>Verdant\'s own reputation</td><td>expense</td><td>Goodwill paid for the pole maker</td><td>asset</td></tr><tr><td>Apex resin lab tests</td><td>expense</td><td>Apex prototypes after 1 May</td><td>asset</td></tr><tr><td>Synapse\'s staff training</td><td>expense</td><td>Synapse\'s bought software licence</td><td>asset</td></tr></table><p class="note">Same thing, different route in, different answer. That is what slide 10 tests. <button type="button" class="linkbtn" data-int="reset">Do them again</button></p></section>';
+  return h;
+}
 /* Topic 4, slides 15–16: the six debt-or-equity exercises the course never solves. Classified with the slide 14 test. */
 var SLX4 = [
  {n:1, s:15, q:"The entity issued a financial instrument, which is to be paid back after 10 years at nominal value. During these 10 years the holder receives annual interest payments in accordance with the Euribor.", a:"L",
@@ -2172,7 +2227,7 @@ function render(){
   if(!dr && DV.err){ DV.err = ""; DV.id = ""; }
   if(dr){ openDoc(dr); if(DV.doc && DV.id===dr.id){ S.docPos[dr.id] = dr.page; saveLocal(); } }
   var isPlan = /^plan(\/|$)/.test(r) || r==="journal";
-  var v = isPlan ? (window.FLPlan ? window.FLPlan.view(r) : '<p class="lead">Loading the planner…</p>') : dr ? vDoc(dr) : m ? (vTopic(+m[1]) + openQsHtml(+m[1])) : msol ? vSolution(msol[1]) : mcard ? vCards(mcard[1]) : ({map:vMap, cheat:vCheat, "slidex-t4":vSlideEx, universe:vUniverse, practice:vPractice, "level-check":vCheck, "context-check":vContext, reading:vReading, "dev-notes":vDev, account:vAccount}[r] || vMap)();
+  var v = isPlan ? (window.FLPlan ? window.FLPlan.view(r) : '<p class="lead">Loading the planner…</p>') : dr ? vDoc(dr) : m ? (vTopic(+m[1]) + openQsHtml(+m[1])) : msol ? vSolution(msol[1]) : mcard ? vCards(mcard[1]) : ({map:vMap, cheat:vCheat, "slidex-t4":vSlideEx, "intang-t3":vIntang, universe:vUniverse, practice:vPractice, "level-check":vCheck, "context-check":vContext, reading:vReading, "dev-notes":vDev, account:vAccount}[r] || vMap)();
   app.innerHTML = v;
   if(document.getElementById("city")) mountCity();
   if(isPlan && window.FLPlan) window.FLPlan.after(r);
@@ -2217,6 +2272,7 @@ app.addEventListener("click", function(e){
   if(dsg.askclaude){ var pq = dsg.askclaude, txt = claudePrompt(pq), done = function(){ askCopied = pq; render(); window.open("https://claude.ai/new", "_blank"); };
     if(navigator.clipboard) navigator.clipboard.writeText(txt).then(done, function(){ window.prompt("Copy this and paste it in Claude:", txt); });
     else window.prompt("Copy this and paste it in Claude:", txt); return; }
+  if(dsg.int){ S.int10 = S.int10 || {}; if(dsg.int==="reset") S.int10 = {}; else { var ip = dsg.int.split("|"); S.int10[ip[0]] = ip[1]; } save(); render(); return; }
   if(dsg.slx){ S.slx = S.slx || {}; if(dsg.slx==="reset") S.slx = {}; else { var sp = dsg.slx.split("|"); S.slx[sp[0]] = sp[1]; } save(); render(); return; }
   if(dsg.tview !== undefined){ var tv = dsg.tview.split("|"); S.tview = S.tview || {}; S.tview[tv[0]] = tv[1]; save(); render(); window.scrollTo(0,0); return; }
   if(dsg.tf){ var tf = dsg.tf.split("|"); TG(+tf[0]).stage = tf[1]; if(tf[1]==="rate") TG(+tf[0]).ri = 0; save(); render(); window.scrollTo(0,0); return; }
