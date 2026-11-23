@@ -1461,11 +1461,47 @@ var READONLY = {
 };
 var openTerm = "";
 var STEPEXTRA = {
+ t4a:[["slx","Practice exercises from slides 15–16: debt or equity? (6 instruments, about 6 minutes)",'<a class="btn small ghost" href="#slidex-t4">Start the slide 15–16 exercises</a>']],
  e0:[["ctx","Do the context check: 7 true-or-false statements, about 4 minutes",'<a class="btn small ghost" href="#context-check">Start the context check</a>']],
  t4f:[["read","Read Elliott 14.3.4, pp. 345–347. It is in the required reading for Topic 4 (pp. 342–347) but not on the slides. Melville pp. 180–182 explains the same more simply",'<a class="btn small ghost" href="#doc/bk-elliott/380/t4f-1">Open Elliott p. 345</a><a class="btn small ghost" href="#doc/bk-melville/193/t4f-0">Open Melville p. 180</a>'],
       ["try","Try 2023 exam question 4 on paper, about 9 minutes",'<a class="btn small ghost" href="#doc/exam-2023/8">Open the question</a>'],
       ["sol","Check yourself with the worked solution",'<a class="btn small ghost" href="#solution/4">Open the worked solution</a>']]
 };
+/* Topic 4, slides 15–16: the six debt-or-equity exercises the course never solves. Classified with the slide 14 test. */
+var SLX4 = [
+ {n:1, s:15, q:"The entity issued a financial instrument, which is to be paid back after 10 years at nominal value. During these 10 years the holder receives annual interest payments in accordance with the Euribor.", a:"L",
+  steps:["Is there an obligation to deliver cash? Yes, twice: the nominal value after 10 years, and the interest every year.","The interest is variable (Euribor), but variable is not the same as optional: the amount changes, the obligation doesn't.","The entity cannot avoid paying → financial liability."],
+  why:"A plain floating-rate bond. Interest → P&L expense. Issue costs → deducted from the liability and spread through the effective interest (slide 17).", trap:"Thinking a variable payment is uncertain and therefore not an obligation."},
+ {n:2, s:15, q:"Paid back after 10 years at nominal value. Interest of 5% a year, but only if on 31.12 a reference rate set by the central bank is higher than 4%.", a:"L",
+  steps:["Repayment of the nominal after 10 years: an obligation, no conditions → that alone makes it a liability.","The interest depends on the central bank rate. The entity does not control that rate.","Slide 14: conditions outside the entity's control are irrelevant, and so is the probability of paying. The entity can't choose to avoid the payment."],
+  why:"Whole instrument → financial liability. When the condition is met, the 5% is interest expense in P&L.", trap:"\"The interest might never be paid, so it's equity.\" Probability doesn't matter; only whether the entity can refuse."},
+ {n:3, s:15, q:"Infinite duration. The holder receives an annual interest payment if, at the same time, the entity pays a dividend on its common shares.", a:"E",
+  steps:["Repayment? Never: infinite duration, so no obligation to give the money back.","Interest? Only if the entity pays a common-share dividend, and declaring dividends is the entity's own decision.","So the entity can always avoid paying anything → no contractual obligation → equity."],
+  why:"Equity, even though it is called \"interest\". Payments are treated as dividends: a distribution, straight to equity, not P&L. Issue costs → deducted from equity. Same logic as the 2025 MCQ c (perpetual, interest at the issuer's discretion) and Orange's subordinated notes.", trap:"Being misled by the word \"interest\". The label of the payment doesn't matter."},
+ {n:4, s:16, q:"The entity issues 1,000 shares with a par value of €100 each. The holder has the option to require the entity to redeem the shares at par at any time.", a:"L",
+  steps:["The holder can force the entity to pay €100 per share back, whenever the holder wants (a put option for the holder).","The entity cannot refuse → obligation to deliver cash.","Slide 14 lists exactly this: instruments puttable by the holder → financial liability."],
+  why:"Financial liability of 1,000 × €100 = €100,000, even though they are legally shares. Any dividends on them → interest expense in P&L. This worsens debt/equity.", trap:"\"They're shares, so they're equity.\" The name of the instrument doesn't matter."},
+ {n:5, s:16, q:"The entity issues 1,000 shares with a par value of €100 each. The entity has the option to redeem the shares at par at any time.", a:"E",
+  steps:["Who decides about redemption? The entity.","The entity can simply never redeem → it can avoid paying.","No contractual obligation → equity."],
+  why:"Equity: share capital €100,000. If the entity later decides to redeem, only then does it become a liability (it then has an obligation). Compare with no. 4: the only difference is who holds the option.", trap:"Mixing up 4 and 5. Ask: who can force the payment? Holder → liability. Entity → equity."},
+ {n:6, s:16, q:"A \"green\" instrument repaid after 15 years at nominal. 3% interest a year. If the entity misses certain CO₂ targets (checked every 3 years), the interest rate increases, or the holder can require immediate redemption.", a:"L",
+  steps:["Repayment after 15 years and 3% every year: obligations from day one → already a liability.","The CO₂ clause only changes the timing (earlier redemption) or the amount (higher rate) of payments that are owed anyway.","Even if hitting CO₂ targets is partly in the entity's hands, it can't avoid the repayment and the 3% → liability."],
+  why:"Financial liability (a sustainability-linked bond). Interest, including any step-up, → P&L expense.", trap:"Thinking the green condition makes it special. It changes when and how much, not whether."}
+];
+function vSlideEx(){
+  S.slx = S.slx || {}; var done = SLX4.filter(function(x){ return S.slx[x.n]; }).length, right = SLX4.filter(function(x){ return S.slx[x.n]===x.a; }).length;
+  var h = '<a class="back" href="#topic-4">← Topic 4</a><div class="stack"><div class="eyebrow">Topic 4 · step 2 · debt or equity?</div><h1>Practice exercises from slides 15–16</h1>'+
+    '<p class="lead">Six instruments from the slides, solved with the test on slide 14. Pick liability or equity first, then read why.</p>'+
+    '<p class="pl-calm"><b>The one question (slide 14):</b> does the entity have a contractual obligation to pay cash that it <b>cannot avoid</b>? Yes → financial liability. No → equity. Probability doesn\'t matter. Conditions outside the entity\'s control don\'t matter. Instruments the <b>holder</b> can put back → liability. "If you have to write a cheque, it can\'t be equity."</p>'+
+    '<p class="note">'+done+' of 6 answered'+(done?', '+right+' right':'')+'. <a href="#doc/t4-slides/15">Open slides 15–16</a></p></div>';
+  SLX4.forEach(function(x){ var p = S.slx[x.n], ok = p===x.a;
+    h += '<section class="card"><div class="row"><span class="eyebrow">Exercise '+x.n+' · slide '+x.s+'</span>'+(p?'<span class="pill '+(ok?"solid":"gap")+'">'+(ok?"Right":"Not quite")+'</span>':'')+'</div><p>'+esc(x.q)+'</p>'+
+      '<div class="two"><button type="button" class="opt" data-slx="'+x.n+'|L" aria-pressed="'+(p==="L")+'">Financial liability</button><button type="button" class="opt" data-slx="'+x.n+'|E" aria-pressed="'+(p==="E")+'">Equity</button></div>';
+    if(p) h += '<p><b>'+(x.a==="L"?"Financial liability":"Equity")+'.</b></p><ol>'+x.steps.map(function(s){ return '<li>'+esc(s)+'</li>'; }).join("")+'</ol><p class="note"><b>Consequence:</b> '+esc(x.why)+'</p><p class="note"><b>Trap:</b> '+esc(x.trap)+'</p>';
+    h += '</section>'; });
+  if(done===6) h += '<section class="card"><h2>The pattern</h2><table class="sol"><tr><td>1 Euribor bond</td><td>liability</td><td>must repay; variable ≠ optional</td></tr><tr><td>2 Interest if central bank rate &gt; 4%</td><td>liability</td><td>condition outside its control</td></tr><tr><td>3 Perpetual, interest only with a common dividend</td><td>equity</td><td>entity can always avoid paying</td></tr><tr><td>4 Shares, holder can demand redemption</td><td>liability</td><td>puttable by the holder</td></tr><tr><td>5 Shares, entity may redeem</td><td>equity</td><td>entity\'s choice</td></tr><tr><td>6 Green bond, CO₂ step-up</td><td>liability</td><td>only timing and amount change</td></tr></table><p class="note">Slide 17 follows from the class: equity → payments are dividends (equity, no P&amp;L), issue costs off equity. Liability → interest expense in P&amp;L, issue costs inside the effective interest. <button type="button" class="linkbtn" data-slx="reset">Do them again</button></p></section>';
+  return h;
+}
 function TG(n){ S.tg = S.tg || {}; return S.tg[n] = S.tg[n] || {stage:"q", ri:0, cur:"", guess:-1, done:{}}; }
 function termify(text, n){
   var keys = Object.keys(TERMS[n]||{}).sort(function(a,b){ return b.length-a.length; }); if(!keys.length) return esc(text);
@@ -2134,7 +2170,7 @@ function render(){
   if(!dr && DV.err){ DV.err = ""; DV.id = ""; }
   if(dr){ openDoc(dr); if(DV.doc && DV.id===dr.id){ S.docPos[dr.id] = dr.page; saveLocal(); } }
   var isPlan = /^plan(\/|$)/.test(r) || r==="journal";
-  var v = isPlan ? (window.FLPlan ? window.FLPlan.view(r) : '<p class="lead">Loading the planner…</p>') : dr ? vDoc(dr) : m ? (vTopic(+m[1]) + openQsHtml(+m[1])) : msol ? vSolution(msol[1]) : mcard ? vCards(mcard[1]) : ({map:vMap, cheat:vCheat, universe:vUniverse, practice:vPractice, "level-check":vCheck, "context-check":vContext, reading:vReading, "dev-notes":vDev, account:vAccount}[r] || vMap)();
+  var v = isPlan ? (window.FLPlan ? window.FLPlan.view(r) : '<p class="lead">Loading the planner…</p>') : dr ? vDoc(dr) : m ? (vTopic(+m[1]) + openQsHtml(+m[1])) : msol ? vSolution(msol[1]) : mcard ? vCards(mcard[1]) : ({map:vMap, cheat:vCheat, "slidex-t4":vSlideEx, universe:vUniverse, practice:vPractice, "level-check":vCheck, "context-check":vContext, reading:vReading, "dev-notes":vDev, account:vAccount}[r] || vMap)();
   app.innerHTML = v;
   if(document.getElementById("city")) mountCity();
   if(isPlan && window.FLPlan) window.FLPlan.after(r);
@@ -2179,6 +2215,7 @@ app.addEventListener("click", function(e){
   if(dsg.askclaude){ var pq = dsg.askclaude, txt = claudePrompt(pq), done = function(){ askCopied = pq; render(); window.open("https://claude.ai/new", "_blank"); };
     if(navigator.clipboard) navigator.clipboard.writeText(txt).then(done, function(){ window.prompt("Copy this and paste it in Claude:", txt); });
     else window.prompt("Copy this and paste it in Claude:", txt); return; }
+  if(dsg.slx){ S.slx = S.slx || {}; if(dsg.slx==="reset") S.slx = {}; else { var sp = dsg.slx.split("|"); S.slx[sp[0]] = sp[1]; } save(); render(); return; }
   if(dsg.tview !== undefined){ var tv = dsg.tview.split("|"); S.tview = S.tview || {}; S.tview[tv[0]] = tv[1]; save(); render(); window.scrollTo(0,0); return; }
   if(dsg.tf){ var tf = dsg.tf.split("|"); TG(+tf[0]).stage = tf[1]; if(tf[1]==="rate") TG(+tf[0]).ri = 0; save(); render(); window.scrollTo(0,0); return; }
   if(dsg.guess){ var gu = dsg.guess.split("|"); TG(+gu[0]).guess = +gu[1]; save(); render(); return; }
