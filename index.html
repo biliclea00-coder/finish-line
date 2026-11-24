@@ -1833,7 +1833,10 @@ function vCards(arg){
   else h += '<div class="pl-progress"><i style="width:'+Math.round(QZ.i/QZ.items.length*100)+'%"></i></div>';
   if(!it){
     S.qdone = S.qdone || {}; S.qdone[arg] = new Date().toISOString().slice(0,10); save();
-    return h+'<section class="card pl-big"><h2>'+QZ.right+' of '+QZ.items.length+' right</h2><p class="lead">'+(QZ.right===QZ.items.length?'All of them. ':'')+'Missed ones come back first next time, so a miss now is useful.</p>'+(deck||timed ? '<a class="btn" href="#topic-'+topics[0]+'">Back to Topic '+topics[0]+'</a>' : '<a class="btn" href="#plan">Back to the plan</a>')+'</section>';
+    return h+'<section class="card pl-big"><h2>'+QZ.right+' of '+QZ.items.length+' right</h2><p class="lead">'+(QZ.right===QZ.items.length?'All of them. ':'')+'Missed ones come back first next time, so a miss now is useful.</p>'+
+      '<button type="button" class="btn" data-qznew="1">Keep going: 8 more</button>'+
+      '<p class="note" style="margin-top:10px">Or pick:</p><div class="row" style="flex-wrap:wrap;gap:6px"><a class="btn small ghost" href="#cards/1,2,3,4,5" data-qzgo="1">Mixed, all topics</a>'+[1,2,3,4,5].map(function(n){ return '<a class="btn small ghost" href="#cards/'+n+'" data-qzgo="1">Topic '+n+'</a>'; }).join("")+'</div>'+
+      (deck||timed ? '<p><a href="#topic-'+topics[0]+'">Back to Topic '+topics[0]+'</a></p>' : '<p><a href="#plan">Back to the plan</a></p>')+'</section>';
   }
   h += '<section class="card pl-big"><div class="eyebrow">Topic '+it.n+' · '+(it.id[0]==="d"?"true or false, from the slides":"from your quiz")+'</div><p class="pl-one" style="font-size:19px">'+esc(it.q)+'</p><div class="opts">'+
     it.o.map(function(o, oi){ var cls = QZ.picked<0 ? "" : oi===it.a ? " right" : oi===QZ.picked ? " wrong" : ""; return '<button type="button" class="opt'+cls+'" data-qzpick="'+oi+'"'+(QZ.picked>=0?" disabled":"")+'>'+esc(o)+'</button>'; }).join("")+'</div>';
@@ -2303,6 +2306,8 @@ app.addEventListener("click", function(e){
   if(dsg.askclaude){ var pq = dsg.askclaude, txt = claudePrompt(pq), done = function(){ askCopied = pq; render(); window.open("https://claude.ai/new", "_blank"); };
     if(navigator.clipboard) navigator.clipboard.writeText(txt).then(done, function(){ window.prompt("Copy this and paste it in Claude:", txt); });
     else window.prompt("Copy this and paste it in Claude:", txt); return; }
+  if(dsg.qznew){ QZ = null; render(); window.scrollTo(0,0); return; }
+  if(dsg.qzgo){ QZ = null; }
   if(dsg.int){ S.int10 = S.int10 || {}; if(dsg.int==="reset") S.int10 = {}; else { var ip = dsg.int.split("|"); S.int10[ip[0]] = ip[1]; } save(); render(); return; }
   if(dsg.slx){ S.slx = S.slx || {}; if(dsg.slx==="reset") S.slx = {}; else { var sp = dsg.slx.split("|"); S.slx[sp[0]] = sp[1]; } save(); render(); return; }
   if(dsg.tview !== undefined){ var tv = dsg.tview.split("|"); S.tview = S.tview || {}; S.tview[tv[0]] = tv[1]; save(); render(); window.scrollTo(0,0); return; }
