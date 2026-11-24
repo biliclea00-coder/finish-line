@@ -1386,7 +1386,7 @@ function mountCity(){
 
 /* ================= views ================= */
 var app = document.getElementById("app"), nav = document.getElementById("nav"), tick = null;
-var TABS = [["plan","Plan"],["journal","Journal"],["map","Course map"],["cheat","Cheat sheet"],["universe","Universe"],["reading","Reading speed"]];
+var TABS = [["plan","Plan"],["journal","Journal"],["map","Course map"],["cheat","Cheat sheet"],["cards/1,2,3,4,5","Question cards"],["universe","Universe"],["reading","Reading speed"]];
 function route(){ var h = (location.hash||"").replace("#",""); if(/access_token=|error=|type=recovery/.test(h)) return recovery ? "account" : "map"; return h || "plan"; }
 function go(h){ if(location.hash === "#"+h){ render(); } else { location.hash = h; } window.scrollTo(0,0); }
 
