@@ -1386,7 +1386,7 @@ function mountCity(){
 
 /* ================= views ================= */
 var app = document.getElementById("app"), nav = document.getElementById("nav"), tick = null;
-var HRTABS = [["hr","HRM exam"],["hr/cards/mixed","Cards"],["hr/overview","Theories"],["hr/cases","Class cases"],["plan","IFRS (archive)"]];
+var HRTABS = [["hr","HRM exam"],["hr/drill","Case drills"],["hr/cards/mixed","Cards"],["hr/overview","Theories"],["hr/cases","Class cases"],["plan","IFRS (archive)"]];
 var TABS = [["plan","Plan"],["journal","Journal"],["map","Course map"],["cheat","Cheat sheet"],["cards/1,2,3,4,5","Question cards"],["universe","Universe"],["reading","Reading speed"]];
 function route(){ var h = (location.hash||"").replace("#",""); if(/access_token=|error=|type=recovery/.test(h)) return recovery ? "account" : "map"; return h || "hr"; }
 function go(h){ if(location.hash === "#"+h){ render(); } else { location.hash = h; } window.scrollTo(0,0); }
@@ -2258,7 +2258,7 @@ function render(){
   killCity();
   var r = route(), m = r.match(/^topic-(\d)$/), msol = r.match(/^solution\/([0-9a-z]+)$/), mcard = r.match(/^cards\/([a-z0-9,-]+)$/);
   var isHr = /^hr(\/|$)/.test(r), tabs = isHr ? HRTABS : [["hr","HRM exam ▸"]].concat(TABS);
-  nav.innerHTML = tabs.map(function(x){ var cur = x[0]===r || (isHr && x[0]==="hr" && /^hr\/(paper|case)/.test(r)) || (isHr && x[0]==="hr/cards/mixed" && /^hr\/cards/.test(r)) || (x[0]==="plan" && /^plan\//.test(r)) || (x[0]==="map" && (m || /^doc\//.test(r) || /^solution\//.test(r) || r==="practice" || r==="level-check" || r==="context-check")); return '<a href="#'+x[0]+'"'+(cur?' aria-current="page"':'')+'>'+x[1]+'</a>'; }).join("");
+  nav.innerHTML = tabs.map(function(x){ var cur = x[0]===r || (isHr && x[0]==="hr" && /^hr\/(paper|case)/.test(r)) || (isHr && x[0]==="hr/cards/mixed" && /^hr\/cards/.test(r)) || (isHr && x[0]==="hr/drill" && /^hr\/drill/.test(r)) || (isHr && x[0]==="hr/cases" && /^hr\/cc/.test(r)) || (x[0]==="plan" && /^plan\//.test(r)) || (x[0]==="map" && (m || /^doc\//.test(r) || /^solution\//.test(r) || r==="practice" || r==="level-check" || r==="context-check")); return '<a href="#'+x[0]+'"'+(cur?' aria-current="page"':'')+'>'+x[1]+'</a>'; }).join("");
   var dr = docRoute(r);
   if(!dr && DV.err){ DV.err = ""; DV.id = ""; }
   if(dr){ openDoc(dr); if(DV.doc && DV.id===dr.id){ S.docPos[dr.id] = dr.page; saveLocal(); } }
