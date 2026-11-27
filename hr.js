@@ -45,6 +45,9 @@ css.textContent = [
 ".hr .casebox{font-size:15px}",
 ".hr .casebox p{margin:0 0 10px}",
 ".hr .big{font-size:28px;font-weight:700}",
+".hr .sdots{display:flex;gap:6px;flex-wrap:wrap}",
+".hr .sdot{width:22px;height:8px;border-radius:4px;border:0;background:var(--line);cursor:pointer;padding:0}",
+".hr .sdot.done{background:var(--good)}",".hr .sdot.on{background:var(--deep)}",
 ".hr .hook{background:var(--warn-bg);border-radius:8px;padding:8px 10px;margin:6px 0}",
 ".hr .exs{background:var(--good-bg);border-radius:8px;padding:8px 10px;margin:6px 0;font-style:italic}",
 ".hr .exs b,.hr .hook b{font-style:normal;display:block;font-size:13px}"
@@ -72,6 +75,7 @@ function vHome(){
   }
   var out = '<div class="hr stack"><h1>'+esc(M.title)+'</h1>'+
   '<div class="card"><b>'+esc(M.fmtTitle)+'</b><div>'+esc(M.fmtBody)+'</div><div class="lead">'+esc(M.fmtTip)+'</div></div>';
+  if(D.map) out += '<a class="tile" href="#hr/map" style="border-color:var(--deep)"><b>🗺️ Start here: the Map</b><small>One session at a time: key question, your first answer, a case, one concept per screen, papers and the book, then exam practice.</small></a>';
   if(pp) out += '<h2>Practice papers</h2>'+pp;
   if(D.dr && D.dr.length) out += '<h2>Case drills</h2><a class="tile" href="#hr/drill" style="border-color:var(--deep)"><b>'+D.dr.length+' new cases, answered the exam way</b><small>'+esc(M.drillTip||"Theory applied to case facts, a second theory, a class case, then a recommendation. Write yours, then compare with the answer key.")+'</small></a>';
   if(D.qs && D.qs.length) out += '<h2>Cards</h2><div class="card"><div class="lead">'+D.qs.length+' exam-style questions. '+seen+' seen, '+miss+' to redo.</div>'+
@@ -147,11 +151,11 @@ function pool(sel){
   if(sel==="missed") return D.qs.filter(function(q){ return h.log[q.id] && h.log[q.id].miss; });
   return D.qs.filter(function(q){ return sel==="mixed" || q.t===sel; });
 }
-function newRound(sel){
+function newRound(sel, cnt){
   var h = H(), ps = pool(sel).slice();
   ps.forEach(function(q){ var l = h.log[q.id]; q._k = (l ? (l.miss ? 1 : 2) : 0) + Math.random(); });
   ps.sort(function(a, b){ return a._k - b._k; });
-  CQ = {sel:sel, items:ps.slice(0, 10), i:0, picked:-1, right:0};
+  CQ = {sel:sel, items:ps.slice(0, cnt||10), i:0, picked:-1, right:0};
 }
 function vCards(sel){
   if(!CQ || CQ.sel!==sel) newRound(sel);
@@ -171,7 +175,7 @@ function vCards(sel){
 
 /* ---------- overview ---------- */
 function thHtml(k){ var t = D.th[k]; if(!t) return "";
-  var st = String(t.story||""), lab = /^Story:/.test(st) ? "📖 The story" : "🧠 Memory trick"; st = st.replace(/^(Story|Trick):\s*/,"");
+  var st = String(t.story||""), lab = /^Story:/.test(st) ? "📖 The story" : "🧠 Memory trick"; st = st.replace(/^(Story|Trick):\s*/,""); st = st.charAt(0).toUpperCase()+st.slice(1);
   return '<div class="th"><b>'+esc(t.n)+'</b> <span class="lead">('+esc(t.who)+')</span>'+
     (st ? '<div class="hook"><b>'+lab+'</b><div>'+esc(st)+'</div></div>' : '')+
     '<div><b>What it says: </b>'+esc(t.what)+'</div>'+
@@ -274,6 +278,87 @@ function vCoverage(){
     D.coverage.map(function(c){ return '<div class="card"><div class="row"><b>'+esc(c[0])+'</b>'+(c[2]?'<span class="pill todo">gap</span>':'<span class="pill solid">used</span>')+'</div><div>'+esc(c[1])+'</div></div>'; }).join("")+'</div>';
 }
 
+/* ---------- guided session path + map ---------- */
+function SP(n){ var h = H(); if(!h.sp) h.sp = {}; if(!h.sp[n]) h.sp[n] = {step:0, first:"", tries:{}, rate:""}; return h.sp[n]; }
+function sessByN(n){ return (D.sess||[]).filter(function(s){ return String(s.n)===String(n); })[0]; }
+function pathSteps(s){ var st = ["key","first","case"]; s.path.core.forEach(function(c){ st.push("c:"+c); }); st.push("trail","check","exam","back"); return st; }
+var STEPLAB = {key:"The key question", first:"Your first answer", "case":"The opening case", trail:"Paper trail and book", check:"Check yourself", exam:"The exam move", back:"Back to your first answer"};
+var STEPMIN = {key:1, first:3, "case":4, trail:8, check:5, exam:20, back:4};
+function stepName(k){ return k.indexOf("c:")===0 ? (D.th[k.slice(2)]||{}).n || k : STEPLAB[k]; }
+function rateLab(r){ return r==="ready" ? '<span class="pill solid">Exam-ready</span>' : r==="getting" ? '<span class="pill prog">Getting there</span>' : r==="not" ? '<span class="pill todo">Not yet</span>' : ''; }
+function vSess(n, k){
+  var s = sessByN(n); if(!s) return vMap();
+  if(!s.path) return '<div class="hr stack"><a href="#hr/map" class="lead">‹ Map</a><h1>S'+s.n+' · '+esc(s.title)+'</h1><div class="card"><b>Key question</b><div class="big" style="font-size:22px">'+esc(s.q)+'</div></div><p class="lead">The guided path for this session is still being built. Meanwhile the reference cards are under Theories.</p><a class="btn" href="#hr/overview">Open the reference cards</a></div>';
+  var p = s.path, sp = SP(n), steps = pathSteps(s);
+  if(k!==undefined && k!==null && !isNaN(k)){ sp.step = Math.max(0, Math.min(steps.length-1, k)); }
+  var i = sp.step, cur = steps[i], h = H(); h.here = {n:n, step:i}; 
+  var mins = cur.indexOf("c:")===0 ? 4 : STEPMIN[cur];
+  var dots = steps.map(function(x, j){ return '<button class="sdot'+(j===i?' on':'')+(j<i?' done':'')+'" data-hr="sstep|'+n+'|'+j+'" title="'+esc(stepName(x))+'"></button>'; }).join("");
+  var head = '<a href="#hr/map" class="lead">‹ Map</a><div class="qn">S'+s.n+' · '+esc(s.title)+'</div>'+
+    '<div class="row"><b>Step '+(i+1)+' of '+steps.length+' · '+esc(stepName(cur))+'</b><span class="pill todo">≈ '+mins+' min</span></div><div class="sdots">'+dots+'</div>';
+  var body = "";
+  function ta(key, ph){ var v = key==="first" ? sp.first : (sp.tries[key]||""); return '<textarea data-hrsp="'+n+'|'+key+'" placeholder="'+esc(ph)+'" style="min-height:110px">'+esc(v)+'</textarea>'; }
+  if(cur==="key"){
+    body = '<div class="card"><div class="lead">Key question</div><div class="big" style="font-size:24px;line-height:1.3">'+esc(s.q)+'</div></div>'+
+      '<div class="card"><b>Where this fits</b><div>'+esc(p.fit)+'</div></div>'+
+      '<div class="card"><b>What\'s coming</b><div class="chips">'+steps.slice(2).map(function(x, j){ return '<a href="#hr/s/'+n+'/'+(j+2)+'">'+esc(stepName(x))+'</a>'; }).join("")+'</div></div>';
+  } else if(cur==="first"){
+    body = '<div class="card"><b>'+esc(s.q)+'</b><div class="lead">Before anything else: answer in 2–3 lines, from what you already know or guess. No right or wrong; you\'ll come back to it at the end.</div>'+ta("first","My first answer…")+'</div>';
+  } else if(cur==="case"){
+    body = '<div class="card"><b>'+esc(p.case.title)+'</b>'+para(p.case.story)+'</div>'+
+      '<div class="card"><b>Your turn</b><div>'+esc(p.case.q)+'</div>'+ta("case","Two quick reasons…")+'<details><summary>What to notice</summary><div class="why">'+esc(p.case.notice)+'</div></details></div>';
+  } else if(cur.indexOf("c:")===0){
+    var id = cur.slice(2), t = D.th[id] || {}, tr = (p.tries||{})[id], st = String(t.story||""), lab = /^Story:/.test(st) ? "📖 The story" : "🧠 Memory trick"; st = st.replace(/^(Story|Trick):\s*/,""); st = st.charAt(0).toUpperCase()+st.slice(1);
+    body = '<div class="card"><div class="big" style="font-size:22px">'+esc(t.n)+'</div><div class="lead">'+esc(t.who)+'</div>'+
+      (st ? '<div class="hook"><b>'+lab+'</b><div>'+esc(st)+'</div></div>' : '')+
+      '<div><b>What it says: </b>'+esc((p.short && p.short[id]) || t.what)+'</div>'+
+      ((p.short && p.short[id]) ? '<details><summary>Also on the slides</summary><div>'+esc(t.what)+'</div></details>' : '')+'</div>'+
+      (tr ? '<div class="card"><b>Try it on the case</b><div>'+esc(tr.q)+'</div>'+ta("t:"+id,"Your answer…")+'<details><summary>Check</summary><div class="why">'+esc(tr.a)+'</div></details></div>' : '')+
+      (t.ex ? '<div class="exs"><b>✍️ Exam sentence</b><div>'+esc(t.ex)+'</div></div>' : '');
+  } else if(cur==="trail"){
+    body = p.core.map(function(id){ var r = (p.trail||{})[id]; if(!r) return ""; var t = D.th[id]||{};
+      return '<details class="card"><summary>'+esc(t.n)+'</summary><div class="stack" style="margin-top:8px">'+
+        '<div><b>📄 Where it started</b><br>'+esc(r.paper)+'</div><div><b>⚔️ The debate</b><br>'+esc(r.debate)+'</div>'+
+        (r.dev?'<div><b>➡️ Where it went</b><br>'+esc(r.dev)+'</div>':'')+(r.prof?'<div><b>🎓 Your professor</b><br>'+esc(r.prof)+'</div>':'')+
+        '<div class="exs"><b>✍️ Use it in the exam</b><div>'+esc(r.exam)+'</div></div></div></details>'; }).join("")+
+      (p.book ? '<div class="card"><b>📘 '+esc(p.book.title)+'</b><div class="lead">'+esc(p.book.note||"")+'</div>'+
+        p.book.parts.map(function(b){ return '<div class="row" style="align-items:flex-start;gap:8px"><span>'+esc(b[0])+' <span class="lead">(pp. '+esc(b[1])+')</span></span><a class="btn ghost" style="width:auto" href="#doc/'+p.book.doc+'/'+b[2]+'">Open</a></div>'; }).join("")+'</div>' : '');
+  } else if(cur==="check"){
+    if(!CQ || CQ.sel!=="p"+n){ newRound(s.t, 5); CQ.sel = "p"+n; }
+    if(!CQ.items.length) body = '<p class="lead">No cards for this session yet.</p>';
+    else if(CQ.i >= CQ.items.length) body = '<div class="card"><div class="big">'+CQ.right+' / '+CQ.items.length+'</div><div class="lead">Missed ones come back in your Cards tab.</div><button class="btn ghost" data-hr="sredo|'+n+'">Another 5</button></div>';
+    else { var q = CQ.items[CQ.i], done = CQ.picked>=0;
+      body = '<div class="card"><div class="qn">Card '+(CQ.i+1)+' of '+CQ.items.length+'</div><div>'+esc(q.q)+'</div>'+optBtns(q, CQ.picked, done, function(kk){ return 'data-hr="pick|'+kk+'"'; })+
+        (done ? whyHtml(q, CQ.picked)+'<button class="btn" data-hr="next">Next card</button>' : '')+'</div>'; }
+  } else if(cur==="exam"){
+    body = '<div class="card"><b>Now the exam way</b><div class="lead">Pick one. Write it like the exam: name the framework, go through it fully, back each point with a case fact, end with a verdict.</div></div>'+
+      p.exam.map(function(e){ return '<a class="tile" href="'+e[1]+'"><b>'+esc(e[0])+'</b><small>'+esc(e[2])+'</small></a>'; }).join("");
+  } else if(cur==="back"){
+    body = '<div class="card"><b>Your first answer</b><div class="model">'+(sp.first ? esc(sp.first) : '<span class="lead">You skipped it. That\'s fine.</span>')+'</div></div>'+
+      '<div class="card"><b>A model answer to: '+esc(s.q)+'</b><div class="model">'+esc(p.model)+'</div></div>'+
+      '<div class="card"><b>How exam-ready do you feel on this session?</b><div class="grid2" style="grid-template-columns:1fr 1fr 1fr">'+
+      [["not","Not yet"],["getting","Getting there"],["ready","Exam-ready"]].map(function(r){ return '<button class="ck'+(sp.rate===r[0]?' on':'')+'" style="justify-content:center" data-hr="srate|'+n+'|'+r[0]+'">'+r[1]+'</button>'; }).join("")+'</div></div>';
+  }
+  var nav = '<div class="grid2">'+(i>0 ? '<button class="btn ghost" data-hr="sstep|'+n+'|'+(i-1)+'">‹ Back</button>' : '<span></span>')+
+    (i<steps.length-1 ? '<button class="btn" data-hr="sstep|'+n+'|'+(i+1)+'">Next ›</button>' : '<a class="btn" href="#hr/map">Back to the map</a>')+'</div>';
+  return '<div class="hr stack">'+head+body+nav+'</div>';
+}
+function vMap(){
+  var h = H(), here = h.here, hs = here ? sessByN(here.n) : null;
+  var out = '<div class="hr stack"><h1>Map</h1>';
+  if(hs) out += '<div class="card" style="border-color:var(--deep)"><div class="lead">📍 You are here</div><b>S'+hs.n+' · '+esc(hs.title)+'</b>'+(hs.path?'<div>Step '+(here.step+1)+' of '+pathSteps(hs).length+': '+esc(stepName(pathSteps(hs)[here.step]))+'</div>':'')+'<a class="btn" href="#hr/s/'+hs.n+'">Continue</a></div>';
+  out += (D.map||[{label:"Sessions", desc:"", sess:D.sess.map(function(s){ return s.n; })}]).map(function(g){
+    return '<h2 style="margin-bottom:0">'+esc(g.label)+'</h2>'+(g.desc?'<div class="lead">'+esc(g.desc)+'</div>':'')+
+      g.sess.map(function(nn){ var s = sessByN(nn); if(!s) return ""; var sp = (h.sp||{})[nn], steps = s.path ? pathSteps(s) : [];
+        var chips = s.path ? s.path.core.map(function(c, j){ return '<a href="#hr/s/'+nn+'/'+(3+j)+'">'+esc((D.th[c]||{}).n||c)+'</a>'; }).join("") : (s.theory||[]).slice(0,4).map(function(c){ return '<a href="#hr/overview">'+esc((D.th[c]||{}).n||c)+'</a>'; }).join("");
+        var cases = (s.ccids||[]).map(function(c){ var x = (D.cc||[]).filter(function(z){ return z.id===c; })[0]; return x ? '<a href="#hr/cc/'+c+'">📁 '+esc(x.name)+'</a>' : ""; }).join("");
+        return '<div class="card'+(here && String(here.n)===String(nn)?'" style="border-color:var(--deep)':'')+'"><a href="#hr/s/'+nn+'" style="text-decoration:none;color:inherit"><div class="row"><b>S'+nn+' · '+esc(s.title)+'</b><span>'+(sp && sp.rate ? rateLab(sp.rate) : (s.path ? '<span class="pill todo">'+(sp ? (sp.step+1)+'/'+steps.length : 'start')+'</span>' : '<span class="pill todo">path soon</span>'))+'</span></div><div class="lead">'+esc(s.q)+'</div></a>'+
+          '<div class="chips">'+chips+cases+'</div></div>';
+      }).join("");
+  }).join("");
+  return out+'<p class="lead"><a href="#hr/overview">All theory cards (reference)</a> · <a href="#hr/cases">All class cases</a></p></div>';
+}
+
 /* ---------- router ---------- */
 function view(r){
   if(tick){ clearInterval(tick); tick = null; }
@@ -283,6 +368,8 @@ function view(r){
   if((m = r.match(/^hr\/cards\/([a-z]+)$/))) return vCards(m[1]);
   if(r==="hr/overview") return vOverview();
   if(r==="hr/cases") return vClassCases();
+  if(r==="hr/map") return vMap();
+  if((m = r.match(/^hr\/s\/(\d+)(?:\/(\d+))?$/))) return vSess(m[1], m[2]!==undefined ? +m[2] : null);
   if(r==="hr/coverage" && D.coverage) return vCoverage();
   if(r==="hr/drill") return vDrills();
   if((m = r.match(/^hr\/drill\/([a-z]+)$/))) return vDrill(m[1]);
@@ -328,6 +415,9 @@ app.addEventListener("click", function(e){
   if(a[0]==="skel"){ var dd = Dd(a[1]); if(!dd.a.trim()) dd.a = SKEL; else if(dd.a.indexOf("Theory 1")<0) dd.a = SKEL+"\n"+dd.a; save(); FL.render(); window.scrollTo(0, y); return; }
   if(a[0]==="dshow"){ Dd(a[1]).shown = true; save(); FL.render(); window.scrollTo(0, y); return; }
   if(a[0]==="dmk"){ var dm = Dd(a[1]).mk; dm[+a[2]] = !dm[+a[2]]; save(); FL.render(); window.scrollTo(0, y); return; }
+  if(a[0]==="sstep"){ SP(a[1]).step = +a[2]; save(); location.hash = "#hr/s/"+a[1]; FL.render(); window.scrollTo(0,0); return; }
+  if(a[0]==="srate"){ SP(a[1]).rate = a[2]; save(); FL.render(); window.scrollTo(0, y); return; }
+  if(a[0]==="sredo"){ CQ = null; FL.render(); return; }
   if(a[0]==="pick" && CQ){ if(CQ.picked>=0) return; var q = CQ.items[CQ.i]; CQ.picked = +a[1]; var ok = CQ.picked===q.a; if(ok) CQ.right++;
     H().log[q.id] = {t:Date.now(), miss:!ok}; save(); FL.render(); window.scrollTo(0, y); return; }
   if(a[0]==="next" && CQ){ CQ.i++; CQ.picked = -1; FL.render(); window.scrollTo(0,0); return; }
@@ -336,6 +426,7 @@ app.addEventListener("click", function(e){
 var tmo = null;
 app.addEventListener("input", function(e){
   var t = e.target; if(!t.dataset) return;
+  if(t.dataset.hrsp){ var ps2 = t.dataset.hrsp.split("|"), so = SP(ps2[0]); if(ps2[1]==="first") so.first = t.value; else so.tries[ps2[1]] = t.value; clearTimeout(tmo); tmo = setTimeout(save, 800); return; }
   if(t.dataset.hrdr){ DD(t.dataset.hrdr).a = t.value; var dw = document.getElementById("hr-dwc"); if(dw) dw.textContent = words(t.value)+" words"; clearTimeout(tmo); tmo = setTimeout(save, 800); return; }
   if(!t.dataset.hrta) return;
   var a = t.dataset.hrta.split("|"); C(a[0]).a[+a[1]] = t.value;
