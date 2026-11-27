@@ -394,7 +394,7 @@ function vSess(n, k){
   var head = '<div class="phead"><a href="#hr/map">‹ Map</a><span>S'+s.n+' · '+esc(s.title)+'</span></div><div class="row"><b>'+esc(st.name)+'</b><span class="pill todo">'+(i+1)+'/'+steps.length+' · ≈'+st.min+' min</span></div><div class="sdots">'+dots+'</div>'+modeToggle();
   var body = "", key = "s"+p.steps.indexOf(st);
   if(st.type==="hook"){
-    body = '<div class="phero tall"><div class="plane">✈️</div><div class="lead rise">Session '+s.n+' · key question</div><div class="hq rise" style="animation-delay:.2s">'+esc(s.q)+'</div><div class="rise" style="animation-delay:.5s">'+esc(st.sub)+'</div></div>'+
+    body = '<div class="phero tall"><div class="plane">'+(st.emoji||'✈️')+'</div><div class="lead rise">Session '+s.n+' · key question</div><div class="hq rise" style="animation-delay:.2s">'+esc(s.q)+'</div><div class="rise" style="animation-delay:.5s">'+esc(st.sub)+'</div></div>'+
       '<div class="lead rise" style="animation-delay:.6s">The '+st.tools.length+' tools you\'ll get. Tap each card.</div><div class="flips">'+st.tools.map(flipHtml).join("")+'</div>';
   } else if(st.type==="first"){
     body = '<div class="phero"><div class="hq">'+esc(s.q)+'</div><div>'+esc(st.prompt)+'</div></div><div class="card">'+
@@ -435,7 +435,7 @@ function vSess(n, k){
     var rw = sp.tries.rewrite || "";
     body = '<div class="phero"><div class="hq" style="font-size:20px">'+esc(s.q)+'</div><div>Your first answer, then a rewrite with everything you now know.</div></div>'+
       '<div class="card"><b>Your first answer</b><div class="model">'+(sp.first ? esc(sp.first) : 'You skipped it.')+'</div></div>'+
-      '<div class="card"><b>Rewrite it now (3–5 lines, exam style)</b><textarea data-hrsp="'+n+'|rewrite" style="min-height:140px" placeholder="Name the framework, go through it with Lufthansa facts, end with a verdict…">'+esc(rw)+'</textarea><button class="btn" data-hr="sfb|'+n+'|rewrite">Get feedback</button>'+(sp.tries.fbrewrite ? rubric(rw, st.rubric) : '')+'</div>'+
+      '<div class="card"><b>Rewrite it now (3–5 lines, exam style)</b><textarea data-hrsp="'+n+'|rewrite" style="min-height:140px" placeholder="'+esc(st.ph||'Name the framework, go through it with Lufthansa facts, end with a verdict…')+'">'+esc(rw)+'</textarea><button class="btn" data-hr="sfb|'+n+'|rewrite">Get feedback</button>'+(sp.tries.fbrewrite ? rubric(rw, st.rubric) : '')+'</div>'+
       '<details class="card"><summary>Model answer</summary><div class="model">'+esc(st.model)+'</div></details>'+
       '<div class="card"><b>How exam-ready do you feel?</b><div class="grid2" style="grid-template-columns:1fr 1fr 1fr">'+[["not","Not yet"],["getting","Getting there"],["ready","Exam-ready"]].map(function(r){ return '<button class="ck'+(sp.rate===r[0]?' on':'')+'" style="justify-content:center" data-hr="srate|'+n+'|'+r[0]+'">'+r[1]+'</button>'; }).join("")+'</div></div>';
   }
