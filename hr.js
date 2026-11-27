@@ -45,6 +45,55 @@ css.textContent = [
 ".hr .casebox{font-size:15px}",
 ".hr .casebox p{margin:0 0 10px}",
 ".hr .big{font-size:28px;font-weight:700}",
+".pathv .phead{display:flex;justify-content:space-between;font-size:13px;color:var(--muted)}",
+".pathv .phead a{color:var(--muted)}",
+".pathv .phero{position:relative;overflow:hidden;border-radius:18px;padding:18px;color:#fff;background:linear-gradient(135deg,#1f4e8c,#6a3fb5 55%,#e0603f);box-shadow:0 8px 24px rgba(0,0,0,.18)}",
+".pathv .phero .lead{color:rgba(255,255,255,.85)}",
+".pathv .phero.tall{min-height:220px}",
+".pathv .hq{font-size:26px;font-weight:800;line-height:1.25;margin:6px 0}",
+".pathv .plane{position:absolute;top:14px;left:-40px;font-size:30px;animation:fly 6s linear infinite}",
+"@keyframes fly{0%{transform:translateX(0) rotate(8deg)}100%{transform:translateX(520px) rotate(-4deg)}}",
+".pathv .rise,.pathv .anim{animation:rise .6s ease both}",
+"@keyframes rise{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}",
+".pathv .wd{display:inline-block;margin-right:.28em;opacity:0;animation:wd .35s ease forwards}",
+"@keyframes wd{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}",
+".pathv .flips{display:grid;grid-template-columns:1fr 1fr;gap:10px}",
+".pathv .flip{perspective:800px;height:150px;cursor:pointer}",
+".pathv .flipin{position:relative;width:100%;height:100%;transition:transform .7s;transform-style:preserve-3d}",
+".pathv .flip.on .flipin{transform:rotateY(180deg)}",
+".pathv .ff{position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden;border-radius:14px;padding:12px;display:flex;flex-direction:column;justify-content:center;gap:6px;text-align:center}",
+".pathv .ff.front{background:var(--surface);border:2px solid var(--line)}",
+".pathv .ff.front small{color:var(--muted)}",
+".pathv .ff.back{background:linear-gradient(135deg,#6a3fb5,#e0603f);color:#fff;transform:rotateY(180deg);font-size:13.5px}",
+".pathv .fic{font-size:30px}.pathv .fic.xl{font-size:42px}",
+".pathv .tl{border-left:3px solid #6a3fb5;margin-left:8px;padding-left:14px;display:flex;flex-direction:column;gap:14px}",
+".pathv .tln{position:relative}",
+".pathv .tln:before{content:'';position:absolute;left:-23px;top:4px;width:14px;height:14px;border-radius:50%;background:#e0603f;box-shadow:0 0 0 4px rgba(224,96,63,.25)}",
+".pathv .tly{font-weight:800;color:#e0603f}",
+".pathv .tlc{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:10px 12px}",
+".pathv .tlh{display:flex;gap:8px;align-items:center}.pathv .ic{font-size:20px;margin-right:6px}",
+".pathv .tlg{margin-top:4px;font-size:14px}",
+".pathv .facts{display:grid;grid-template-columns:1fr 1fr;gap:8px}",
+".pathv .fact{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:10px;font-size:14px}",
+".pathv .fact .fic{font-size:24px}",
+".pathv .fb{margin-top:8px;border-radius:12px;padding:10px;background:var(--bg);border:1px solid var(--line)}",
+".pathv .meter{height:10px;border-radius:5px;background:var(--line);overflow:hidden;margin:6px 0}",
+".pathv .meter i{display:block;height:100%;background:linear-gradient(90deg,#e0603f,#3a9d6b);animation:grow 1s ease both}",
+"@keyframes grow{from{width:0}}",
+".pathv .fbi{font-size:14px;margin:4px 0}.pathv .fbi.ok{color:var(--good)}.pathv .fbi.warn{color:#c27a14}.pathv .fbi.no{color:var(--muted)}",
+".pathv .tapq{border-top:1px solid var(--line);padding-top:10px;margin-top:10px}",
+".pathv .tapt{font-weight:600;margin-bottom:6px}",
+".pathv .tapo{display:flex;flex-wrap:wrap;gap:6px}",
+".pathv .tchip{font:inherit;font-size:14px;padding:7px 12px;border-radius:999px;border:1px solid var(--line);background:var(--surface);color:var(--ink);cursor:pointer}",
+".pathv .tchip.right{background:var(--good-bg);border-color:var(--good);font-weight:700}",
+".pathv .tchip.wrong{background:var(--warn-bg);border-color:var(--warn)}",
+".pathv .tchip.dim{opacity:.5}",
+".pathv .fsvg{width:100%;max-width:340px;display:block;margin:8px auto}",
+".pathv .fline{stroke:var(--muted);stroke-width:2;stroke-dasharray:200;stroke-dashoffset:200;animation:draw 1s ease forwards}",
+"@keyframes draw{to{stroke-dashoffset:0}}",
+".pathv .fnode{animation:rise .5s ease both}",
+".pathv .exs.anim{border-left:4px solid #3a9d6b}",
+".pathv .pnav{margin-top:6px}",
 ".hr .sdots{display:flex;gap:6px;flex-wrap:wrap}",
 ".hr .sdot{width:22px;height:8px;border-radius:4px;border:0;background:var(--line);cursor:pointer;padding:0}",
 ".hr .sdot.done{background:var(--good)}",".hr .sdot.on{background:var(--deep)}",
@@ -279,69 +328,95 @@ function vCoverage(){
 }
 
 /* ---------- guided session path + map ---------- */
-function SP(n){ var h = H(); if(!h.sp) h.sp = {}; if(!h.sp[n]) h.sp[n] = {step:0, first:"", tries:{}, rate:""}; return h.sp[n]; }
+function SP(n){ var h = H(); if(!h.sp) h.sp = {}; if(!h.sp[n]) h.sp[n] = {step:0, first:"", tries:{}, rate:"", taps:{}}; if(!h.sp[n].taps) h.sp[n].taps = {}; return h.sp[n]; }
 function sessByN(n){ return (D.sess||[]).filter(function(s){ return String(s.n)===String(n); })[0]; }
-function pathSteps(s){ var st = ["key","first","case"]; s.path.core.forEach(function(c){ st.push("c:"+c); }); st.push("trail","check","exam","back"); return st; }
-var STEPLAB = {key:"The key question", first:"Your first answer", "case":"The opening case", trail:"Paper trail and book", check:"Check yourself", exam:"The exam move", back:"Back to your first answer"};
-var STEPMIN = {key:1, first:3, "case":4, trail:8, check:5, exam:20, back:4};
-function stepName(k){ return k.indexOf("c:")===0 ? (D.th[k.slice(2)]||{}).n || k : STEPLAB[k]; }
+function pathSteps(s){ return s.path.steps; }
+function stepName(st){ return st.name; }
 function rateLab(r){ return r==="ready" ? '<span class="pill solid">Exam-ready</span>' : r==="getting" ? '<span class="pill prog">Getting there</span>' : r==="not" ? '<span class="pill todo">Not yet</span>' : ''; }
+function words2(txt, d0){ return String(txt).split(/\s+/).map(function(w, i){ return '<span class="wd" style="animation-delay:'+((d0||0)+i*0.06).toFixed(2)+'s">'+esc(w)+'</span>'; }).join(""); }
+function exLine(txt, d0){ return '<div class="exs anim"><b>✍️ Exam line</b><div class="exl">'+words2(txt, d0)+'</div></div>'; }
+/* keyword rubric feedback on a free answer */
+function rubric(text, R){
+  var t = String(text||"").toLowerCase(); if(!t.trim()) return '<div class="why">Write something first; even a guess helps.</div>';
+  var hit = [], miss = [];
+  R.items.forEach(function(it){ var ok = it.kw.some(function(k){ return new RegExp(k).test(t); }); (ok ? hit : miss).push(it); });
+  var warn = (R.warn||[]).filter(function(w){ return w.kw.some(function(k){ return new RegExp(k).test(t); }); });
+  var pct = Math.round(100*hit.length/R.items.length);
+  return '<div class="fb anim"><div class="row"><b>'+esc(R.title||"Your answer covers")+'</b><b>'+hit.length+' of '+R.items.length+'</b></div><div class="meter"><i style="width:'+pct+'%"></i></div>'+
+    hit.map(function(it){ return '<div class="fbi ok">✓ <b>'+esc(it.label)+'.</b> '+esc(it.good)+'</div>'; }).join("")+
+    warn.map(function(w){ return '<div class="fbi warn">⚠ '+esc(w.msg)+'</div>'; }).join("")+
+    miss.map(function(it){ return '<div class="fbi no">○ <b>'+esc(it.label)+':</b> '+esc(it.miss)+'</div>'; }).join("")+
+    '<div class="lead" style="margin-top:6px">'+esc(pct>=70 ? (R.hi||"Strong. You're ready for the exam version.") : pct>=35 ? (R.mid||"A good start: the missing pieces are exactly what this session gives you.") : (R.lo||"That's normal before the session: the next screens give you the pieces."))+'</div></div>';
+}
+/* tap exercise: each item has options, one right, feedback per item */
+function tapHtml(n, key, T, sp){
+  var got = sp.taps[key] || {}, done = 0, right = 0;
+  var rows = T.items.map(function(it, i){ var pk = got[i]; if(pk!==undefined){ done++; if(pk===it.a) right++; }
+    return '<div class="tapq"><div class="tapt">'+(it.icon?'<span class="ic">'+it.icon+'</span>':'')+esc(it.text)+'</div><div class="tapo">'+it.opts.map(function(o, k){
+      var cls = pk===undefined ? "" : (k===it.a ? " right" : (k===pk ? " wrong" : " dim"));
+      return '<button class="tchip'+cls+'" '+(pk!==undefined?'disabled ':'')+'data-hr="tap|'+n+'|'+key+'|'+i+'|'+k+'">'+esc(o)+'</button>'; }).join("")+'</div>'+
+      (pk!==undefined ? '<div class="why anim">'+(pk===it.a?'✓ ':'✗ The answer is "'+esc(it.opts[it.a])+'". ')+esc(it.fb)+'</div>' : '')+'</div>';
+  }).join("");
+  var end = done===T.items.length ? '<div class="fb anim"><b>'+right+' of '+T.items.length+' right.</b> '+esc(T.wrap||"")+'</div>' : '';
+  return '<div class="card"><b>'+esc(T.q)+'</b>'+(T.hint?'<div class="lead">'+esc(T.hint)+'</div>':'')+rows+end+'</div>';
+}
+function flipHtml(t, i){ return '<div class="flip rise" style="animation-delay:'+(0.15*i+0.3)+'s" onclick="this.classList.toggle(\'on\')"><div class="flipin"><div class="ff front"><div class="fic">'+t.icon+'</div><b>'+esc(t.name)+'</b><small>tap to flip</small></div><div class="ff back"><b>'+esc(t.gives)+'</b><i>"'+esc(t.line)+'"</i></div></div></div>'; }
+function forcesSvg(r){ /* r: ratings array [rivalry, entry, suppliers, buyers, substitutes] as 0 high,1 med,2 low or undefined */
+  var col = function(v){ return v===0 ? "#e5533d" : v===1 ? "#e8a33d" : v===2 ? "#3a9d6b" : "var(--line)"; };
+  var nodes = [["Rivalry",160,110],["New entrants",160,22],["Suppliers",40,110],["Buyers",280,110],["Substitutes",160,198]];
+  return '<svg viewBox="0 0 320 220" class="fsvg">'+nodes.slice(1).map(function(nd, i){ return '<line x1="160" y1="110" x2="'+nd[1]+'" y2="'+nd[2]+'" class="fline" style="animation-delay:'+(0.2*i)+'s"/>'; }).join("")+
+    nodes.map(function(nd, i){ return '<g class="fnode" style="animation-delay:'+(0.15*i+0.2)+'s"><circle cx="'+nd[1]+'" cy="'+nd[2]+'" r="'+(i===0?34:26)+'" fill="'+col(r[i])+'" opacity=".9"/><text x="'+nd[1]+'" y="'+(nd[2]+4)+'" text-anchor="middle" font-size="'+(i===0?11:9.5)+'" fill="#fff" font-weight="700">'+nd[0]+'</text></g>'; }).join("")+'</svg>';
+}
 function vSess(n, k){
   var s = sessByN(n); if(!s) return vMap();
-  if(!s.path) return '<div class="hr stack"><a href="#hr/map" class="lead">‹ Map</a><h1>S'+s.n+' · '+esc(s.title)+'</h1><div class="card"><b>Key question</b><div class="big" style="font-size:22px">'+esc(s.q)+'</div></div><p class="lead">The guided path for this session is still being built. Meanwhile the reference cards are under Theories.</p><a class="btn" href="#hr/overview">Open the reference cards</a></div>';
-  var p = s.path, sp = SP(n), steps = pathSteps(s);
-  if(k!==undefined && k!==null && !isNaN(k)){ sp.step = Math.max(0, Math.min(steps.length-1, k)); }
-  var i = sp.step, cur = steps[i], h = H(); h.here = {n:n, step:i}; 
-  var mins = cur.indexOf("c:")===0 ? 4 : STEPMIN[cur];
-  var dots = steps.map(function(x, j){ return '<button class="sdot'+(j===i?' on':'')+(j<i?' done':'')+'" data-hr="sstep|'+n+'|'+j+'" title="'+esc(stepName(x))+'"></button>'; }).join("");
-  var head = '<a href="#hr/map" class="lead">‹ Map</a><div class="qn">S'+s.n+' · '+esc(s.title)+'</div>'+
-    '<div class="row"><b>Step '+(i+1)+' of '+steps.length+' · '+esc(stepName(cur))+'</b><span class="pill todo">≈ '+mins+' min</span></div><div class="sdots">'+dots+'</div>';
-  var body = "";
-  function ta(key, ph){ var v = key==="first" ? sp.first : (sp.tries[key]||""); return '<textarea data-hrsp="'+n+'|'+key+'" placeholder="'+esc(ph)+'" style="min-height:110px">'+esc(v)+'</textarea>'; }
-  if(cur==="key"){
-    body = '<div class="card"><div class="lead">Key question</div><div class="big" style="font-size:24px;line-height:1.3">'+esc(s.q)+'</div></div>'+
-      '<div class="card"><b>Where this fits</b><div>'+esc(p.fit)+'</div></div>'+
-      '<div class="card"><b>What\'s coming</b><div class="chips">'+steps.slice(2).map(function(x, j){ return '<a href="#hr/s/'+n+'/'+(j+2)+'">'+esc(stepName(x))+'</a>'; }).join("")+'</div></div>';
-  } else if(cur==="first"){
-    body = '<div class="card"><b>'+esc(s.q)+'</b><div class="lead">Before anything else: answer in 2–3 lines, from what you already know or guess. No right or wrong; you\'ll come back to it at the end.</div>'+ta("first","My first answer…")+'</div>';
-  } else if(cur==="case"){
-    body = '<div class="card"><b>'+esc(p.case.title)+'</b>'+para(p.case.story)+'</div>'+
-      '<div class="card"><b>Your turn</b><div>'+esc(p.case.q)+'</div>'+ta("case","Two quick reasons…")+'<details><summary>What to notice</summary><div class="why">'+esc(p.case.notice)+'</div></details></div>';
-  } else if(cur.indexOf("c:")===0){
-    var id = cur.slice(2), t = D.th[id] || {}, tr = (p.tries||{})[id], st = String(t.story||""), lab = /^Story:/.test(st) ? "📖 The story" : "🧠 Memory trick"; st = st.replace(/^(Story|Trick):\s*/,""); st = st.charAt(0).toUpperCase()+st.slice(1);
-    body = '<div class="card"><div class="big" style="font-size:22px">'+esc(t.n)+'</div><div class="lead">'+esc(t.who)+'</div>'+
-      (st ? '<div class="hook"><b>'+lab+'</b><div>'+esc(st)+'</div></div>' : '')+
-      '<div><b>What it says: </b>'+esc((p.short && p.short[id]) || t.what)+'</div>'+
-      ((p.short && p.short[id]) ? '<details><summary>Also on the slides</summary><div>'+esc(t.what)+'</div></details>' : '')+'</div>'+
-      (tr ? '<div class="card"><b>Try it on the case</b><div>'+esc(tr.q)+'</div>'+ta("t:"+id,"Your answer…")+'<details><summary>Check</summary><div class="why">'+esc(tr.a)+'</div></details></div>' : '')+
-      (t.ex ? '<div class="exs"><b>✍️ Exam sentence</b><div>'+esc(t.ex)+'</div></div>' : '');
-  } else if(cur==="trail"){
-    body = p.core.map(function(id){ var r = (p.trail||{})[id]; if(!r) return ""; var t = D.th[id]||{};
-      return '<details class="card"><summary>'+esc(t.n)+'</summary><div class="stack" style="margin-top:8px">'+
-        '<div><b>📄 Where it started</b><br>'+esc(r.paper)+'</div><div><b>⚔️ The debate</b><br>'+esc(r.debate)+'</div>'+
-        (r.dev?'<div><b>➡️ Where it went</b><br>'+esc(r.dev)+'</div>':'')+(r.prof?'<div><b>🎓 Your professor</b><br>'+esc(r.prof)+'</div>':'')+
-        '<div class="exs"><b>✍️ Use it in the exam</b><div>'+esc(r.exam)+'</div></div></div></details>'; }).join("")+
-      (p.book ? '<div class="card"><b>📘 '+esc(p.book.title)+'</b><div class="lead">'+esc(p.book.note||"")+'</div>'+
-        p.book.parts.map(function(b){ return '<div class="row" style="align-items:flex-start;gap:8px"><span>'+esc(b[0])+' <span class="lead">(pp. '+esc(b[1])+')</span></span><a class="btn ghost" style="width:auto" href="#doc/'+p.book.doc+'/'+b[2]+'">Open</a></div>'; }).join("")+'</div>' : '');
-  } else if(cur==="check"){
-    if(!CQ || CQ.sel!=="p"+n){ newRound(s.t, 5); CQ.sel = "p"+n; }
-    if(!CQ.items.length) body = '<p class="lead">No cards for this session yet.</p>';
-    else if(CQ.i >= CQ.items.length) body = '<div class="card"><div class="big">'+CQ.right+' / '+CQ.items.length+'</div><div class="lead">Missed ones come back in your Cards tab.</div><button class="btn ghost" data-hr="sredo|'+n+'">Another 5</button></div>';
-    else { var q = CQ.items[CQ.i], done = CQ.picked>=0;
-      body = '<div class="card"><div class="qn">Card '+(CQ.i+1)+' of '+CQ.items.length+'</div><div>'+esc(q.q)+'</div>'+optBtns(q, CQ.picked, done, function(kk){ return 'data-hr="pick|'+kk+'"'; })+
-        (done ? whyHtml(q, CQ.picked)+'<button class="btn" data-hr="next">Next card</button>' : '')+'</div>'; }
-  } else if(cur==="exam"){
-    body = '<div class="card"><b>Now the exam way</b><div class="lead">Pick one. Write it like the exam: name the framework, go through it fully, back each point with a case fact, end with a verdict.</div></div>'+
-      p.exam.map(function(e){ return '<a class="tile" href="'+e[1]+'"><b>'+esc(e[0])+'</b><small>'+esc(e[2])+'</small></a>'; }).join("");
-  } else if(cur==="back"){
-    body = '<div class="card"><b>Your first answer</b><div class="model">'+(sp.first ? esc(sp.first) : '<span class="lead">You skipped it. That\'s fine.</span>')+'</div></div>'+
-      '<div class="card"><b>A model answer to: '+esc(s.q)+'</b><div class="model">'+esc(p.model)+'</div></div>'+
-      '<div class="card"><b>How exam-ready do you feel on this session?</b><div class="grid2" style="grid-template-columns:1fr 1fr 1fr">'+
-      [["not","Not yet"],["getting","Getting there"],["ready","Exam-ready"]].map(function(r){ return '<button class="ck'+(sp.rate===r[0]?' on':'')+'" style="justify-content:center" data-hr="srate|'+n+'|'+r[0]+'">'+r[1]+'</button>'; }).join("")+'</div></div>';
+  if(!s.path) return '<div class="hr stack"><a href="#hr/map" class="lead">‹ Map</a><div class="phero"><div class="lead">S'+s.n+' · '+esc(s.title)+'</div><div class="hq">'+esc(s.q)+'</div></div><p class="lead">The guided path for this session is being built. Meanwhile the reference cards are under the map.</p><a class="btn" href="#hr/overview">Open the reference cards</a></div>';
+  var p = s.path, sp = SP(n), steps = p.steps;
+  if(k!==undefined && k!==null && !isNaN(k)) sp.step = Math.max(0, Math.min(steps.length-1, k));
+  var i = sp.step, st = steps[i], h = H(); h.here = {n:n, step:i};
+  var dots = steps.map(function(x, j){ return '<button class="sdot'+(j===i?' on':'')+(j<i?' done':'')+'" data-hr="sstep|'+n+'|'+j+'" aria-label="'+esc(x.name)+'"></button>'; }).join("");
+  var head = '<div class="phead"><a href="#hr/map">‹ Map</a><span>S'+s.n+' · '+esc(s.title)+'</span></div><div class="row"><b>'+esc(st.name)+'</b><span class="pill todo">'+(i+1)+'/'+steps.length+' · ≈'+st.min+' min</span></div><div class="sdots">'+dots+'</div>';
+  var body = "", key = "s"+i;
+  if(st.type==="hook"){
+    body = '<div class="phero tall"><div class="plane">✈️</div><div class="lead rise">Session '+s.n+' · key question</div><div class="hq rise" style="animation-delay:.2s">'+esc(s.q)+'</div><div class="rise" style="animation-delay:.5s">'+esc(st.sub)+'</div></div>'+
+      '<div class="lead rise" style="animation-delay:.6s">The '+st.tools.length+' tools you\'ll get. Tap each card.</div><div class="flips">'+st.tools.map(flipHtml).join("")+'</div>';
+  } else if(st.type==="first"){
+    body = '<div class="phero"><div class="hq">'+esc(s.q)+'</div><div>'+esc(st.prompt)+'</div></div><div class="card">'+
+      '<textarea data-hrsp="'+n+'|first" placeholder="My first answer…" style="min-height:120px">'+esc(sp.first)+'</textarea>'+
+      '<button class="btn" data-hr="sfb|'+n+'|first">Get feedback</button>'+(sp.tries.fbfirst ? rubric(sp.first, st.rubric) : '')+'</div>';
+  } else if(st.type==="story"){
+    body = '<div class="phero"><div class="hq" style="font-size:20px">'+esc(st.title)+'</div><div>'+esc(st.sub)+'</div></div><div class="tl">'+
+      st.nodes.map(function(nd, j){ var d = j*0.9; return '<div class="tln rise" style="animation-delay:'+d+'s"><div class="tly">'+esc(nd.year)+'</div><div class="tlc"><div class="tlh"><span class="ic">'+nd.icon+'</span><b>'+esc(nd.who)+'</b></div><div class="tli">'+esc(nd.idea)+'</div>'+
+        (nd.gives?'<div class="tlg">You get: <b>'+esc(nd.gives)+'</b></div>':'')+(nd.line?exLine(nd.line, d+0.4):'')+'</div></div>'; }).join("")+'</div>';
+  } else if(st.type==="casefile"){
+    body = '<div class="phero"><div class="lead">📁 Case file</div><div class="hq" style="font-size:22px">'+esc(st.title)+'</div><div>'+esc(st.sub)+'</div></div><div class="facts">'+
+      st.facts.map(function(f, j){ return '<div class="fact rise" style="animation-delay:'+(j*0.12)+'s"><div class="fic">'+f[0]+'</div><b>'+esc(f[1])+'</b><div>'+esc(f[2])+'</div></div>'; }).join("")+'</div>'+
+      '<div class="card"><b>Your turn: '+esc(st.q)+'</b><textarea data-hrsp="'+n+'|'+key+'" placeholder="Two reasons…" style="min-height:90px">'+esc(sp.tries[key]||"")+'</textarea><button class="btn" data-hr="sfb|'+n+'|'+key+'">Get feedback</button>'+(sp.tries["fb"+key] ? rubric(sp.tries[key], st.rubric) : '')+'</div>';
+  } else if(st.type==="concept"){
+    var t = D.th[st.id] || {}, sto = String(t.story||""), lab = /^Story:/.test(sto) ? "📖 The story" : "🧠 Memory trick"; sto = sto.replace(/^(Story|Trick):\s*/,""); sto = sto.charAt(0).toUpperCase()+sto.slice(1);
+    var r5 = []; if(st.svg){ var g = sp.taps[key]||{}; st.task.items.forEach(function(it, j){ r5[j] = g[j]; }); }
+    body = '<div class="phero"><div class="fic xl">'+(st.icon||"💡")+'</div><div class="hq" style="font-size:22px">'+esc(t.n)+'</div><div class="lead">'+esc(t.who)+'</div></div>'+
+      '<div class="card"><div>'+esc(st.short)+'</div>'+(st.svg?forcesSvg(r5):'')+'<details><summary>'+lab+'</summary><div>'+esc(sto)+'</div></details><details><summary>Everything on the slides</summary><div>'+esc(t.what)+'</div></details></div>'+
+      tapHtml(n, key, st.task, sp)+(t.ex ? exLine(st.line || t.ex, 0.2) : '');
+  } else if(st.type==="deeper"){
+    body = '<div class="phero"><div class="hq" style="font-size:20px">Go deeper (optional)</div><div>'+esc(st.sub)+'</div></div>'+
+      st.debates.map(function(d){ return '<details class="card"><summary>'+esc(d.t)+'</summary><div class="stack" style="margin-top:6px"><div>'+esc(d.body)+'</div>'+exLine(d.line, 0)+'</div></details>'; }).join("")+
+      '<div class="card"><b>📘 '+esc(st.book.title)+'</b><div class="lead">'+esc(st.book.note)+'</div>'+st.book.parts.map(function(b){ return '<div class="row" style="align-items:flex-start;gap:8px"><span>'+esc(b[0])+' <span class="lead">(pp. '+esc(b[1])+')</span></span><a class="btn ghost" style="width:auto" href="#doc/'+st.book.doc+'/'+b[2]+'">Open</a></div>'; }).join("")+'</div>';
+  } else if(st.type==="check"){
+    body = '<div class="phero"><div class="hq" style="font-size:20px">Check yourself</div><div>'+esc(st.sub)+'</div></div>'+tapHtml(n, key, st.task, sp);
+  } else if(st.type==="exam"){
+    body = '<div class="phero"><div class="hq" style="font-size:20px">Now the exam way</div><div>'+esc(st.sub)+'</div></div>'+
+      st.items.map(function(e){ return '<a class="tile" href="'+e[1]+'"><b>'+esc(e[0])+'</b><small>'+esc(e[2])+'</small></a>'; }).join("");
+  } else if(st.type==="back"){
+    var rw = sp.tries.rewrite || "";
+    body = '<div class="phero"><div class="hq" style="font-size:20px">'+esc(s.q)+'</div><div>Your first answer, then a rewrite with everything you now know.</div></div>'+
+      '<div class="card"><b>Your first answer</b><div class="model">'+(sp.first ? esc(sp.first) : 'You skipped it.')+'</div></div>'+
+      '<div class="card"><b>Rewrite it now (3–5 lines, exam style)</b><textarea data-hrsp="'+n+'|rewrite" style="min-height:140px" placeholder="Name the framework, go through it with Lufthansa facts, end with a verdict…">'+esc(rw)+'</textarea><button class="btn" data-hr="sfb|'+n+'|rewrite">Get feedback</button>'+(sp.tries.fbrewrite ? rubric(rw, st.rubric) : '')+'</div>'+
+      '<details class="card"><summary>Model answer</summary><div class="model">'+esc(st.model)+'</div></details>'+
+      '<div class="card"><b>How exam-ready do you feel?</b><div class="grid2" style="grid-template-columns:1fr 1fr 1fr">'+[["not","Not yet"],["getting","Getting there"],["ready","Exam-ready"]].map(function(r){ return '<button class="ck'+(sp.rate===r[0]?' on':'')+'" style="justify-content:center" data-hr="srate|'+n+'|'+r[0]+'">'+r[1]+'</button>'; }).join("")+'</div></div>';
   }
-  var nav = '<div class="grid2">'+(i>0 ? '<button class="btn ghost" data-hr="sstep|'+n+'|'+(i-1)+'">‹ Back</button>' : '<span></span>')+
+  var nav = '<div class="grid2 pnav">'+(i>0 ? '<button class="btn ghost" data-hr="sstep|'+n+'|'+(i-1)+'">‹ Back</button>' : '<span></span>')+
     (i<steps.length-1 ? '<button class="btn" data-hr="sstep|'+n+'|'+(i+1)+'">Next ›</button>' : '<a class="btn" href="#hr/map">Back to the map</a>')+'</div>';
-  return '<div class="hr stack">'+head+body+nav+'</div>';
+  return '<div class="hr stack pathv">'+head+body+nav+'</div>';
 }
 function vMap(){
   var h = H(), here = h.here, hs = here ? sessByN(here.n) : null;
@@ -350,7 +425,7 @@ function vMap(){
   out += (D.map||[{label:"Sessions", desc:"", sess:D.sess.map(function(s){ return s.n; })}]).map(function(g){
     return '<h2 style="margin-bottom:0">'+esc(g.label)+'</h2>'+(g.desc?'<div class="lead">'+esc(g.desc)+'</div>':'')+
       g.sess.map(function(nn){ var s = sessByN(nn); if(!s) return ""; var sp = (h.sp||{})[nn], steps = s.path ? pathSteps(s) : [];
-        var chips = s.path ? s.path.core.map(function(c, j){ return '<a href="#hr/s/'+nn+'/'+(3+j)+'">'+esc((D.th[c]||{}).n||c)+'</a>'; }).join("") : (s.theory||[]).slice(0,4).map(function(c){ return '<a href="#hr/overview">'+esc((D.th[c]||{}).n||c)+'</a>'; }).join("");
+        var chips = s.path ? s.path.steps.map(function(x, j){ return x.type==="concept" ? '<a href="#hr/s/'+nn+'/'+j+'">'+(x.icon||'')+' '+esc((D.th[x.id]||{}).n||x.id)+'</a>' : ''; }).join("") : (s.theory||[]).slice(0,4).map(function(c){ return '<a href="#hr/overview">'+esc((D.th[c]||{}).n||c)+'</a>'; }).join("");
         var cases = (s.ccids||[]).map(function(c){ var x = (D.cc||[]).filter(function(z){ return z.id===c; })[0]; return x ? '<a href="#hr/cc/'+c+'">📁 '+esc(x.name)+'</a>' : ""; }).join("");
         return '<div class="card'+(here && String(here.n)===String(nn)?'" style="border-color:var(--deep)':'')+'"><a href="#hr/s/'+nn+'" style="text-decoration:none;color:inherit"><div class="row"><b>S'+nn+' · '+esc(s.title)+'</b><span>'+(sp && sp.rate ? rateLab(sp.rate) : (s.path ? '<span class="pill todo">'+(sp ? (sp.step+1)+'/'+steps.length : 'start')+'</span>' : '<span class="pill todo">path soon</span>'))+'</span></div><div class="lead">'+esc(s.q)+'</div></a>'+
           '<div class="chips">'+chips+cases+'</div></div>';
@@ -418,6 +493,8 @@ app.addEventListener("click", function(e){
   if(a[0]==="sstep"){ SP(a[1]).step = +a[2]; save(); location.hash = "#hr/s/"+a[1]; FL.render(); window.scrollTo(0,0); return; }
   if(a[0]==="srate"){ SP(a[1]).rate = a[2]; save(); FL.render(); window.scrollTo(0, y); return; }
   if(a[0]==="sredo"){ CQ = null; FL.render(); return; }
+  if(a[0]==="sfb"){ SP(a[1]).tries["fb"+a[2]] = 1; save(); FL.render(); window.scrollTo(0, y); return; }
+  if(a[0]==="tap"){ var tp = SP(a[1]).taps; if(!tp[a[2]]) tp[a[2]] = {}; if(tp[a[2]][a[3]]===undefined){ tp[a[2]][a[3]] = +a[4]; save(); FL.render(); window.scrollTo(0, y); } return; }
   if(a[0]==="pick" && CQ){ if(CQ.picked>=0) return; var q = CQ.items[CQ.i]; CQ.picked = +a[1]; var ok = CQ.picked===q.a; if(ok) CQ.right++;
     H().log[q.id] = {t:Date.now(), miss:!ok}; save(); FL.render(); window.scrollTo(0, y); return; }
   if(a[0]==="next" && CQ){ CQ.i++; CQ.picked = -1; FL.render(); window.scrollTo(0,0); return; }
@@ -426,7 +503,7 @@ app.addEventListener("click", function(e){
 var tmo = null;
 app.addEventListener("input", function(e){
   var t = e.target; if(!t.dataset) return;
-  if(t.dataset.hrsp){ var ps2 = t.dataset.hrsp.split("|"), so = SP(ps2[0]); if(ps2[1]==="first") so.first = t.value; else so.tries[ps2[1]] = t.value; clearTimeout(tmo); tmo = setTimeout(save, 800); return; }
+  if(t.dataset.hrsp){ var ps2 = t.dataset.hrsp.split("|"), so = SP(ps2[0]); if(ps2[1]==="first") so.first = t.value; else so.tries[ps2[1]] = t.value; so.tries["fb"+ps2[1]] = 0; clearTimeout(tmo); tmo = setTimeout(save, 800); return; }
   if(t.dataset.hrdr){ DD(t.dataset.hrdr).a = t.value; var dw = document.getElementById("hr-dwc"); if(dw) dw.textContent = words(t.value)+" words"; clearTimeout(tmo); tmo = setTimeout(save, 800); return; }
   if(!t.dataset.hrta) return;
   var a = t.dataset.hrta.split("|"); C(a[0]).a[+a[1]] = t.value;
