@@ -100,6 +100,8 @@ css.textContent = [
 ".pathv .wimg{width:54px;height:54px;border-radius:50%;object-fit:cover;margin-right:8px;border:2px solid #e0603f;flex:none}",
 ".pathv .wimg.sm{width:44px;height:44px;display:block;margin:0 auto 6px}",
 ".pathv .fame{font-size:13px;color:#c27a14;font-weight:600;margin:2px 0}",
+".pathv .prize{background:#fff6e0;border-left:3px solid #e0a526;border-radius:8px;padding:8px 10px;margin:8px 0;font-size:14px;line-height:1.45}",
+".pathv .prize b{display:block;color:#a8670c;font-size:12px;letter-spacing:.02em;margin-bottom:2px}",
 ".pathv .vid{margin:8px 0}.pathv .vid iframe{width:100%;aspect-ratio:16/9;border:0;border-radius:12px}",
 ".pathv .sides{display:grid;grid-template-columns:1fr auto 1fr;gap:6px;align-items:stretch}",
 ".pathv .side{border-radius:12px;padding:10px;font-size:14px;text-align:center}",
@@ -402,7 +404,7 @@ function vSess(n, k){
       '<button class="btn" data-hr="sfb|'+n+'|first">Get feedback</button>'+(sp.tries.fbfirst ? rubric(sp.first, st.rubric) : '')+'</div>';
   } else if(st.type==="story"){
     body = '<div class="phero"><div class="hq" style="font-size:20px">'+esc(st.title)+'</div><div>'+esc(st.sub)+'</div></div><div class="tl">'+
-      st.nodes.map(function(nd, j){ var cu = MODE()==='curious', d = cu ? j*0.9 : 0; return '<div class="tln rise" style="animation-delay:'+d+'s"><div class="tly">'+esc(nd.year)+'</div><div class="tlc"><div class="tlh">'+(cu?wikiImg(nd.wiki):'')+'<span class="ic">'+nd.icon+'</span><b>'+esc(nd.who)+'</b></div>'+(cu && nd.fame?'<div class="fame">🏆 '+esc(nd.fame)+'</div>':'')+'<div class="tli">'+esc(nd.idea)+'</div>'+(cu?ytHtml(nd.video):'')+
+      st.nodes.map(function(nd, j){ var cu = MODE()==='curious', d = cu ? j*0.9 : 0; return '<div class="tln rise" style="animation-delay:'+d+'s"><div class="tly">'+esc(nd.year)+'</div><div class="tlc"><div class="tlh">'+(cu?wikiImg(nd.wiki):'')+'<span class="ic">'+nd.icon+'</span><b>'+esc(nd.who)+'</b></div>'+(nd.fame?'<div class="fame">🏆 '+esc(nd.fame)+'</div>':'')+'<div class="tli">'+esc(nd.idea)+'</div>'+(nd.sig?'<div class="prize"><b>Why this prize matters</b>'+esc(nd.sig)+'</div>':'')+(cu?ytHtml(nd.video):'')+
         (nd.gives?'<div class="tlg">You get: <b>'+esc(nd.gives)+'</b></div>':'')+(nd.line?exLine(nd.line, d+0.4):'')+'</div></div>'; }).join("")+'</div>';
   } else if(st.type==="casefile"){
     body = '<div class="phero"><div class="lead">📁 Case file</div><div class="hq" style="font-size:22px">'+esc(st.title)+'</div><div>'+esc(st.sub)+'</div></div><div class="facts">'+
