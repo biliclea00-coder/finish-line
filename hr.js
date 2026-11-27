@@ -79,6 +79,7 @@ function vHome(){
    '<div class="chips">'+Object.keys(D.topics).map(function(t){ return '<a href="#hr/cards/'+t+'">'+esc(tname(t))+'</a>'; }).join("")+'</div></div>';
   var side = [];
   if(D.sess && D.sess.length) side.push('<a class="tile" href="#hr/overview"><b>Sessions & theories</b><small>Each session with its theories: a story or memory trick, and an exam sentence</small></a>');
+  if(D.coverage) side.push('<a class="tile" href="#hr/coverage"><b>File checklist</b><small>What I extracted from each of your files, and the gaps</small></a>');
   if(D.cc && D.cc.length) side.push('<a class="tile" href="#hr/cases"><b>Class cases</b><small>'+esc(M.ccTip||"")+'</small></a>');
   if(side.length) out += '<h2>On the side</h2><div class="grid2">'+side.join("")+'</div>';
   if(M.note) out += '<p class="lead" style="font-size:13px">'+esc(M.note)+'</p>';
@@ -235,9 +236,9 @@ function vDrill(id){
 }
 
 /* ---------- case drills ---------- */
-var SKEL = "Theory 1 (name + author):\nApplied to the case:\n\nTheory 2 (name + author):\nApplied to the case:\n\nClass case:\n\nRecommendation (+ trade-off):\n";
+var SKEL = (D.meta && D.meta.skel) || "Theory 1 (name + author):\nApplied to the case:\n\nTheory 2 (name + author):\nApplied to the case:\n\nClass case:\n\nRecommendation (+ trade-off):\n";
 function Dd(id){ var h = H(); if(!h.d) h.d = {}; if(!h.d[id]) h.d[id] = {a:"", shown:false, mk:{}}; return h.d[id]; }
-var DCK = ["Named at least 2 theories with authors","Applied each theory to specific facts from this case (numbers, quotes, events)","Cited a class case and said why it's similar","Ended with a concrete recommendation (and a trade-off)"];
+var DCK = (D.meta && D.meta.dck) || ["Named at least 2 theories with authors","Applied each theory to specific facts from this case (numbers, quotes, events)","Cited a class case and said why it's similar","Ended with a concrete recommendation (and a trade-off)"];
 function vDrills(){
   return '<div class="hr stack"><a href="#hr" class="lead">‹ '+esc(D.meta.back||"Exam home")+'</a><h1>Case drills</h1>'+
     '<div class="card"><b>The answer pattern, every time</b><div>1. Name a theory (and author). 2. Apply it to facts from the case. 3. Repeat with a second theory. 4. Cite a class case. 5. Recommendation with a trade-off.</div><div class="lead">New cases you haven\'t seen in class. The answer key uses only theories from your course.</div></div>'+
@@ -267,6 +268,12 @@ function vDrill(id){
   return s;
 }
 
+function vCoverage(){
+  return '<div class="hr stack"><a href="#hr" class="lead">‹ '+esc(D.meta.back||"Exam home")+'</a><h1>What I extracted from each file</h1>'+
+    '<p class="lead">Every file you sent, and what it became in the app. Gaps are marked.</p>'+
+    D.coverage.map(function(c){ return '<div class="card"><div class="row"><b>'+esc(c[0])+'</b>'+(c[2]?'<span class="pill todo">gap</span>':'<span class="pill solid">used</span>')+'</div><div>'+esc(c[1])+'</div></div>'; }).join("")+'</div>';
+}
+
 /* ---------- router ---------- */
 function view(r){
   if(tick){ clearInterval(tick); tick = null; }
@@ -276,6 +283,7 @@ function view(r){
   if((m = r.match(/^hr\/cards\/([a-z]+)$/))) return vCards(m[1]);
   if(r==="hr/overview") return vOverview();
   if(r==="hr/cases") return vClassCases();
+  if(r==="hr/coverage" && D.coverage) return vCoverage();
   if(r==="hr/drill") return vDrills();
   if((m = r.match(/^hr\/drill\/([a-z]+)$/))) return vDrill(m[1]);
   if(r==="hr/drill") return vDrills();

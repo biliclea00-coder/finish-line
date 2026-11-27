@@ -1388,12 +1388,12 @@ function mountCity(){
 /* ================= views ================= */
 var app = document.getElementById("app"), nav = document.getElementById("nav"), tick = null;
 var CTABS = {
-  st:[["st","Strategy exam"],["hr","HRM (archive)"],["plan","IFRS (archive)"]],
+  st:[["st","Strategy exam"],["st/drill","Case drills"],["st/cards/mixed","Cards"],["st/overview","Theories"],["st/cases","Class cases"],["hr","HRM (archive)"],["plan","IFRS (archive)"]],
   hr:[["hr","HRM exam"],["hr/drill","Case drills"],["hr/cards/mixed","Cards"],["hr/overview","Theories"],["hr/cases","Class cases"],["st","Strategy ▸"],["plan","IFRS (archive)"]]
 };
 function ctabCur(x, r, cx){
   if(x[0]===r) return true; if(!cx || x[0].indexOf(cx)!==0) return false;
-  if(x[0]===cx) return new RegExp("^"+cx+"\\/(paper|case)").test(r);
+  if(x[0]===cx) return new RegExp("^"+cx+"\\/(paper|case)\\/").test(r);
   var base = x[0].split("/").slice(0,2).join("/");
   if(r.indexOf(base)===0) return true;
   return base===cx+"/cases" && r.indexOf(cx+"/cc")===0;
