@@ -58,7 +58,7 @@ css.textContent = [
 ".pathv .wd{display:inline-block;margin-right:.28em;opacity:0;animation:wd .35s ease forwards}",
 "@keyframes wd{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}",
 ".pathv .flips{display:grid;grid-template-columns:1fr 1fr;gap:10px}",
-".pathv .flip{perspective:800px;height:150px;cursor:pointer}",
+".pathv .flip{perspective:800px;height:210px;cursor:pointer}",
 ".pathv .flipin{position:relative;width:100%;height:100%;transition:transform .7s;transform-style:preserve-3d}",
 ".pathv .flip.on .flipin{transform:rotateY(180deg)}",
 ".pathv .ff{position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden;border-radius:14px;padding:12px;display:flex;flex-direction:column;justify-content:center;gap:6px;text-align:center}",
@@ -94,6 +94,18 @@ css.textContent = [
 ".pathv .fnode{animation:rise .5s ease both}",
 ".pathv .exs.anim{border-left:4px solid #3a9d6b}",
 ".pathv .pnav{margin-top:6px}",
+".pathv .mtog{display:flex;gap:6px;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:4px;width:max-content}",
+".pathv .mtog button{font:inherit;font-size:13px;border:0;border-radius:999px;padding:6px 12px;background:transparent;color:var(--ink);cursor:pointer}",
+".pathv .mtog button.on{background:linear-gradient(135deg,#6a3fb5,#e0603f);color:#fff;font-weight:700}",
+".pathv .wimg{width:54px;height:54px;border-radius:50%;object-fit:cover;margin-right:8px;border:2px solid #e0603f;flex:none}",
+".pathv .wimg.sm{width:44px;height:44px;display:block;margin:0 auto 6px}",
+".pathv .fame{font-size:13px;color:#c27a14;font-weight:600;margin:2px 0}",
+".pathv .vid{margin:8px 0}.pathv .vid iframe{width:100%;aspect-ratio:16/9;border:0;border-radius:12px}",
+".pathv .sides{display:grid;grid-template-columns:1fr auto 1fr;gap:6px;align-items:stretch}",
+".pathv .side{border-radius:12px;padding:10px;font-size:14px;text-align:center}",
+".pathv .side.a{background:rgba(31,78,140,.18);border:1px solid #1f4e8c}.pathv .side.b{background:rgba(224,96,63,.15);border:1px solid #e0603f}",
+".pathv .vs{align-self:center;font-weight:900;color:#e0603f}",
+".pathv .ff.back span{font-size:12.5px;opacity:.95}",
 ".hr .sdots{display:flex;gap:6px;flex-wrap:wrap}",
 ".hr .sdot{width:22px;height:8px;border-radius:4px;border:0;background:var(--line);cursor:pointer;padding:0}",
 ".hr .sdot.done{background:var(--good)}",".hr .sdot.on{background:var(--deep)}",
@@ -329,8 +341,13 @@ function vCoverage(){
 
 /* ---------- guided session path + map ---------- */
 function SP(n){ var h = H(); if(!h.sp) h.sp = {}; if(!h.sp[n]) h.sp[n] = {step:0, first:"", tries:{}, rate:"", taps:{}}; if(!h.sp[n].taps) h.sp[n].taps = {}; return h.sp[n]; }
+function MODE(){ var h = H(); return h.mode || 'curious'; }
+var WIKI = {};
+function wikiImg(title, cls){ return title ? '<img class="'+(cls||'wimg')+'" data-wiki="'+esc(title)+'" alt="" style="display:none">' : ''; }
+function ytHtml(v){ return MODE()!=='curious' || !v ? '' : '<div class="vid"><iframe src="https://www.youtube-nocookie.com/embed/'+v.yt+'?rel=0'+(v.start?'&start='+v.start:'')+(v.end?'&end='+v.end:'')+'" title="'+esc(v.title)+'" loading="lazy" allow="encrypted-media; picture-in-picture; fullscreen" allowfullscreen></iframe><div class="lead">🎬 '+esc(v.title)+(v.note?' · '+esc(v.note):'')+'</div></div>'; }
+function modeToggle(){ var m = MODE(); return '<div class="mtog"><button class="'+(m==='exam'?'on':'')+'" data-hr="mode|exam">🎯 Exam focus</button><button class="'+(m==='curious'?'on':'')+'" data-hr="mode|curious">🔭 Curious</button></div>'; }
 function sessByN(n){ return (D.sess||[]).filter(function(s){ return String(s.n)===String(n); })[0]; }
-function pathSteps(s){ return s.path.steps; }
+function pathSteps(s){ var m = MODE(); return s.path.steps.filter(function(x){ return m==='curious' || !x.curious; }); }
 function stepName(st){ return st.name; }
 function rateLab(r){ return r==="ready" ? '<span class="pill solid">Exam-ready</span>' : r==="getting" ? '<span class="pill prog">Getting there</span>' : r==="not" ? '<span class="pill todo">Not yet</span>' : ''; }
 function words2(txt, d0){ return String(txt).split(/\s+/).map(function(w, i){ return '<span class="wd" style="animation-delay:'+((d0||0)+i*0.06).toFixed(2)+'s">'+esc(w)+'</span>'; }).join(""); }
@@ -370,12 +387,12 @@ function forcesSvg(r){ /* r: ratings array [rivalry, entry, suppliers, buyers, s
 function vSess(n, k){
   var s = sessByN(n); if(!s) return vMap();
   if(!s.path) return '<div class="hr stack"><a href="#hr/map" class="lead">‹ Map</a><div class="phero"><div class="lead">S'+s.n+' · '+esc(s.title)+'</div><div class="hq">'+esc(s.q)+'</div></div><p class="lead">The guided path for this session is being built. Meanwhile the reference cards are under the map.</p><a class="btn" href="#hr/overview">Open the reference cards</a></div>';
-  var p = s.path, sp = SP(n), steps = p.steps;
+  var p = s.path, sp = SP(n), steps = pathSteps(s); if(sp.step >= steps.length) sp.step = steps.length-1;
   if(k!==undefined && k!==null && !isNaN(k)) sp.step = Math.max(0, Math.min(steps.length-1, k));
   var i = sp.step, st = steps[i], h = H(); h.here = {n:n, step:i};
   var dots = steps.map(function(x, j){ return '<button class="sdot'+(j===i?' on':'')+(j<i?' done':'')+'" data-hr="sstep|'+n+'|'+j+'" aria-label="'+esc(x.name)+'"></button>'; }).join("");
-  var head = '<div class="phead"><a href="#hr/map">‹ Map</a><span>S'+s.n+' · '+esc(s.title)+'</span></div><div class="row"><b>'+esc(st.name)+'</b><span class="pill todo">'+(i+1)+'/'+steps.length+' · ≈'+st.min+' min</span></div><div class="sdots">'+dots+'</div>';
-  var body = "", key = "s"+i;
+  var head = '<div class="phead"><a href="#hr/map">‹ Map</a><span>S'+s.n+' · '+esc(s.title)+'</span></div><div class="row"><b>'+esc(st.name)+'</b><span class="pill todo">'+(i+1)+'/'+steps.length+' · ≈'+st.min+' min</span></div><div class="sdots">'+dots+'</div>'+modeToggle();
+  var body = "", key = "s"+p.steps.indexOf(st);
   if(st.type==="hook"){
     body = '<div class="phero tall"><div class="plane">✈️</div><div class="lead rise">Session '+s.n+' · key question</div><div class="hq rise" style="animation-delay:.2s">'+esc(s.q)+'</div><div class="rise" style="animation-delay:.5s">'+esc(st.sub)+'</div></div>'+
       '<div class="lead rise" style="animation-delay:.6s">The '+st.tools.length+' tools you\'ll get. Tap each card.</div><div class="flips">'+st.tools.map(flipHtml).join("")+'</div>';
@@ -385,7 +402,7 @@ function vSess(n, k){
       '<button class="btn" data-hr="sfb|'+n+'|first">Get feedback</button>'+(sp.tries.fbfirst ? rubric(sp.first, st.rubric) : '')+'</div>';
   } else if(st.type==="story"){
     body = '<div class="phero"><div class="hq" style="font-size:20px">'+esc(st.title)+'</div><div>'+esc(st.sub)+'</div></div><div class="tl">'+
-      st.nodes.map(function(nd, j){ var d = j*0.9; return '<div class="tln rise" style="animation-delay:'+d+'s"><div class="tly">'+esc(nd.year)+'</div><div class="tlc"><div class="tlh"><span class="ic">'+nd.icon+'</span><b>'+esc(nd.who)+'</b></div><div class="tli">'+esc(nd.idea)+'</div>'+
+      st.nodes.map(function(nd, j){ var cu = MODE()==='curious', d = cu ? j*0.9 : 0; return '<div class="tln rise" style="animation-delay:'+d+'s"><div class="tly">'+esc(nd.year)+'</div><div class="tlc"><div class="tlh">'+(cu?wikiImg(nd.wiki):'')+'<span class="ic">'+nd.icon+'</span><b>'+esc(nd.who)+'</b></div>'+(cu && nd.fame?'<div class="fame">🏆 '+esc(nd.fame)+'</div>':'')+'<div class="tli">'+esc(nd.idea)+'</div>'+(cu?ytHtml(nd.video):'')+
         (nd.gives?'<div class="tlg">You get: <b>'+esc(nd.gives)+'</b></div>':'')+(nd.line?exLine(nd.line, d+0.4):'')+'</div></div>'; }).join("")+'</div>';
   } else if(st.type==="casefile"){
     body = '<div class="phero"><div class="lead">📁 Case file</div><div class="hq" style="font-size:22px">'+esc(st.title)+'</div><div>'+esc(st.sub)+'</div></div><div class="facts">'+
@@ -401,6 +418,14 @@ function vSess(n, k){
     body = '<div class="phero"><div class="hq" style="font-size:20px">Go deeper (optional)</div><div>'+esc(st.sub)+'</div></div>'+
       st.debates.map(function(d){ return '<details class="card"><summary>'+esc(d.t)+'</summary><div class="stack" style="margin-top:6px"><div>'+esc(d.body)+'</div>'+exLine(d.line, 0)+'</div></details>'; }).join("")+
       '<div class="card"><b>📘 '+esc(st.book.title)+'</b><div class="lead">'+esc(st.book.note)+'</div>'+st.book.parts.map(function(b){ return '<div class="row" style="align-items:flex-start;gap:8px"><span>'+esc(b[0])+' <span class="lead">(pp. '+esc(b[1])+')</span></span><a class="btn ghost" style="width:auto" href="#doc/'+st.book.doc+'/'+b[2]+'">Open</a></div>'; }).join("")+'</div>';
+  } else if(st.type==="arena"){
+    body = '<div class="phero"><div class="hq" style="font-size:20px">⚔️ The arena</div><div>'+esc(st.sub)+'</div></div>'+
+      st.debates.map(function(d, j){ var ak = key+"_"+j, ans = sp.tries[ak]||"";
+        return '<details class="card arena"'+(j===0?' open':'')+'><summary>'+esc(d.t)+'</summary><div class="stack" style="margin-top:8px">'+
+          '<div class="sides"><div class="side a">'+wikiImg(d.a.wiki,'wimg sm')+'<b>'+esc(d.a.who)+'</b><div>'+esc(d.a.claim)+'</div></div><div class="vs">vs</div><div class="side b">'+wikiImg(d.b.wiki,'wimg sm')+'<b>'+esc(d.b.who)+'</b><div>'+esc(d.b.claim)+'</div></div></div>'+
+          '<div><b>🧭 Where it stands now</b><br>'+esc(d.now)+'</div><div><b>🎯 Why it matters for you</b><br>'+esc(d.why)+'</div>'+ytHtml(d.video)+
+          '<div class="card" style="margin:0"><b>Your turn: '+esc(d.q)+'</b><textarea data-hrsp="'+n+'|'+ak+'" style="min-height:90px" placeholder="2–3 lines…">'+esc(ans)+'</textarea><button class="btn" data-hr="sfb|'+n+'|'+ak+'">Get feedback</button>'+(sp.tries["fb"+ak] ? rubric(ans, d.rubric) : '')+
+          '<details><summary>Full answer</summary><div class="model">'+esc(d.model)+'</div></details></div></div></details>'; }).join("");
   } else if(st.type==="check"){
     body = '<div class="phero"><div class="hq" style="font-size:20px">Check yourself</div><div>'+esc(st.sub)+'</div></div>'+tapHtml(n, key, st.task, sp);
   } else if(st.type==="exam"){
@@ -454,7 +479,9 @@ function view(r){
   return vHome();
 }
 var ctimer = null;
-function after(r){
+function loadWiki(){ var els = document.querySelectorAll('img[data-wiki]'); Array.prototype.forEach.call(els, function(im){ var t = im.getAttribute('data-wiki'); var put = function(j){ if(j && j.thumbnail && j.thumbnail.source){ im.src = j.thumbnail.source; im.style.display = ''; im.title = j.title || ''; } };
+  if(WIKI[t]!==undefined){ put(WIKI[t]); return; } WIKI[t] = null; fetch('https://en.wikipedia.org/api/rest_v1/page/summary/'+encodeURIComponent(t)).then(function(r){ return r.ok ? r.json() : null; }).then(function(j){ WIKI[t] = j; put(j); }).catch(function(){}); }); }
+function after(r){ setTimeout(loadWiki, 30);
   var m = r.match(/^hr\/paper\/(\d)$/);
   if(m && !P(m[1]).done){
     var p = P(m[1]);
@@ -472,6 +499,7 @@ function after(r){
 /* ---------- events ---------- */
 var app = document.getElementById("app");
 app.addEventListener("click", function(e){
+  var dl = e.target.closest('a[href^="#doc/"]'); if(dl){ try{ sessionStorage.setItem("flDocBack", location.hash); }catch(er){} }
   var b = e.target.closest("[data-hr]"); if(!b) return;
   e.stopPropagation();
   var a = b.dataset.hr.split("|"), y = window.scrollY;
@@ -493,6 +521,7 @@ app.addEventListener("click", function(e){
   if(a[0]==="sstep"){ SP(a[1]).step = +a[2]; save(); location.hash = "#hr/s/"+a[1]; FL.render(); window.scrollTo(0,0); return; }
   if(a[0]==="srate"){ SP(a[1]).rate = a[2]; save(); FL.render(); window.scrollTo(0, y); return; }
   if(a[0]==="sredo"){ CQ = null; FL.render(); return; }
+  if(a[0]==="mode"){ H().mode = a[1]; save(); FL.render(); window.scrollTo(0, y); return; }
   if(a[0]==="sfb"){ SP(a[1]).tries["fb"+a[2]] = 1; save(); FL.render(); window.scrollTo(0, y); return; }
   if(a[0]==="tap"){ var tp = SP(a[1]).taps; if(!tp[a[2]]) tp[a[2]] = {}; if(tp[a[2]][a[3]]===undefined){ tp[a[2]][a[3]] = +a[4]; save(); FL.render(); window.scrollTo(0, y); } return; }
   if(a[0]==="pick" && CQ){ if(CQ.picked>=0) return; var q = CQ.items[CQ.i]; CQ.picked = +a[1]; var ok = CQ.picked===q.a; if(ok) CQ.right++;
