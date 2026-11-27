@@ -573,6 +573,7 @@ var DOCS = {
  "t4-slides":{t:"Topic 4 slides",c:1,p:40},"t4-cases":{t:"Topic 4 exercises",c:1,p:3},"t4-solutions":{t:"Topic 4 solutions",c:1,p:6},
  "t5-slides":{t:"Topic 5 slides",c:1,p:40},"t5-cases":{t:"Topic 5 exercises",c:1,p:9},"t5-solutions":{t:"Topic 5 solutions",c:1,p:15},
  "exam-2023":{t:"Exam CM01, November 2023",c:1,p:9},
+ "st-exam-2023":{t:"Strategy exam, Dec 2023: Insight Timer case (Main Track)",c:1,p:12},
  "exam-2025":{t:"Mock exam CM01, 2025 (practice paper)",c:1,p:8},"exam-2025-key":{t:"Mock exam CM01, 2025: answer key",c:1,p:4},
  "bk-elliott":{t:"Elliott & Elliott, Financial Accounting and Reporting (19th ed.)",local:"elliott",p:925},
  "bk-melville":{t:"Melville, International Financial Reporting: A Practical Guide (7th ed.)",local:"melville",p:514},
@@ -1386,9 +1387,19 @@ function mountCity(){
 
 /* ================= views ================= */
 var app = document.getElementById("app"), nav = document.getElementById("nav"), tick = null;
-var HRTABS = [["hr","HRM exam"],["hr/drill","Case drills"],["hr/cards/mixed","Cards"],["hr/overview","Theories"],["hr/cases","Class cases"],["plan","IFRS (archive)"]];
+var CTABS = {
+  st:[["st","Strategy exam"],["hr","HRM (archive)"],["plan","IFRS (archive)"]],
+  hr:[["hr","HRM exam"],["hr/drill","Case drills"],["hr/cards/mixed","Cards"],["hr/overview","Theories"],["hr/cases","Class cases"],["st","Strategy ▸"],["plan","IFRS (archive)"]]
+};
+function ctabCur(x, r, cx){
+  if(x[0]===r) return true; if(!cx || x[0].indexOf(cx)!==0) return false;
+  if(x[0]===cx) return new RegExp("^"+cx+"\\/(paper|case)").test(r);
+  var base = x[0].split("/").slice(0,2).join("/");
+  if(r.indexOf(base)===0) return true;
+  return base===cx+"/cases" && r.indexOf(cx+"/cc")===0;
+}
 var TABS = [["plan","Plan"],["journal","Journal"],["map","Course map"],["cheat","Cheat sheet"],["cards/1,2,3,4,5","Question cards"],["universe","Universe"],["reading","Reading speed"]];
-function route(){ var h = (location.hash||"").replace("#",""); if(/access_token=|error=|type=recovery/.test(h)) return recovery ? "account" : "map"; return h || "hr"; }
+function route(){ var h = (location.hash||"").replace("#",""); if(/access_token=|error=|type=recovery/.test(h)) return recovery ? "account" : "map"; return h || "st"; }
 function go(h){ if(location.hash === "#"+h){ render(); } else { location.hash = h; } window.scrollTo(0,0); }
 
 function lane(){ return TOPICS.map(function(t){ var s = topicShare(t); return '<i class="'+(s>=1?"full":"")+'">'+(s>0&&s<1?'<b style="width:'+Math.round(s*100)+'%"></b>':'')+'</i>'; }).join("")+'<span class="end"></span>'; }
@@ -2257,18 +2268,18 @@ function render(){
   if(tick){ clearInterval(tick); tick = null; }
   killCity();
   var r = route(), m = r.match(/^topic-(\d)$/), msol = r.match(/^solution\/([0-9a-z]+)$/), mcard = r.match(/^cards\/([a-z0-9,-]+)$/);
-  var isHr = /^hr(\/|$)/.test(r), tabs = isHr ? HRTABS : [["hr","HRM exam ▸"]].concat(TABS);
-  nav.innerHTML = tabs.map(function(x){ var cur = x[0]===r || (isHr && x[0]==="hr" && /^hr\/(paper|case)/.test(r)) || (isHr && x[0]==="hr/cards/mixed" && /^hr\/cards/.test(r)) || (isHr && x[0]==="hr/drill" && /^hr\/drill/.test(r)) || (isHr && x[0]==="hr/cases" && /^hr\/cc/.test(r)) || (x[0]==="plan" && /^plan\//.test(r)) || (x[0]==="map" && (m || /^doc\//.test(r) || /^solution\//.test(r) || r==="practice" || r==="level-check" || r==="context-check")); return '<a href="#'+x[0]+'"'+(cur?' aria-current="page"':'')+'>'+x[1]+'</a>'; }).join("");
+  var cxm = r.match(/^(hr|st)(\/|$)/), cx = cxm ? cxm[1] : null, tabs = cx ? CTABS[cx] : [["st","Strategy exam ▸"],["hr","HRM"]].concat(TABS);
+  nav.innerHTML = tabs.map(function(x){ var cur = (cx ? ctabCur(x, r, cx) : x[0]===r) || (x[0]==="plan" && /^plan\//.test(r)) || (x[0]==="map" && (m || /^doc\//.test(r) || /^solution\//.test(r) || r==="practice" || r==="level-check" || r==="context-check")); return '<a href="#'+x[0]+'"'+(cur?' aria-current="page"':'')+'>'+x[1]+'</a>'; }).join("");
   var dr = docRoute(r);
   if(!dr && DV.err){ DV.err = ""; DV.id = ""; }
   if(dr){ openDoc(dr); if(DV.doc && DV.id===dr.id){ S.docPos[dr.id] = dr.page; saveLocal(); } }
   var isPlan = /^plan(\/|$)/.test(r) || r==="journal";
-  var isHrV = /^hr(\/|$)/.test(r);
-  var v = isHrV ? (window.FLHR ? window.FLHR.view(r) : '<p class="lead">Loading HRM…</p>') : isPlan ? (window.FLPlan ? window.FLPlan.view(r) : '<p class="lead">Loading the planner…</p>') : dr ? vDoc(dr) : m ? (vTopic(+m[1]) + openQsHtml(+m[1])) : msol ? vSolution(msol[1]) : mcard ? vCards(mcard[1]) : ({map:vMap, cheat:vCheat, "slidex-t4":vSlideEx, "intang-t3":vIntang, "malaga-t3":vMalaga, universe:vUniverse, practice:vPractice, "level-check":vCheck, "context-check":vContext, reading:vReading, "dev-notes":vDev, account:vAccount}[r] || vMap)();
+  var isHrV = /^(hr|st)(\/|$)/.test(r), cxv = isHrV ? r.split("/")[0] : "";
+  var v = isHrV ? (window.FLC && window.FLC[cxv] ? window.FLC[cxv].view(r) : '<p class="lead">Loading…</p>') : isPlan ? (window.FLPlan ? window.FLPlan.view(r) : '<p class="lead">Loading the planner…</p>') : dr ? vDoc(dr) : m ? (vTopic(+m[1]) + openQsHtml(+m[1])) : msol ? vSolution(msol[1]) : mcard ? vCards(mcard[1]) : ({map:vMap, cheat:vCheat, "slidex-t4":vSlideEx, "intang-t3":vIntang, "malaga-t3":vMalaga, universe:vUniverse, practice:vPractice, "level-check":vCheck, "context-check":vContext, reading:vReading, "dev-notes":vDev, account:vAccount}[r] || vMap)();
   app.innerHTML = v;
   if(document.getElementById("city")) mountCity();
   if(isPlan && window.FLPlan) window.FLPlan.after(r);
-  if(isHrV && window.FLHR) window.FLHR.after(r);
+  if(isHrV && window.FLC && window.FLC[cxv]) window.FLC[cxv].after(r);
   if(dr && DV.doc) drawDoc(Math.min(Math.max(1, dr.page), DV.doc.numPages));
   if(msol || mcard) tick = setInterval(function(){
     var c = document.getElementById("sol-clock"); if(c && solTimer){ var l = Math.max(0, solTimer.secs - Math.floor((Date.now()-solTimer.start)/1000)); c.textContent = Math.floor(l/60)+":"+("0"+l%60).slice(-2)+(l===0?" · time's up":""); }
@@ -2460,5 +2471,6 @@ render(); setSync(); initCloud(); bookCheck().then(render);
 </script>
 <script src="plan.js"></script>
 <script src="hr.js"></script>
+<script src="st.js"></script>
 </body>
 </html>
