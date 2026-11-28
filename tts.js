@@ -67,19 +67,24 @@
     return out;
   }
 
-  function pickVoice(){
+  function quality(v){ var t = (v.name + ' ' + (v.voiceURI||'')).toLowerCase(); return /premium/.test(t) ? 2 : (/enhanced|neural|natural/.test(t) ? 1 : 0); }
+  function label(v){ var q = quality(v); return v.name.replace(/\s*\((enhanced|premium)\)/i,'') + (q===2 ? ' (Premium)' : q===1 ? ' (Enhanced)' : '') + ' · ' + v.lang; }
+  function englishVoices(){
     var vs = S.getVoices().filter(function(v){ return /^en/i.test(v.lang); });
-    if(!vs.length) return null;
     function score(v){
-      var n = v.name, s = 0;
-      if(/premium|enhanced|natural|neural/i.test(n)) s += 5;
-      if(/google uk english female|google us english|samantha|daniel|serena|karen|moira/i.test(n)) s += 3;
-      if(/en-GB/i.test(v.lang)) s += 1;
-      if(v.localService) s += 1;
-      if(/compact|novelty|whisper|bells|zarvox|bad news|jester/i.test(n)) s -= 10;
+      var n = v.name, s = quality(v) * 10;
+      if(v.default) s += 4;
+      if(/allison|ava|zoe|evan|nathan|joelle|noelle|serena|samantha|daniel|karen|moira|google uk english female|google us english/i.test(n)) s += 2;
+      if(/compact/i.test(v.voiceURI||'')) s -= 3;
+      if(/novelty|whisper|bells|zarvox|bad news|good news|jester|bubbles|boing|cellos|organ|trinoids|albert|fred|junior|ralph|kathy|bahh|wobble|superstar|grandma|grandpa|eddy|flo|reed|rocko|sandy|shelley/i.test(n)) s -= 20;
       return s;
     }
-    vs.sort(function(a,b){ return score(b) - score(a); });
+    return vs.filter(function(v){ return score(v) > -10; }).sort(function(a,b){ return score(b) - score(a); });
+  }
+  function pickVoice(){
+    var vs = englishVoices(); if(!vs.length) return null;
+    var want = null; try { want = localStorage.getItem('fl-tts-voice'); } catch(e){}
+    if(want){ for(var k=0; k<vs.length; k++) if(vs[k].voiceURI === want || vs[k].name === want) return vs[k]; }
     return vs[0];
   }
   S.onvoiceschanged = function(){ st.voice = pickVoice(); };
@@ -116,7 +121,7 @@
     render();
   }
 
-  function play(){ st.i = 0; st.on = true; st.playing = true; st.key = stepKey(); startBlock(); }
+  function play(){ st.voice = pickVoice() || st.voice; st.i = 0; st.on = true; st.playing = true; st.key = stepKey(); startBlock(); }
   function pause(){ st.playing = false; st.token = Math.random(); S.cancel(); render(); }
   function resume(){ st.playing = true; st.token = Math.random(); S.cancel(); setTimeout(speakPart, 60); render(); }
   function stop(){
@@ -142,7 +147,7 @@
     var h;
     if(!st.on){ h = btn('play','🔊 Read aloud','Read this page aloud'); }
     else h = btn('prev','⏮','Previous part') + (st.playing ? btn('pause','⏸','Pause') : btn('resume','▶️','Resume')) +
-      btn('next','⏭','Next part') + btn('rate', st.rate + '×', 'Change speed') + btn('stop','✕','Stop reading');
+      btn('next','⏭','Next part') + btn('rate', st.rate + '×', 'Change speed') + btn('voice','🗣','Choose voice') + btn('stop','✕','Stop reading');
     bar.className = st.on ? 'tts-bar open' : 'tts-bar';
     if(bar.innerHTML !== h) bar.innerHTML = h;
   }
@@ -150,15 +155,35 @@
     var b = e.target.closest('[data-tts]'); if(!b) return;
     var a = b.getAttribute('data-tts');
     if(a==='play') play(); else if(a==='pause') pause(); else if(a==='resume') resume();
-    else if(a==='stop') stop(); else if(a==='next') jump(1); else if(a==='prev') jump(-1); else if(a==='rate') cycleRate();
+    else if(a==='stop') stop(); else if(a==='next') jump(1); else if(a==='prev') jump(-1); else if(a==='rate') cycleRate(); else if(a==='voice') openMenu();
   });
 
+  var menu = document.createElement('div'); menu.className = 'tts-menu';
+  function openMenu(){
+    var vs = englishVoices(), cur = st.voice ? st.voice.voiceURI : '';
+    if(!vs.length){ menu.innerHTML = '<p>No English voices found yet. Try again in a second.</p><button type="button" data-ttsv="">Close</button>'; }
+    else menu.innerHTML = '<b>Choose a voice</b><p>Downloaded Enhanced or Premium voices sound best.</p>' + vs.map(function(v){
+      return '<button type="button" class="'+(v.voiceURI===cur?'on':'')+'" data-ttsv="'+v.voiceURI.replace(/"/g,'&quot;')+'">'+label(v).replace(/</g,'&lt;')+'</button>'; }).join('') + '<button type="button" data-ttsv="">Close</button>';
+    if(!menu.parentNode) document.body.appendChild(menu);
+    menu.style.display = 'block';
+  }
+  menu.addEventListener('click', function(e){
+    var b = e.target.closest('[data-ttsv]'); if(!b) return;
+    var uri = b.getAttribute('data-ttsv'); menu.style.display = 'none';
+    if(!uri) return;
+    var v = englishVoices().filter(function(x){ return x.voiceURI === uri; })[0];
+    if(v){ st.voice = v; try { localStorage.setItem('fl-tts-voice', uri); } catch(e){}
+      if(st.playing){ st.token = Math.random(); S.cancel(); setTimeout(speakPart, 60); } }
+  });
   var css = document.createElement('style');
   css.textContent =
     '.tts-bar{position:fixed;right:14px;bottom:calc(14px + env(safe-area-inset-bottom));z-index:9999;display:flex;gap:4px;' +
     'background:#1f2a24;color:#fff;border-radius:999px;padding:6px;box-shadow:0 6px 20px rgba(0,0,0,.25);font:600 15px/1 system-ui,sans-serif}' +
     '.tts-bar button{background:transparent;border:0;color:#fff;font:inherit;padding:9px 12px;border-radius:999px;cursor:pointer;min-width:40px}' +
     '.tts-bar button:active{background:rgba(255,255,255,.15)}' +
+    '.tts-menu{display:none;position:fixed;left:12px;right:12px;bottom:calc(72px + env(safe-area-inset-bottom));max-height:60vh;overflow:auto;z-index:10000;background:#fff;color:#1f2a24;border-radius:16px;padding:14px;box-shadow:0 10px 30px rgba(0,0,0,.3);font:15px/1.35 system-ui,sans-serif}' +
+    '.tts-menu p{margin:4px 0 10px;color:#666;font-size:13px}.tts-menu button{display:block;width:100%;text-align:left;border:0;background:#f3f3ef;border-radius:10px;padding:11px 12px;margin:6px 0;font:inherit;color:inherit}' +
+    '.tts-menu button.on{background:#1f2a24;color:#fff}' +
     '.tts-on{outline:3px solid #e0a526;outline-offset:3px;border-radius:10px;transition:outline-color .2s}';
   document.head.appendChild(css);
 
