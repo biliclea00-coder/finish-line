@@ -97,16 +97,28 @@ css.textContent = [
 ".pathv .mtog{display:flex;gap:6px;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:4px;width:max-content}",
 ".pathv .mtog button{font:inherit;font-size:13px;border:0;border-radius:999px;padding:6px 12px;background:transparent;color:var(--ink);cursor:pointer}",
 ".pathv .mtog button.on{background:linear-gradient(135deg,#6a3fb5,#e0603f);color:#fff;font-weight:700}",
-".pathv .wimg{width:54px;height:54px;border-radius:50%;object-fit:cover;margin-right:8px;border:2px solid #e0603f;flex:none}",
-".pathv .wimg.sm{width:44px;height:44px;display:block;margin:0 auto 6px}",
+".pathv .wimg{width:84px;height:84px;border-radius:50%;object-fit:cover;object-position:50% 25%;margin-right:10px;border:3px solid #e0603f;flex:none}",
+".pathv .wimg.sm{width:104px;height:104px;display:block;margin:0 auto 8px}",
+".pathv .wimg.hero{width:100%;height:auto;max-height:260px;border-radius:14px;margin:0 0 10px;border:0;object-fit:cover}",
 ".pathv .fame{font-size:13px;color:#c27a14;font-weight:600;margin:2px 0}",
-".pathv .prize{background:#fff6e0;border-left:3px solid #e0a526;border-radius:8px;padding:8px 10px;margin:8px 0;font-size:14px;line-height:1.45}",
-".pathv .prize b{display:block;color:#a8670c;font-size:12px;letter-spacing:.02em;margin-bottom:2px}",
+".pathv .prize{background:rgba(224,165,38,.14);border-left:3px solid #e0a526;border-radius:8px;padding:8px 10px;margin:8px 0;font-size:14px;line-height:1.45}",
+".pathv .prize b{display:block;color:#d9952a;font-size:12px;letter-spacing:.02em;margin-bottom:2px}",
 ".pathv .vid{margin:8px 0}.pathv .vid iframe{width:100%;aspect-ratio:16/9;border:0;border-radius:12px}",
 ".pathv .sides{display:grid;grid-template-columns:1fr auto 1fr;gap:6px;align-items:stretch}",
 ".pathv .side{border-radius:12px;padding:10px;font-size:14px;text-align:center}",
 ".pathv .side.a{background:rgba(31,78,140,.18);border:1px solid #1f4e8c}.pathv .side.b{background:rgba(224,96,63,.15);border:1px solid #e0603f}",
 ".pathv .vs{align-self:center;font-weight:900;color:#e0603f}",
+".pathv .mom .kick{font-size:12px;letter-spacing:.08em;text-transform:uppercase;opacity:.85}",
+".pathv .scene{font-size:17px;line-height:1.6;margin:0}",
+".pathv .scene+.scene{margin-top:12px}",
+".pathv .scene.new{animation:rise .6s ease both}",
+".pathv .twist{border-radius:14px;padding:12px 14px;background:linear-gradient(135deg,rgba(106,63,181,.22),rgba(224,96,63,.22));border:1px solid rgba(224,96,63,.5)}",
+".pathv .twist b{display:block;font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:#e0603f;margin-bottom:4px}",
+".pathv .src{font-size:12.5px;opacity:.8}.pathv .src a{color:inherit}",
+".pathv .sc{border-radius:14px;padding:12px;border:1px solid var(--line);background:var(--surface)}",
+".pathv .sc .says{border-left:3px solid #8a8f98;padding-left:10px;margin:8px 0;opacity:.9}",
+".pathv .sc .act{border-left:3px solid #e0603f;padding-left:10px;margin:8px 0}",
+".pathv .sc .tag{display:inline-block;font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;padding:2px 8px;border-radius:999px;background:rgba(224,96,63,.18);color:#e0603f}",
 ".pathv .ff.back span{font-size:12.5px;opacity:.95}",
 ".hr .sdots{display:flex;gap:6px;flex-wrap:wrap}",
 ".hr .sdot{width:22px;height:8px;border-radius:4px;border:0;background:var(--line);cursor:pointer;padding:0}",
@@ -368,15 +380,17 @@ function rubric(text, R){
     '<div class="lead" style="margin-top:6px">'+esc(pct>=70 ? (R.hi||"Strong. You're ready for the exam version.") : pct>=35 ? (R.mid||"A good start: the missing pieces are exactly what this session gives you.") : (R.lo||"That's normal before the session: the next screens give you the pieces."))+'</div></div>';
 }
 /* tap exercise: each item has options, one right, feedback per item */
+function hsh(s){ var h = 2166136261; s = String(s); for(var i=0;i<s.length;i++){ h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); } return h>>>0; }
+function order(nn, seed){ var o = []; for(var i=0;i<nn;i++) o.push(i); var h = hsh(seed); for(var k=nn-1;k>0;k--){ h = Math.imul(h ^ (h>>>15), 2246822507)>>>0; var r = h % (k+1); var t = o[k]; o[k] = o[r]; o[r] = t; } return o; }
 function tapHtml(n, key, T, sp){
   var got = sp.taps[key] || {}, done = 0, right = 0;
   var rows = T.items.map(function(it, i){ var pk = got[i]; if(pk!==undefined){ done++; if(pk===it.a) right++; }
-    return '<div class="tapq"><div class="tapt">'+(it.icon?'<span class="ic">'+it.icon+'</span>':'')+esc(it.text)+'</div><div class="tapo">'+it.opts.map(function(o, k){
+    return '<div class="tapq"><div class="tapt">'+(it.icon?'<span class="ic">'+it.icon+'</span>':'')+esc(it.text)+'</div><div class="tapo">'+order(it.opts.length, key+'|'+i+'|'+it.text).map(function(k){ var o = it.opts[k];
       var cls = pk===undefined ? "" : (k===it.a ? " right" : (k===pk ? " wrong" : " dim"));
       return '<button class="tchip'+cls+'" '+(pk!==undefined?'disabled ':'')+'data-hr="tap|'+n+'|'+key+'|'+i+'|'+k+'">'+esc(o)+'</button>'; }).join("")+'</div>'+
       (pk!==undefined ? '<div class="why anim">'+(pk===it.a?'✓ ':'✗ The answer is "'+esc(it.opts[it.a])+'". ')+esc(it.fb)+'</div>' : '')+'</div>';
   }).join("");
-  var end = done===T.items.length ? '<div class="fb anim"><b>'+right+' of '+T.items.length+' right.</b> '+esc(T.wrap||"")+'</div>' : '';
+  var end = (done===T.items.length && !T.noend) ? '<div class="fb anim"><b>'+right+' of '+T.items.length+' right.</b> '+esc(T.wrap||"")+'</div>' : '';
   return '<div class="card"><b>'+esc(T.q)+'</b>'+(T.hint?'<div class="lead">'+esc(T.hint)+'</div>':'')+rows+end+'</div>';
 }
 function flipHtml(t, i){ return '<div class="flip rise" style="animation-delay:'+(0.15*i+0.3)+'s" onclick="this.classList.toggle(\'on\')"><div class="flipin"><div class="ff front"><div class="fic">'+t.icon+'</div><b>'+esc(t.name)+'</b><small>tap to flip</small></div><div class="ff back"><b>'+esc(t.gives)+'</b><i>"'+esc(t.line)+'"</i></div></div></div>'; }
@@ -404,7 +418,7 @@ function vSess(n, k){
       '<button class="btn" data-hr="sfb|'+n+'|first">Get feedback</button>'+(sp.tries.fbfirst ? rubric(sp.first, st.rubric) : '')+'</div>';
   } else if(st.type==="story"){
     body = '<div class="phero"><div class="hq" style="font-size:20px">'+esc(st.title)+'</div><div>'+esc(st.sub)+'</div></div><div class="tl">'+
-      st.nodes.map(function(nd, j){ var cu = MODE()==='curious', d = cu ? j*0.9 : 0; return '<div class="tln rise" style="animation-delay:'+d+'s"><div class="tly">'+esc(nd.year)+'</div><div class="tlc"><div class="tlh">'+(cu?wikiImg(nd.wiki):'')+'<span class="ic">'+nd.icon+'</span><b>'+esc(nd.who)+'</b></div>'+(nd.fame?'<div class="fame">🏆 '+esc(nd.fame)+'</div>':'')+'<div class="tli">'+esc(nd.idea)+'</div>'+(nd.sig?'<div class="prize"><b>Why this prize matters</b>'+esc(nd.sig)+'</div>':'')+(cu?ytHtml(nd.video):'')+
+      st.nodes.map(function(nd, j){ var cu = MODE()==='curious', d = cu ? j*0.9 : 0; return '<div class="tln rise" style="animation-delay:'+d+'s"><div class="tly">'+esc(nd.year)+'</div><div class="tlc"><div class="tlh">'+wikiImg(nd.wiki)+'<span class="ic">'+nd.icon+'</span><b>'+esc(nd.who)+'</b></div>'+(nd.fame?'<div class="fame">🏆 '+esc(nd.fame)+'</div>':'')+'<div class="tli">'+esc(nd.idea)+'</div>'+(nd.sig?'<div class="prize"><b>Why this prize matters</b>'+esc(nd.sig)+'</div>':'')+(cu?ytHtml(nd.video):'')+
         (nd.gives?'<div class="tlg">You get: <b>'+esc(nd.gives)+'</b></div>':'')+(nd.line?exLine(nd.line, d+0.4):'')+'</div></div>'; }).join("")+'</div>';
   } else if(st.type==="casefile"){
     body = '<div class="phero"><div class="lead">📁 Case file</div><div class="hq" style="font-size:22px">'+esc(st.title)+'</div><div>'+esc(st.sub)+'</div></div><div class="facts">'+
@@ -426,8 +440,21 @@ function vSess(n, k){
         return '<details class="card arena"'+(j===0?' open':'')+'><summary>'+esc(d.t)+'</summary><div class="stack" style="margin-top:8px">'+
           '<div class="sides"><div class="side a">'+wikiImg(d.a.wiki,'wimg sm')+'<b>'+esc(d.a.who)+'</b><div>'+esc(d.a.claim)+'</div></div><div class="vs">vs</div><div class="side b">'+wikiImg(d.b.wiki,'wimg sm')+'<b>'+esc(d.b.who)+'</b><div>'+esc(d.b.claim)+'</div></div></div>'+
           '<div><b>🧭 Where it stands now</b><br>'+esc(d.now)+'</div><div><b>🎯 Why it matters for you</b><br>'+esc(d.why)+'</div>'+ytHtml(d.video)+
-          '<div class="card" style="margin:0"><b>Your turn: '+esc(d.q)+'</b><textarea data-hrsp="'+n+'|'+ak+'" style="min-height:90px" placeholder="2–3 lines…">'+esc(ans)+'</textarea><button class="btn" data-hr="sfb|'+n+'|'+ak+'">Get feedback</button>'+(sp.tries["fb"+ak] ? rubric(ans, d.rubric) : '')+
+          (d.ctx?'<div class="sc"><b>📁 The case in brief</b><div>'+esc(d.ctx)+'</div></div>':'')+'<div class="card" style="margin:0"><b>Your turn: '+esc(d.q)+'</b><textarea data-hrsp="'+n+'|'+ak+'" style="min-height:90px" placeholder="2–3 lines…">'+esc(ans)+'</textarea><button class="btn" data-hr="sfb|'+n+'|'+ak+'">Get feedback</button>'+(sp.tries["fb"+ak] ? rubric(ans, d.rubric) : '')+
           '<details><summary>Full answer</summary><div class="model">'+esc(d.model)+'</div></details></div></div></details>'; }).join("");
+  } else if(st.type==="moment"){
+    var mk = key, seen = (sp.taps[mk+"m"]||{}).n||1, pk = (sp.taps[mk+"p"]||{})[0], at = st.at||st.scenes.length;
+    var showN = Math.min(seen, st.scenes.length), gated = st.predict && showN>=at && pk===undefined;
+    if(gated) showN = at;
+    body = '<div class="phero mom">'+(st.wiki?wikiImg(st.wiki,'wimg hero'):'')+'<div class="kick">'+esc(st.kicker)+'</div><div class="hq" style="font-size:22px">'+esc(st.title)+'</div>'+(st.sub?'<div>'+esc(st.sub)+'</div>':'')+'</div>'+
+      '<div class="card">'+st.scenes.slice(0, Math.min(showN, at)).map(function(sc, j){ return '<p class="scene'+(j===showN-1?' new':'')+'">'+esc(sc)+'</p>'; }).join("")+'</div>'+
+      (st.predict && showN>=at ? tapHtml(n, mk+"p", {q:"🤔 Your guess first", items:[st.predict], noend:1}, sp) : '')+
+      (showN>at ? '<div class="card">'+st.scenes.slice(at, showN).map(function(sc, j){ return '<p class="scene'+(at+j===showN-1?' new':'')+'">'+esc(sc)+'</p>'; }).join("")+'</div>' : '')+
+      (!gated && showN<st.scenes.length ? '<button class="btn" data-hr="mom|'+n+'|'+mk+'|'+(showN+1)+'">Continue ›</button>' : '')+
+      (showN>=st.scenes.length ? '<div class="twist anim"><b>What it proves</b>'+esc(st.proves)+'</div>'+(st.now?'<div class="card"><b>🕰 What happened next</b><div>'+esc(st.now)+'</div></div>':'')+(st.line?exLine(st.line, 0.2):'')+(st.src?'<div class="src">Sources: '+st.src.map(function(x){ return x[1] ? '<a href="'+esc(x[1])+'" target="_blank" rel="noopener">'+esc(x[0])+'</a>' : esc(x[0]); }).join(" · ")+'</div>':'') : '');
+  } else if(st.type==="slidecheck"){
+    body = '<div class="phero"><div class="hq" style="font-size:20px">'+esc(st.title)+'</div><div>'+esc(st.sub)+'</div></div>'+
+      st.items.map(function(x, j){ return '<div class="sc rise" style="animation-delay:'+(j*0.08)+'s"><span class="tag">'+esc(x.tag)+'</span> <b>'+esc(x.where)+'</b><div class="says"><b>Your slide:</b> '+esc(x.says)+'</div><div class="act"><b>Actually:</b> '+esc(x.actually)+'</div>'+(x.why?'<div class="lead">🎯 '+esc(x.why)+'</div>':'')+(x.src?'<div class="src">'+esc(x.src)+'</div>':'')+'</div>'; }).join("");
   } else if(st.type==="check"){
     body = '<div class="phero"><div class="hq" style="font-size:20px">Check yourself</div><div>'+esc(st.sub)+'</div></div>'+tapHtml(n, key, st.task, sp);
   } else if(st.type==="exam"){
@@ -524,6 +551,7 @@ app.addEventListener("click", function(e){
   if(a[0]==="srate"){ SP(a[1]).rate = a[2]; save(); FL.render(); window.scrollTo(0, y); return; }
   if(a[0]==="sredo"){ CQ = null; FL.render(); return; }
   if(a[0]==="mode"){ H().mode = a[1]; save(); FL.render(); window.scrollTo(0, y); return; }
+  if(a[0]==="mom"){ var tq = SP(a[1]).taps; tq[a[2]+"m"] = {n:+a[3]}; save(); FL.render(); window.scrollTo(0, y); return; }
   if(a[0]==="sfb"){ SP(a[1]).tries["fb"+a[2]] = 1; save(); FL.render(); window.scrollTo(0, y); return; }
   if(a[0]==="tap"){ var tp = SP(a[1]).taps; if(!tp[a[2]]) tp[a[2]] = {}; if(tp[a[2]][a[3]]===undefined){ tp[a[2]][a[3]] = +a[4]; save(); FL.render(); window.scrollTo(0, y); } return; }
   if(a[0]==="pick" && CQ){ if(CQ.picked>=0) return; var q = CQ.items[CQ.i]; CQ.picked = +a[1]; var ok = CQ.picked===q.a; if(ok) CQ.right++;
