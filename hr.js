@@ -115,6 +115,7 @@ css.textContent = [
 ".pathv .twist{border-radius:14px;padding:12px 14px;background:linear-gradient(135deg,rgba(106,63,181,.22),rgba(224,96,63,.22));border:1px solid rgba(224,96,63,.5)}",
 ".pathv .twist b{display:block;font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:#e0603f;margin-bottom:4px}",
 ".pathv .src{font-size:12.5px;opacity:.8}.pathv .src a{color:inherit}",
+".pathv .fixc .tag{display:inline-block;font-size:11px;font-weight:800;letter-spacing:.04em;padding:2px 8px;border-radius:999px;background:rgba(224,96,63,.18);color:#e0603f;margin-bottom:4px}",
 ".pathv .sc{border-radius:14px;padding:12px;border:1px solid var(--line);background:var(--surface)}",
 ".pathv .sc .says{border-left:3px solid #8a8f98;padding-left:10px;margin:8px 0;opacity:.9}",
 ".pathv .sc .act{border-left:3px solid #e0603f;padding-left:10px;margin:8px 0}",
@@ -393,6 +394,16 @@ function tapHtml(n, key, T, sp){
   var end = (done===T.items.length && !T.noend) ? '<div class="fb anim"><b>'+right+' of '+T.items.length+' right.</b> '+esc(T.wrap||"")+'</div>' : '';
   return '<div class="card"><b>'+esc(T.q)+'</b>'+(T.hint?'<div class="lead">'+esc(T.hint)+'</div>':'')+rows+end+'</div>';
 }
+var FIXO = ["Correct and complete","Correct, but something important is missing","Outdated: the facts have moved on","Wrong or contradicts another source"];
+function fixHtml(n, key, items, sp){
+  if(!items || !items.length) return "";
+  var got = sp.taps[key] || {};
+  return '<div class="card fixc"><b>🔎 Spot what\'s off on your slide</b><div class="lead">I checked your slides against Grant, the papers and the news. Decide first, then see what I found.</div>'+items.map(function(x, i){ var pk = got[i];
+    return '<div class="tapq"><div class="tapt"><span class="tag">'+esc(x.where)+'</span><br>'+esc(x.says)+'</div><div class="tapo">'+order(4, key+'|'+i+'|'+x.where).map(function(k){
+      var cls = pk===undefined ? "" : (k===x.v ? " right" : (k===pk ? " wrong" : " dim"));
+      return '<button class="tchip'+cls+'" '+(pk!==undefined?'disabled ':'')+'data-hr="tap|'+n+'|'+key+'|'+i+'|'+k+'">'+esc(FIXO[k])+'</button>'; }).join("")+'</div>'+
+      (pk!==undefined ? '<div class="why anim">'+(pk===x.v?'✓ ':'✗ It\'s "'+esc(FIXO[x.v])+'". ')+'<b>What I found:</b> '+esc(x.actually)+(x.why?'<br>🎯 '+esc(x.why):'')+(x.src?'<div class="src">'+esc(x.src)+'</div>':'')+'</div>' : '')+'</div>'; }).join("")+'</div>';
+}
 function flipHtml(t, i){ return '<div class="flip rise" style="animation-delay:'+(0.15*i+0.3)+'s" onclick="this.classList.toggle(\'on\')"><div class="flipin"><div class="ff front"><div class="fic">'+t.icon+'</div><b>'+esc(t.name)+'</b><small>tap to flip</small></div><div class="ff back"><b>'+esc(t.gives)+'</b><i>"'+esc(t.line)+'"</i></div></div></div>'; }
 function forcesSvg(r){ /* r: ratings array [rivalry, entry, suppliers, buyers, substitutes] as 0 high,1 med,2 low or undefined */
   var col = function(v){ return v===0 ? "#e5533d" : v===1 ? "#e8a33d" : v===2 ? "#3a9d6b" : "var(--line)"; };
@@ -429,11 +440,11 @@ function vSess(n, k){
     var r5 = []; if(st.svg){ var g = sp.taps[key]||{}; st.task.items.forEach(function(it, j){ r5[j] = g[j]; }); }
     body = '<div class="phero"><div class="fic xl">'+(st.icon||"💡")+'</div><div class="hq" style="font-size:22px">'+esc(t.n)+'</div><div class="lead">'+esc(t.who)+'</div></div>'+
       '<div class="card"><div>'+esc(st.short)+'</div>'+(st.svg?forcesSvg(r5):'')+'<details><summary>'+lab+'</summary><div>'+esc(sto)+'</div></details><details><summary>Everything on the slides</summary><div>'+esc(t.what)+'</div></details></div>'+
-      tapHtml(n, key, st.task, sp)+(t.ex ? exLine(st.line || t.ex, 0.2) : '');
+      tapHtml(n, key, st.task, sp)+(t.ex ? exLine(st.line || t.ex, 0.2) : '')+ytHtml(st.video);
   } else if(st.type==="deeper"){
     body = '<div class="phero"><div class="hq" style="font-size:20px">Go deeper (optional)</div><div>'+esc(st.sub)+'</div></div>'+
       st.debates.map(function(d){ return '<details class="card"><summary>'+esc(d.t)+'</summary><div class="stack" style="margin-top:6px"><div>'+esc(d.body)+'</div>'+exLine(d.line, 0)+'</div></details>'; }).join("")+
-      '<div class="card"><b>📘 '+esc(st.book.title)+'</b><div class="lead">'+esc(st.book.note)+'</div>'+st.book.parts.map(function(b){ return '<div class="row" style="align-items:flex-start;gap:8px"><span>'+esc(b[0])+' <span class="lead">(pp. '+esc(b[1])+')</span></span><a class="btn ghost" style="width:auto" href="#doc/'+st.book.doc+'/'+b[2]+'">Open</a></div>'; }).join("")+'</div>';
+      '<a class="btn ghost" href="#hr/fix/'+n+'">🔎 All corrections to your slides (reference)</a>'+'<div class="card"><b>📘 '+esc(st.book.title)+'</b><div class="lead">'+esc(st.book.note)+'</div>'+st.book.parts.map(function(b){ return '<div class="row" style="align-items:flex-start;gap:8px"><span>'+esc(b[0])+' <span class="lead">(pp. '+esc(b[1])+')</span></span><a class="btn ghost" style="width:auto" href="#doc/'+st.book.doc+'/'+b[2]+'">Open</a></div>'; }).join("")+'</div>';
   } else if(st.type==="arena"){
     body = '<div class="phero"><div class="hq" style="font-size:20px">⚔️ The arena</div><div>'+esc(st.sub)+'</div></div>'+
       st.debates.map(function(d, j){ var ak = key+"_"+j, ans = sp.tries[ak]||"";
@@ -451,7 +462,7 @@ function vSess(n, k){
       (st.predict && showN>=at ? tapHtml(n, mk+"p", {q:"🤔 Your guess first", items:[st.predict], noend:1}, sp) : '')+
       (showN>at ? '<div class="card">'+st.scenes.slice(at, showN).map(function(sc, j){ return '<p class="scene'+(at+j===showN-1?' new':'')+'">'+esc(sc)+'</p>'; }).join("")+'</div>' : '')+
       (!gated && showN<st.scenes.length ? '<button class="btn" data-hr="mom|'+n+'|'+mk+'|'+(showN+1)+'">Continue ›</button>' : '')+
-      (showN>=st.scenes.length ? '<div class="twist anim"><b>What it proves</b>'+esc(st.proves)+'</div>'+(st.now?'<div class="card"><b>🕰 What happened next</b><div>'+esc(st.now)+'</div></div>':'')+(st.line?exLine(st.line, 0.2):'')+(st.src?'<div class="src">Sources: '+st.src.map(function(x){ return x[1] ? '<a href="'+esc(x[1])+'" target="_blank" rel="noopener">'+esc(x[0])+'</a>' : esc(x[0]); }).join(" · ")+'</div>':'') : '');
+      (showN>=st.scenes.length ? '<div class="twist anim"><b>What it proves</b>'+esc(st.proves)+'</div>'+ytHtml(st.video)+(st.now?'<div class="card"><b>🕰 What happened next</b><div>'+esc(st.now)+'</div></div>':'')+(st.line?exLine(st.line, 0.2):'')+(st.src?'<div class="src">Sources: '+st.src.map(function(x){ return x[1] ? '<a href="'+esc(x[1])+'" target="_blank" rel="noopener">'+esc(x[0])+'</a>' : esc(x[0]); }).join(" · ")+'</div>':'') : '');
   } else if(st.type==="slidecheck"){
     body = '<div class="phero"><div class="hq" style="font-size:20px">'+esc(st.title)+'</div><div>'+esc(st.sub)+'</div></div>'+
       st.items.map(function(x, j){ return '<div class="sc rise" style="animation-delay:'+(j*0.08)+'s"><span class="tag">'+esc(x.tag)+'</span> <b>'+esc(x.where)+'</b><div class="says"><b>Your slide:</b> '+esc(x.says)+'</div><div class="act"><b>Actually:</b> '+esc(x.actually)+'</div>'+(x.why?'<div class="lead">🎯 '+esc(x.why)+'</div>':'')+(x.src?'<div class="src">'+esc(x.src)+'</div>':'')+'</div>'; }).join("");
@@ -468,9 +479,17 @@ function vSess(n, k){
       '<details class="card"><summary>Model answer</summary><div class="model">'+esc(st.model)+'</div></details>'+
       '<div class="card"><b>How exam-ready do you feel?</b><div class="grid2" style="grid-template-columns:1fr 1fr 1fr">'+[["not","Not yet"],["getting","Getting there"],["ready","Exam-ready"]].map(function(r){ return '<button class="ck'+(sp.rate===r[0]?' on':'')+'" style="justify-content:center" data-hr="srate|'+n+'|'+r[0]+'">'+r[1]+'</button>'; }).join("")+'</div></div>';
   }
+  if(st.fix) body += fixHtml(n, key+"f", st.fix, sp);
   var nav = '<div class="grid2 pnav">'+(i>0 ? '<button class="btn ghost" data-hr="sstep|'+n+'|'+(i-1)+'">‹ Back</button>' : '<span></span>')+
     (i<steps.length-1 ? '<button class="btn" data-hr="sstep|'+n+'|'+(i+1)+'">Next ›</button>' : '<a class="btn" href="#hr/map">Back to the map</a>')+'</div>';
   return '<div class="hr stack pathv">'+head+body+nav+'</div>';
+}
+function vFixes(n){
+  var s = sessByN(n); if(!s || !s.path) return vMap();
+  var all = []; s.path.steps.forEach(function(st){ (st.fix||[]).forEach(function(x){ all.push(x); }); });
+  return '<div class="hr stack pathv"><div class="phead"><a href="#hr/s/'+n+'">‹ Back to the session</a><span>S'+s.n+' · slide corrections</span></div>'+
+    '<div class="phero"><div class="hq" style="font-size:20px">All corrections to your slides</div><div>Reference list. In the session, each one appears as a task at the moment you learn that topic.</div></div>'+
+    (all.length ? all.map(function(x){ return '<div class="sc"><span class="tag">'+esc(FIXO[x.v])+'</span> <b>'+esc(x.where)+'</b><div class="says"><b>Your slide:</b> '+esc(x.says)+'</div><div class="act"><b>What I found:</b> '+esc(x.actually)+'</div>'+(x.why?'<div class="lead">🎯 '+esc(x.why)+'</div>':'')+'</div>'; }).join("") : '<p class="lead">No corrections recorded for this session yet.</p>')+'</div>';
 }
 function vMap(){
   var h = H(), here = h.here, hs = here ? sessByN(here.n) : null;
@@ -498,6 +517,7 @@ function view(r){
   if(r==="hr/overview") return vOverview();
   if(r==="hr/cases") return vClassCases();
   if(r==="hr/map") return vMap();
+  if((m = r.match(/^hr\/fix\/(\d+)$/))) return vFixes(m[1]);
   if((m = r.match(/^hr\/s\/(\d+)(?:\/(\d+))?$/))) return vSess(m[1], m[2]!==undefined ? +m[2] : null);
   if(r==="hr/coverage" && D.coverage) return vCoverage();
   if(r==="hr/drill") return vDrills();
